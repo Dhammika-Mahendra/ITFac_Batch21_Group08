@@ -1,0 +1,52 @@
+# Node modules
+node_modules/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+
+# Build output
+dist/
+build/
+
+# Dependency directories
+jspm_packages/
+
+# Optional npm cache directory
+.npm/
+
+# Optional eslint cache
+.eslintcache
+
+# dotenv environment variables file
+.env
+
+# VSCode settings
+.vscode/
+
+# Coverage directory
+coverage/
+
+# Yarn Integrity file
+.yarn-integrity
+
+# Parcel-bundler cache
+.cache/
+
+# Next.js build output
+.next/
+
+# Svelte build output
+.svelte-kit/
+
+# Storybook build output
+storybook-static/
+
+# Mac system files
+.DS_Store
