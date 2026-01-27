@@ -11,13 +11,8 @@ class LoginPage {
     return cy.get('button[type="submit"]');
   }
 
-  // 2. Define Action (methods)
-  visit() {
-    cy.visit("http://localhost:8080/ui/login");
-  }
-
   visitLoginPage() {
-    this.visit();
+    cy.visit(Cypress.env("BASE_URL") + "/ui/login");
   }
 
   login(username, password) {
@@ -26,13 +21,28 @@ class LoginPage {
     this.loginBtn.click();
   }
 
-  isTokenResponse(json) {
-    return (
-      json &&
-      typeof json === "object" &&
-      Object.hasOwn(json, "token") &&
-      Object.hasOwn(json, "tokenType")
-    );
+}
+
+class loginAPI{
+
+  loginAPIRequest(username, password){
+    return cy.request({
+      method: 'POST',
+      url: Cypress.env("BASE_URL") + '/api/auth/login',
+      body: {
+        username: username,
+        password: password
+      },
+      failOnStatusCode: false
+    });
+  } 
+
+  getAuthToken(username, password) {
+    return this.loginAPIRequest(username, password).then((response) => {
+      expect(response.status, "login API should succeed").to.eq(200);
+      this.validateTokenResponse(response.body);
+      return response.body.token;
+    });
   }
 
   validateTokenResponse(json) {
@@ -41,17 +51,8 @@ class LoginPage {
     expect(json.tokenType, "tokenType should be present").to.be.a("string").and
       .not.be.empty;
   }
-
-  validateTextMessage(bodyText, expectedMessage) {
-    expect(bodyText).to.include(expectedMessage);
-  }
-
-  verifyMessage(expectedMessage) {
-    cy.document().then((doc) => {
-      const bodyText = doc.body.innerText;
-      this.validateTextMessage(bodyText, expectedMessage);
-    });
-  }
+  
 }
 
 export const loginPage = new LoginPage();
+export const loginApi = new loginAPI();
