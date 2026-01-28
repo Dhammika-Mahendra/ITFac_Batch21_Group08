@@ -116,3 +116,18 @@ export function validateSalesErrorResponse(response) {
 	expect(response.body.message, "error message should mention unknown field").to.include("unknownField");
 	return response;
 }
+
+export function validateSalesSortedByQuantity(response) {
+	const sales = response.body.content;
+	
+	// Verify sales are sorted by quantity in ascending order (lowest to highest)
+	for (let i = 0; i < sales.length - 1; i++) {
+		const currentQuantity = sales[i].quantity ?? 0;
+		const nextQuantity = sales[i + 1].quantity ?? 0;
+		expect(
+			currentQuantity,
+			`Sales at index ${i} (quantity: ${currentQuantity}) should be <= sales at index ${i + 1} (quantity: ${nextQuantity})`,
+		).to.be.at.most(nextQuantity);
+	}
+	return response;
+}
