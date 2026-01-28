@@ -33,3 +33,11 @@ Feature: Sales Management
         Then I should receive a 200 status code
         And the response should contain a list of sales
         And the sales should be sorted by quantity in ascending order
+
+    @Sale_Admin_API_05
+    Scenario: Admin retrieve sales sorted by total price
+        Given I have logged in as an admin user
+        When I call the sales pagination API endpoint with page 0, size 10 and sort totalPrice
+        Then I should receive a 200 status code
+        And the response should contain a list of sales
+        And the sales should be sorted by total price in ascending order

@@ -131,3 +131,18 @@ export function validateSalesSortedByQuantity(response) {
 	}
 	return response;
 }
+
+export function validateSalesSortedByTotalPrice(response) {
+	const sales = response.body.content;
+	
+	// Verify sales are sorted by totalPrice in ascending order (lowest to highest)
+	for (let i = 0; i < sales.length - 1; i++) {
+		const currentTotal = Number(sales[i].totalPrice ?? 0);
+		const nextTotal = Number(sales[i + 1].totalPrice ?? 0);
+		expect(
+			currentTotal,
+			`Sales at index ${i} (totalPrice: ${currentTotal}) should be <= sales at index ${i + 1} (totalPrice: ${nextTotal})`,
+		).to.be.at.most(nextTotal);
+	}
+	return response;
+}
