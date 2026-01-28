@@ -1,0 +1,20 @@
+@api @sales
+
+Feature: Sales Management
+    I want to retrieve and manage sales records
+
+    @Sale_Admin_API_01
+    Scenario: Admin retrieve sales sorted by date
+        Given I have logged in as an admin user
+        When I call the sales pagination API endpoint with page 0, size 10 and sort soldAt descending
+        Then I should receive a 200 status code
+        And the response should contain a list of sales
+        And the sales should be sorted by soldAt in descending order
+
+    @Sale_Admin_API_02
+    Scenario: Admin retrieve sales sorted by plant name
+        Given I have logged in as an admin user
+        When I call the sales pagination API endpoint with page 0, size 10 and sort PlantName
+        Then I should receive a 200 status code
+        And the response should contain a list of sales
+        And the sales should be sorted by plant name in alphabetical order
