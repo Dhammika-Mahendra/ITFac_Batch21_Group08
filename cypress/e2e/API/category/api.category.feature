@@ -1,4 +1,4 @@
-@ui @categoty
+@api @category
 
 Feature: Category Access
     I want to manage categories after signing in
