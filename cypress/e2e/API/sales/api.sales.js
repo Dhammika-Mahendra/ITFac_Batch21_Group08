@@ -1,6 +1,6 @@
 import { Given, When, Then } from "@badeball/cypress-cucumber-preprocessor";
 import { apiLoginAsAdmin } from "../../preconditions/login";
-import { getSalesPage, validateSalesResponse, validateSalesSortedByDate, validateSalesSortedByPlantName } from "../../../support/api/sales";
+import { getSalesPage, validateSalesResponse, validateSalesSortedByDate, validateSalesSortedByPlantName, validateSalesErrorResponse } from "../../../support/api/sales";
 
 Given("I have logged in as an admin user", () => {
 	return apiLoginAsAdmin();
@@ -20,6 +20,10 @@ Then("I should receive a 200 status code", () => {
 	return cy.get("@salesPageResponse").its("status").should("eq", 200);
 });
 
+Then("I should receive a 500 status code", () => {
+	return cy.get("@salesPageResponse").its("status").should("eq", 500);
+});
+
 Then("the response should contain a list of sales", () => {
 	return cy.get("@salesPageResponse").then((response) => {
 		return validateSalesResponse(response);
@@ -35,5 +39,11 @@ Then("the sales should be sorted by soldAt in descending order", () => {
 Then("the sales should be sorted by plant name in alphabetical order", () => {
 	return cy.get("@salesPageResponse").then((response) => {
 		return validateSalesSortedByPlantName(response);
+	});
+});
+
+Then("the response should contain an error message about unknown field", () => {
+	return cy.get("@salesPageResponse").then((response) => {
+		return validateSalesErrorResponse(response);
 	});
 });

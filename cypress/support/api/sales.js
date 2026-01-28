@@ -109,3 +109,10 @@ export function validateSalesSortedByPlantName(response) {
 	}
 	return response;
 }
+
+export function validateSalesErrorResponse(response) {
+	expect(response.status, "error status").to.equal(500);
+	expect(response.body.message, "error message").to.exist;
+	expect(response.body.message, "error message should mention unknown field").to.include("unknownField");
+	return response;
+}
