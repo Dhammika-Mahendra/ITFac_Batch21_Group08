@@ -146,3 +146,77 @@ export function validateSalesSortedByTotalPrice(response) {
 	}
 	return response;
 }
+//sales UI
+// Utility functions for sales data backup and restoration
+let salesBackup = [];
+
+export function backupSalesData() {
+	return getAllSales().then(() => {
+		return cy.get("@salesResponse").then((response) => {
+			if (response.status === 200 && response.body) {
+				salesBackup = response.body;
+				cy.log(`Backed up ${salesBackup.length} sales records`);
+			}
+		});
+	});
+}
+
+export function restoreSalesData() {
+	cy.log(`Restoring ${salesBackup.length} sales records`);
+	
+	if (salesBackup.length === 0) {
+		return cy.wrap(null);
+	}
+	
+	const baseUrl = ensureBaseUrl();
+	
+	// Restore each sale using the correct endpoint format
+	const restorePromises = salesBackup.map((sale) => {
+		const plantId = sale.plant?.id || sale.plantId;
+		
+		if (!plantId) {
+			cy.log(`Warning: No plantId found for sale, skipping`);
+			return cy.wrap(null);
+		}
+		
+		// Create sale parameters as query string
+		const saleParams = {
+			quantity: sale.quantity,
+			totalPrice: sale.totalPrice,
+			soldAt: sale.soldAt
+		};
+		
+		return cy.get("@authToken").then((token) => {
+			return cy.request({
+				method: "POST",
+				url: `${baseUrl}/api/sales/plant/${plantId}`,
+				headers: {
+					Authorization: `Bearer ${token}`
+				},
+				qs: saleParams,
+				failOnStatusCode: false
+			}).then((response) => {
+				if (response.status === 201 || response.status === 200) {
+					cy.log(`✓ Restored sale for plant ${plantId}`);
+				} else {
+					cy.log(`✗ Failed to restore plant ${plantId}: ${response.status}`);
+				}
+			});
+		});
+	});
+	
+	return Cypress.Promise.all(restorePromises);
+}
+
+export function deleteAllSales() {
+	return getAllSales().then(() => {
+		return cy.get("@salesResponse").then((response) => {
+			if (response.status === 200 && response.body && response.body.length > 0) {
+				const deletePromises = response.body.map((sale) => 
+					deleteSale(sale.id)
+				);
+				return Cypress.Promise.all(deletePromises);
+			}
+		});
+	});
+}
