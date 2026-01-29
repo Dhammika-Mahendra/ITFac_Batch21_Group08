@@ -44,6 +44,13 @@ Feature: Category Management
         When I send a request to delete the category
         Then the category should be deleted successfully
 
+    @Cat_Admin_API_07
+    Scenario: Verify that an Admin can successfully delete an existing category using a valid Category ID
+        Given I have logged in as an admin user and a category exists
+        When I send a DELETE request to the category endpoint with a valid category ID
+        Then I should receive a 204 status code for deletion
+        And the category should be deleted successfully
+
     #----------------------------------------------
     #          Non-Admin User Scenarios 
     #----------------------------------------------
