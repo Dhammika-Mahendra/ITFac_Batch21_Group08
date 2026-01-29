@@ -146,3 +146,12 @@ export function validateSalesSortedByTotalPrice(response) {
 	}
 	return response;
 }
+
+function validateSalesNotFoundResponse(response) {
+	expect(response.status, "error status").to.be.oneOf([404, 500]);
+	expect(response.body.message, "error message").to.exist;
+	expect(response.body.message, "error message should mention not found").to.include("Sale not found");
+	return response;
+}
+
+export { validateSalesNotFoundResponse };

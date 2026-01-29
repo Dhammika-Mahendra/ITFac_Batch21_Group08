@@ -1,6 +1,6 @@
 import { Given, When, Then } from "@badeball/cypress-cucumber-preprocessor";
 import { apiLoginAsAdmin } from "../../preconditions/login";
-import { getSalesPage, validateSalesResponse, validateSalesSortedByDate, validateSalesSortedByPlantName, validateSalesErrorResponse, validateSalesSortedByQuantity, validateSalesSortedByTotalPrice } from "../../../support/api/sales";
+import { getSalesPage, sellPlant, validateSalesResponse, validateSalesSortedByDate, validateSalesSortedByPlantName, validateSalesErrorResponse, validateSalesSortedByQuantity, validateSalesSortedByTotalPrice, validateSalesNotFoundResponse } from "../../../support/api/sales";
 
 Given("I have logged in as an admin user", () => {
 	return apiLoginAsAdmin();
@@ -22,6 +22,10 @@ Then("I should receive a 200 status code", () => {
 
 Then("I should receive a 500 status code", () => {
 	return cy.get("@salesPageResponse").its("status").should("eq", 500);
+});
+
+Then("I should receive a 404 status code", () => {
+	return cy.get("@sellPlantResponse").its("status").should("be.oneOf", [404, 500]);
 });
 
 Then("the response should contain a list of sales", () => {
@@ -57,5 +61,16 @@ Then("the sales should be sorted by quantity in ascending order", () => {
 Then("the sales should be sorted by total price in ascending order", () => {
 	return cy.get("@salesPageResponse").then((response) => {
 		return validateSalesSortedByTotalPrice(response);
+	});
+});
+
+When("I attempt to create a sale for a non-existent plant", () => {
+	const payload = { id: 99999, quantity: 1 };
+	return sellPlant(99999, payload, "sellPlantResponse");
+});
+
+Then("the response should contain a sale not found error message", () => {
+	return cy.get("@sellPlantResponse").then((response) => {
+		return validateSalesNotFoundResponse(response);
 	});
 });

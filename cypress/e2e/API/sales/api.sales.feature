@@ -41,3 +41,10 @@ Feature: Sales Management
         Then I should receive a 200 status code
         And the response should contain a list of sales
         And the sales should be sorted by total price in ascending order
+
+    @Sale_Admin_API_06
+    Scenario: Admin create sale with invalid plant
+        Given I have logged in as an admin user
+        When I attempt to create a sale for a non-existent plant
+        Then I should receive a 404 status code
+        And the response should contain a sale not found error message
