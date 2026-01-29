@@ -1,6 +1,6 @@
 import { Given, When, Then } from "@badeball/cypress-cucumber-preprocessor";
 import { apiLoginAsAdmin, apiLoginAsUser } from "../../preconditions/login";
-import { getAllCategories, deleteCategory, getCategoryById, getAllSubCategories } from "../../../support/api/category";
+import { getAllCategories, deleteCategory, getCategoryById, getAllSubCategories, createCategory } from "../../../support/api/category";
 
 Given("I have logged in as an admin user", () => {
 	return apiLoginAsAdmin();
@@ -141,6 +141,75 @@ Then("the response should contain an error message about category not found", ()
 		expect(response.body.message).to.include("Category not found");
 		expect(response.body).to.have.property("timestamp");
 		cy.log("✅ Error response structure and message validated");
+	});
+});
+
+When("I send a POST request to create a main category with empty parent", () => {
+    // Generate a shorter name to satisfy the 3-10 character limit
+    // "Cat" (3 chars) + 5 random chars = 8 chars total
+    const randomSuffix = Math.random().toString(36).substring(2, 7);
+    const uniqueName = `Cat${randomSuffix}`;
+    
+    const mainCategoryPayload = {
+        id: 0,
+        name: uniqueName,
+        parent: null,
+        subCategories: []
+    };
+    
+    cy.log(`Creating main category: ${uniqueName}`);
+    
+    return cy.get("@authToken").then((token) => {
+        const baseUrl = Cypress.env("BASE_URL").replace(/\/$/, "");
+        
+        return cy.request({
+            method: "POST",
+            url: `${baseUrl}/api/categories`,
+            body: mainCategoryPayload,
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json"
+            },
+            failOnStatusCode: false
+        }).as("createMainCategoryResponse");
+    });
+});
+
+Then("I should receive a 201 status code for creation", () => {
+	return cy.get("@createMainCategoryResponse").then((response) => {
+		if (response.status === 400) {
+			cy.log("⚠️ Received 400 (Bad Request) - Check error details");
+			cy.log(`Error: ${JSON.stringify(response.body)}`);
+		}
+		expect(response.status).to.eq(201, `Expected 201 but got ${response.status}. Error: ${JSON.stringify(response.body)}`);
+		cy.log("✅ Received expected 201 status for main category creation");
+	});
+});
+
+Then("the response should contain the created main category details", () => {
+	return cy.get("@createMainCategoryResponse").then((response) => {
+		if (response.status === 400) {
+			// Handle validation error - log details for debugging
+			cy.log("⚠️ Bad Request (400) - Validation Error");
+			cy.log(`Error details: ${JSON.stringify(response.body)}`);
+			expect(response.status).to.eq(201);
+		}
+		
+		// Validate successful response structure
+		expect(response.body).to.have.property("id");
+		expect(response.body).to.have.property("name");
+		
+		// Optional: check for subCategories if the API includes it
+		if (response.body.hasOwnProperty("subCategories")) {
+			expect(response.body.subCategories).to.be.an("array");
+		}
+		
+		// Store the created category ID for potential cleanup
+		cy.wrap(response.body.id).as("createdMainCategoryId");
+		
+		cy.log(`✅ Main category created successfully with ID: ${response.body.id}`);
+		cy.log(`✅ Category name: ${response.body.name}`);
+		cy.log("✅ Response structure validated");
 	});
 });
 

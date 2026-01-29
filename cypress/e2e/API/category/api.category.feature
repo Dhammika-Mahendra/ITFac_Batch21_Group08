@@ -58,6 +58,13 @@ Feature: Category Management
         Then I should receive a 404 status code for deletion
         And the response should contain an error message about category not found
 
+    @Cat_Admin_API_09
+    Scenario: Verify that an admin can successfully create a main category by submitting a category with an empty Parent Category
+        Given I have logged in as an admin user
+        When I send a POST request to create a main category with empty parent
+        Then I should receive a 201 status code for creation
+        And the response should contain the created main category details
+
     #----------------------------------------------
     #          Non-Admin User Scenarios 
     #----------------------------------------------
