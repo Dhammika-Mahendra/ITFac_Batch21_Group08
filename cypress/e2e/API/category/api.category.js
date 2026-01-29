@@ -1,6 +1,6 @@
 import { Given, When, Then } from "@badeball/cypress-cucumber-preprocessor";
 import { apiLoginAsAdmin, apiLoginAsUser } from "../../preconditions/login";
-import { createCategory, getAllCategories, deleteCategory } from "../../../support/api/category";
+import { createCategory, getAllCategories, deleteCategory, updateCategory, getCategoryById } from "../../../support/api/category";
 
 Given("I have logged in as an admin user", () => {
 	return apiLoginAsAdmin();
@@ -36,8 +36,10 @@ Then("the response should contain a list of categories", () => {
 
 // @Cat_Admin_API_03 -----------------------------------------------
 
-When("I send a request to create a new category", () => {
-	let data = {"id":null,"name":"Jannet","parent":{"id":13,"name":null,"parent":null}};
+const mainCatName = "Gold";
+
+When("I send a request to create a new main category", () => {
+	let data = {"id":null,"name":mainCatName,"parent":{"id":null,"name":null,"parent":null}};
 	return createCategory(data, "createCategoryResponse");
 });
 
@@ -50,5 +52,35 @@ Then("the category should be created successfully", () => {
 		if (createdCategoryId) {
 			return deleteCategory(createdCategoryId);
 		}
+	});
+});
+
+// @Cat_Admin_API_04 -----------------------------------------------
+
+const initialName= "Iris";
+const editName= "Irish";
+const parentId= 19;
+const catId = 89;
+
+Given("a category exists", () => {
+	return getCategoryById(89, "existingCategoryResponse").then((response) => {
+		expect(response.status, "fetch existing category status").to.eq(200);
+		expect(response.body.name, "existing category name").to.eq(initialName);
+	});
+});
+
+Then("I send a request to edit the category name", () => {
+	let data = {"name":editName,"parentId":parentId};
+	return updateCategory(catId, data, "updateCategoryResponse");
+});
+
+Then("the category name should be updated successfully", () => {
+	return cy.get("@updateCategoryResponse").then((response) => {
+		expect(response.status, "update category status").to.eq(200);
+		expect(response.body.name, "updated category name").to.eq("Irish");
+
+		// Revert the category name back to its initial value for cleanup
+		let revertData = {"name":initialName,"parentId":parentId}; 
+		return updateCategory(catId, revertData);
 	});
 });
