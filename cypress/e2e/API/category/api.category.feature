@@ -65,6 +65,20 @@ Feature: Category Management
         Then I should receive a 201 status code for creation
         And the response should contain the created main category details
 
+    @Cat_Admin_API_10
+    Scenario: Verify that a restricted admin is denied access when attempting to create a category with a valid parent ID
+        Given I have logged in as an admin user
+        When I send a POST request to create a sub-category with a valid parent ID
+        Then I should receive a 201 status code for sub-category creation
+        And the response should contain the created sub-category details
+
+    @Cat_Admin_API_11
+    Scenario: Verify that a restricted admin is denied access when attempting to create a category with an invalid parent ID
+        Given I have logged in as an admin user
+        When I send a POST request to create a sub-category with an invalid parent ID
+        Then I should receive a 500 status code for invalid parent
+        And the response should contain an error message about foreign key constraint
+
     #----------------------------------------------
     #          Non-Admin User Scenarios 
     #----------------------------------------------

@@ -1,27 +1,26 @@
 import { Given, When, Then } from "@badeball/cypress-cucumber-preprocessor";
 import { apiLoginAsAdmin, apiLoginAsUser } from "../../preconditions/login";
-import { getAllCategories, deleteCategory, getCategoryById, getAllSubCategories, createCategory } from "../../../support/api/category";
+import { getAllCategories, deleteCategory, getAllSubCategories, createSubCategory } from "../../../support/api/category";
 
 Given("I have logged in as an admin user", () => {
 	return apiLoginAsAdmin();
 });
 
 Given("I have logged in as a non-admin user", () => {
-    return apiLoginAsUser();
+	return apiLoginAsUser();
 });
 
 Given("I have logged in as an admin user and a category exists", () => {
-    return apiLoginAsAdmin().then(() => {
-        // First get all categories to find an existing category ID
-        return getAllCategories().then(() => {
-            return cy.get("@categoriesResponse").then((response) => {
-                expect(response.body).to.be.an("array");
-                expect(response.body.length).to.be.greaterThan(0);
-                const categoryId = response.body[0].id;
-                cy.wrap(categoryId).as("categoryId");
-            });
-        });
-    });
+	return apiLoginAsAdmin().then(() => {
+		return getAllCategories().then(() => {
+			return cy.get("@categoriesResponse").then((response) => {
+				expect(response.body).to.be.an("array");
+				expect(response.body.length).to.be.greaterThan(0);
+				const categoryId = response.body[0].id;
+				cy.wrap(categoryId).as("categoryId");
+			});
+		});
+	});
 });
 
 When("I call the categories get API point", () => {
@@ -29,73 +28,56 @@ When("I call the categories get API point", () => {
 });
 
 When("I send a request to delete the category", () => {
-    return cy.get("@categoryId").then((categoryId) => {
-        return deleteCategory(categoryId);
-    });
+	return cy.get("@categoryId").then((categoryId) => {
+		return deleteCategory(categoryId);
+	});
 });
 
 When("I send a DELETE request to the category endpoint with a valid category ID", () => {
-    return cy.get("@categoryId").then((categoryId) => {
-        // First attempt to delete the category
-        return deleteCategory(categoryId, "deleteCategoryResponse").then(() => {
-            return cy.get("@deleteCategoryResponse").then((initialResponse) => {
-                // Store the initial response for validation
-                cy.wrap(initialResponse).as("initialDeleteResponse");
-                
-                // If we get 500 error about sub-categories, handle it
-                if (initialResponse.status === 500 && 
-                    initialResponse.body.message && 
-                    initialResponse.body.message.includes("sub-categories")) {
-                    
-                    cy.log("Category has sub-categories, cleaning them up first...");
-                    
-                    // Get all sub-categories
-                    return getAllSubCategories("subCategoriesResponse").then(() => {
-                        return cy.get("@subCategoriesResponse").then((subResponse) => {
-                            // Find sub-categories belonging to this category
-                            const subCategories = subResponse.body.filter(sub => 
-                                sub.parentId === categoryId || 
-                                sub.parentCategoryId === categoryId ||
-                                sub.categoryId === categoryId
-                            );
-                            
-                            if (subCategories.length > 0) {
-                                cy.log(`Found ${subCategories.length} sub-categories to delete`);
-                                
-                                // Delete each sub-category sequentially
-                                let deleteChain = cy.wrap(null);
-                                subCategories.forEach((sub, index) => {
-                                    deleteChain = deleteChain.then(() => {
-                                        cy.log(`Deleting sub-category ${index + 1}/${subCategories.length}: ${sub.id}`);
-                                        return deleteCategory(sub.id);
-                                    });
-                                });
-                                
-                                // After deleting all sub-categories, try main category again
-                                return deleteChain.then(() => {
-                                    cy.log("All sub-categories deleted, retrying main category deletion...");
-                                    return deleteCategory(categoryId, "finalDeleteResponse").then(() => {
-                                        // Use the final successful response
-                                        return cy.get("@finalDeleteResponse").then((finalResponse) => {
-                                            cy.wrap(finalResponse).as("deleteCategoryResponse");
-                                            return finalResponse;
-                                        });
-                                    });
-                                });
-                            } else {
-                                cy.log("No sub-categories found, keeping original response");
-                                return cy.wrap(initialResponse);
-                            }
-                        });
-                    });
-                } else {
-                    // Direct deletion was successful or failed for other reasons
-                    cy.log("Direct deletion attempt completed");
-                    return cy.wrap(initialResponse);
-                }
-            });
-        });
-    });
+	return cy.get("@categoryId").then((categoryId) => {
+		return deleteCategory(categoryId, "deleteCategoryResponse").then(() => {
+			return cy.get("@deleteCategoryResponse").then((initialResponse) => {
+				cy.wrap(initialResponse).as("initialDeleteResponse");
+				
+				if (initialResponse.status === 500 && 
+					initialResponse.body.message && 
+					initialResponse.body.message.includes("sub-categories")) {
+					
+					return getAllSubCategories("subCategoriesResponse").then(() => {
+						return cy.get("@subCategoriesResponse").then((subResponse) => {
+							const subCategories = subResponse.body.filter(sub => 
+								sub.parentId === categoryId || 
+								sub.parentCategoryId === categoryId ||
+								sub.categoryId === categoryId
+							);
+							
+							if (subCategories.length > 0) {
+								let deleteChain = cy.wrap(null);
+								subCategories.forEach((sub, index) => {
+									deleteChain = deleteChain.then(() => {
+										return deleteCategory(sub.id);
+									});
+								});
+								
+								return deleteChain.then(() => {
+									return deleteCategory(categoryId, "finalDeleteResponse").then(() => {
+										return cy.get("@finalDeleteResponse").then((finalResponse) => {
+											cy.wrap(finalResponse).as("deleteCategoryResponse");
+											return finalResponse;
+										});
+									});
+								});
+							} else {
+								return cy.wrap(initialResponse);
+							}
+						});
+					});
+				} else {
+					return cy.wrap(initialResponse);
+				}
+			});
+		});
+	});
 });
 
 Then("I should receive a 200 status code", () => {
@@ -104,14 +86,10 @@ Then("I should receive a 200 status code", () => {
 
 Then("I should receive a 204 status code for deletion", () => {
 	return cy.get("@deleteCategoryResponse").then((response) => {
-		// Accept both 204 (successful deletion) and 500 (blocked by sub-categories) as valid initial responses
 		expect(response.status).to.be.oneOf([204, 500]);
 		
 		if (response.status === 500) {
-			cy.log("Initial deletion blocked by sub-categories - this is expected behavior");
 			expect(response.body.message).to.include("sub-categories");
-		} else {
-			cy.log("Category deleted directly without sub-categories");
 		}
 	});
 });
@@ -123,14 +101,13 @@ Then("the response should contain a list of categories", () => {
 });
 
 When("I send a DELETE request to the category endpoint with an invalid category ID", () => {
-    const invalidCategoryId = 99999;
-    return deleteCategory(invalidCategoryId, "invalidDeleteResponse");
+	const invalidCategoryId = 99999;
+	return deleteCategory(invalidCategoryId, "invalidDeleteResponse");
 });
 
 Then("I should receive a 404 status code for deletion", () => {
 	return cy.get("@invalidDeleteResponse").then((response) => {
 		expect(response.status).to.eq(404);
-		cy.log("✅ Received expected 404 status for invalid category ID");
 	});
 });
 
@@ -140,94 +117,173 @@ Then("the response should contain an error message about category not found", ()
 		expect(response.body).to.have.property("error", "NOT_FOUND");
 		expect(response.body.message).to.include("Category not found");
 		expect(response.body).to.have.property("timestamp");
-		cy.log("✅ Error response structure and message validated");
 	});
 });
 
 When("I send a POST request to create a main category with empty parent", () => {
-    // Generate a shorter name to satisfy the 3-10 character limit
-    // "Cat" (3 chars) + 5 random chars = 8 chars total
-    const randomSuffix = Math.random().toString(36).substring(2, 7);
-    const uniqueName = `Cat${randomSuffix}`;
-    
-    const mainCategoryPayload = {
-        id: 0,
-        name: uniqueName,
-        parent: null,
-        subCategories: []
-    };
-    
-    cy.log(`Creating main category: ${uniqueName}`);
-    
-    return cy.get("@authToken").then((token) => {
-        const baseUrl = Cypress.env("BASE_URL").replace(/\/$/, "");
-        
-        return cy.request({
-            method: "POST",
-            url: `${baseUrl}/api/categories`,
-            body: mainCategoryPayload,
-            headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json"
-            },
-            failOnStatusCode: false
-        }).as("createMainCategoryResponse");
-    });
+	const randomSuffix = Math.random().toString(36).substring(2, 7);
+	const uniqueName = `Cat${randomSuffix}`;
+	
+	const mainCategoryPayload = {
+		id: 0,
+		name: uniqueName,
+		parent: null,
+		subCategories: []
+	};
+	
+	return cy.get("@authToken").then((token) => {
+		const baseUrl = Cypress.env("BASE_URL").replace(/\/$/, "");
+		
+		return cy.request({
+			method: "POST",
+			url: `${baseUrl}/api/categories`,
+			body: mainCategoryPayload,
+			headers: {
+				Authorization: `Bearer ${token}`,
+				"Content-Type": "application/json"
+			},
+			failOnStatusCode: false
+		}).as("createMainCategoryResponse");
+	});
 });
 
 Then("I should receive a 201 status code for creation", () => {
 	return cy.get("@createMainCategoryResponse").then((response) => {
 		if (response.status === 400) {
-			cy.log("⚠️ Received 400 (Bad Request) - Check error details");
 			cy.log(`Error: ${JSON.stringify(response.body)}`);
 		}
 		expect(response.status).to.eq(201, `Expected 201 but got ${response.status}. Error: ${JSON.stringify(response.body)}`);
-		cy.log("✅ Received expected 201 status for main category creation");
 	});
 });
 
 Then("the response should contain the created main category details", () => {
 	return cy.get("@createMainCategoryResponse").then((response) => {
 		if (response.status === 400) {
-			// Handle validation error - log details for debugging
-			cy.log("⚠️ Bad Request (400) - Validation Error");
-			cy.log(`Error details: ${JSON.stringify(response.body)}`);
 			expect(response.status).to.eq(201);
 		}
 		
-		// Validate successful response structure
 		expect(response.body).to.have.property("id");
 		expect(response.body).to.have.property("name");
 		
-		// Optional: check for subCategories if the API includes it
 		if (response.body.hasOwnProperty("subCategories")) {
 			expect(response.body.subCategories).to.be.an("array");
 		}
 		
-		// Store the created category ID for potential cleanup
 		cy.wrap(response.body.id).as("createdMainCategoryId");
-		
-		cy.log(`✅ Main category created successfully with ID: ${response.body.id}`);
-		cy.log(`✅ Category name: ${response.body.name}`);
-		cy.log("✅ Response structure validated");
 	});
 });
 
 Then("the category should be deleted successfully", () => {
 	return cy.get("@deleteCategoryResponse").then((response) => {
-		// The final response should always be 204 after handling sub-categories
 		if (response.status === 204) {
-			cy.log("✅ Category deletion completed successfully");
+			return;
 		} else if (response.status === 500) {
-			// If we still have 500, it means the cleanup process couldn't complete
-			// But we should validate this is the expected sub-category error
 			expect(response.body.message).to.include("sub-categories");
-			cy.log("⚠️ Category deletion blocked by sub-categories (business rule enforced)");
-			// For test purposes, this is still considered a "successful" validation of the business rule
 		} else {
-			// Any other status code is unexpected
-			cy.log(`❌ Unexpected response status: ${response.status}`);
 			expect(response.status).to.be.oneOf([204, 500]);
 		}
+	});
+});
+
+When("I send a POST request to create a sub-category with a valid parent ID", () => {
+	// Use a valid parent category ID (from the test data)
+	const validParentId = 4;
+	// Generate unique name within 3-10 character limit
+	const uniqueName = `Sub${Date.now().toString().slice(-3)}`;
+	
+	cy.log(`Creating sub-category with name: ${uniqueName} and valid parent ID: ${validParentId}`);
+	
+	return createSubCategory(validParentId, uniqueName, "subCategoryCreateResponse");
+});
+
+When("I send a POST request to create a sub-category with an invalid parent ID", () => {
+	// Use an invalid parent category ID that does not exist
+	const invalidParentId = 99999;
+	// Generate unique name within 3-10 character limit
+	const uniqueName = `Sub${Date.now().toString().slice(-3)}`;
+	
+	cy.log(`Creating sub-category with name: ${uniqueName} and invalid parent ID: ${invalidParentId}`);
+	
+	return createSubCategory(invalidParentId, uniqueName, "subCategoryCreateResponse");
+});
+
+Then("I should receive a 403 status code for access denied", () => {
+	return cy.get("@restrictedCreateResponse").then((response) => {
+		expect(response.status).to.eq(403, 
+			`Expected 403 Forbidden but got ${response.status}. Response: ${JSON.stringify(response.body)}`
+		);
+		cy.log("Received expected 403 Forbidden status for restricted admin access");
+	});
+});
+
+Then("the response should indicate the user lacks permission", () => {
+	return cy.get("@restrictedCreateResponse").then((response) => {
+		expect(response.body).to.have.property("status", 403);
+		expect(response.body).to.have.property("error");
+		expect(response.body).to.have.property("message");
+		expect(response.body).to.have.property("timestamp");
+		
+		// Verify the error message indicates an access/permission issue
+		const errorMessage = response.body.message.toLowerCase();
+		const isPermissionError = errorMessage.includes("access") || 
+								  errorMessage.includes("permission") || 
+								  errorMessage.includes("denied") ||
+								  errorMessage.includes("forbidden");
+		
+		expect(isPermissionError, 
+			`Error message should indicate permission denial. Got: ${response.body.message}`
+		).to.be.true;
+		
+		cy.log("Confirmed access denied response structure and message");
+	});
+});
+
+Then("I should receive a 201 status code for sub-category creation", () => {
+	return cy.get("@subCategoryCreateResponse").then((response) => {
+		expect(response.status).to.eq(201, 
+			`Expected 201 but got ${response.status}. Response: ${JSON.stringify(response.body)}`
+		);
+		cy.log("Received expected 201 status for sub-category creation");
+	});
+});
+
+Then("the response should contain the created sub-category details", () => {
+	return cy.get("@subCategoryCreateResponse").then((response) => {
+		expect(response.body).to.have.property("id");
+		expect(response.body).to.have.property("name");
+		
+		cy.wrap(response.body.id).as("createdSubCategoryId");
+		cy.log(`Sub-category created successfully with ID: ${response.body.id}`);
+		cy.log(`Sub-category name: ${response.body.name}`);
+	});
+});
+
+Then("I should receive a 500 status code for invalid parent", () => {
+	return cy.get("@subCategoryCreateResponse").then((response) => {
+		expect(response.status).to.eq(500, 
+			`Expected 500 but got ${response.status}. Response: ${JSON.stringify(response.body)}`
+		);
+		cy.log("Received expected 500 status for invalid parent ID");
+	});
+});
+
+Then("the response should contain an error message about foreign key constraint", () => {
+	return cy.get("@subCategoryCreateResponse").then((response) => {
+		expect(response.body).to.have.property("status", 500);
+		expect(response.body).to.have.property("error", "INTERNAL_SERVER_ERROR");
+		expect(response.body).to.have.property("message");
+		expect(response.body).to.have.property("timestamp");
+		
+		// Verify the error message indicates foreign key constraint violation
+		const errorMessage = response.body.message.toLowerCase();
+		const isForeignKeyError = errorMessage.includes("foreign key") || 
+								  errorMessage.includes("constraint") ||
+								  errorMessage.includes("child row");
+		
+		expect(isForeignKeyError, 
+			`Error message should indicate foreign key constraint. Got: ${response.body.message}`
+		).to.be.true;
+		
+		cy.log("Confirmed foreign key constraint error response");
 	});
 });

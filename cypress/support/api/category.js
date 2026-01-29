@@ -101,3 +101,30 @@ export function getMainCategories(responseAlias = "mainCategoriesResponse") {
 	return categoryRequest({ path: "/api/categories/main", alias: responseAlias });
 }
 
+export function createSubCategory(parentId, categoryName, responseAlias = "subCategoryCreateResponse") {
+	// Validate required parameters
+	if (!parentId && parentId !== 0) {
+		throw new Error("parentId is required to create a sub-category.");
+	}
+	if (!categoryName) {
+		throw new Error("categoryName is required when creating a sub-category.");
+	}
+	
+	const subCategoryPayload = {
+		id: null,
+		name: categoryName,
+		parent: {
+			id: parentId,
+			name: null,
+			parent: null
+		}
+	};
+	
+	return categoryRequest({
+		method: "POST",
+		path: "/api/categories",
+		body: subCategoryPayload,
+		alias: responseAlias
+	});
+}
+
