@@ -8,7 +8,7 @@ Feature: Category Management
     #----------------------------------------------
 
     @Cat_Admin_API_01
-    Scenario: See all categories as an admin user
+    Scenario: Verify Admin can retrieve all existing categories
         Given I have logged in as an admin user
         When I call the categories get API point
         Then I should receive a 200 status code
@@ -49,7 +49,7 @@ Feature: Category Management
     #----------------------------------------------
 
     @Cat_User_API_01
-    Scenario: See all categories as a non-admin user
+    Scenario: Verify User can retrieve all exiting categories
         Given I have logged in as a non-admin user
         When I call the categories get API point
         Then I should receive a 200 status code
