@@ -122,6 +122,28 @@ Then("the response should contain a list of categories", () => {
 	});
 });
 
+When("I send a DELETE request to the category endpoint with an invalid category ID", () => {
+    const invalidCategoryId = 99999;
+    return deleteCategory(invalidCategoryId, "invalidDeleteResponse");
+});
+
+Then("I should receive a 404 status code for deletion", () => {
+	return cy.get("@invalidDeleteResponse").then((response) => {
+		expect(response.status).to.eq(404);
+		cy.log("✅ Received expected 404 status for invalid category ID");
+	});
+});
+
+Then("the response should contain an error message about category not found", () => {
+	return cy.get("@invalidDeleteResponse").then((response) => {
+		expect(response.body).to.have.property("status", 404);
+		expect(response.body).to.have.property("error", "NOT_FOUND");
+		expect(response.body.message).to.include("Category not found");
+		expect(response.body).to.have.property("timestamp");
+		cy.log("✅ Error response structure and message validated");
+	});
+});
+
 Then("the category should be deleted successfully", () => {
 	return cy.get("@deleteCategoryResponse").then((response) => {
 		// The final response should always be 204 after handling sub-categories

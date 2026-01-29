@@ -51,6 +51,13 @@ Feature: Category Management
         Then I should receive a 204 status code for deletion
         And the category should be deleted successfully
 
+    @Cat_Admin_API_08
+    Scenario: Verify that the system handles errors when an Admin attempts to delete a category with an invalid Category ID
+        Given I have logged in as an admin user
+        When I send a DELETE request to the category endpoint with an invalid category ID
+        Then I should receive a 404 status code for deletion
+        And the response should contain an error message about category not found
+
     #----------------------------------------------
     #          Non-Admin User Scenarios 
     #----------------------------------------------
