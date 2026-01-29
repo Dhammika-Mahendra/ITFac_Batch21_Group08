@@ -48,3 +48,11 @@ Feature: Sales Management
         When I attempt to create a sale for a non-existent plant
         Then I should receive a 404 status code
         And the response should contain a sale not found error message
+
+    @Sale_Admin_API_07
+    Scenario: Admin retrieve single sale by ID
+        Given I have logged in as an admin user
+        And I have retrieved a list of sales to get an existing sale ID
+        When I retrieve a single sale by ID
+        Then I should receive a 200 status code
+        And the response should contain a single sale with the correct ID

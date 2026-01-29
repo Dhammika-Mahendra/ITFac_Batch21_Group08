@@ -154,4 +154,12 @@ function validateSalesNotFoundResponse(response) {
 	return response;
 }
 
+export function validateSingleSaleResponse(response, expectedId) {
+	expect(response.status, "response status").to.equal(200);
+	expect(response.body, "sale object").to.exist;
+	expect(response.body.id, "sale ID").to.equal(expectedId);
+	expect(response.body.id, "sale ID should be defined").to.not.be.undefined;
+	return response;
+}
+
 export { validateSalesNotFoundResponse };

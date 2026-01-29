@@ -1,6 +1,6 @@
 import { Given, When, Then } from "@badeball/cypress-cucumber-preprocessor";
 import { apiLoginAsAdmin } from "../../preconditions/login";
-import { getSalesPage, sellPlant, validateSalesResponse, validateSalesSortedByDate, validateSalesSortedByPlantName, validateSalesErrorResponse, validateSalesSortedByQuantity, validateSalesSortedByTotalPrice, validateSalesNotFoundResponse } from "../../../support/api/sales";
+import { getSalesPage, sellPlant, validateSalesResponse, validateSalesSortedByDate, validateSalesSortedByPlantName, validateSalesErrorResponse, validateSalesSortedByQuantity, validateSalesSortedByTotalPrice, validateSalesNotFoundResponse, getSaleById, validateSingleSaleResponse } from "../../../support/api/sales";
 
 Given("I have logged in as an admin user", () => {
 	return apiLoginAsAdmin();
@@ -72,5 +72,33 @@ When("I attempt to create a sale for a non-existent plant", () => {
 Then("the response should contain a sale not found error message", () => {
 	return cy.get("@sellPlantResponse").then((response) => {
 		return validateSalesNotFoundResponse(response);
+	});
+});
+
+Given("I have retrieved a list of sales to get an existing sale ID", () => {
+	return getSalesPage({ page: 0, size: 10 }).then(() => {
+		return cy.get("@salesPageResponse").then((response) => {
+			const sales = response.body.content;
+			if (sales && sales.length > 0) {
+				const firstSaleId = sales[0].id;
+				return cy.wrap(firstSaleId).as("saleId");
+			} else {
+				throw new Error("No sales found in the response");
+			}
+		});
+	});
+});
+
+When("I retrieve a single sale by ID", () => {
+	return cy.get("@saleId").then((saleId) => {
+		return getSaleById(saleId);
+	});
+});
+
+Then("the response should contain a single sale with the correct ID", () => {
+	return cy.get("@saleResponse").then((response) => {
+		return cy.get("@saleId").then((expectedId) => {
+			return validateSingleSaleResponse(response, expectedId);
+		});
 	});
 });
