@@ -1,5 +1,6 @@
 import { Given, When, Then } from "@badeball/cypress-cucumber-preprocessor";
 import { apiLoginAsAdmin, apiLoginAsUser } from "../../preconditions/login";
+import { getAllCategories } from "../../../support/api/category";
 
 Given("I have logged in as an admin user", () => {
 	return apiLoginAsAdmin();
@@ -10,18 +11,7 @@ Given("I have logged in as a non-admin user", () => {
 });
 
 When("I call the categories get API point", () => {
-	return cy.get("@authToken").then((token) => {
-		return cy
-			.request({
-				method: "GET",
-				url: `${Cypress.env("BASE_URL")}/api/categories`,
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-				failOnStatusCode: false,
-			})
-			.as("categoriesResponse");
-	});
+	return getAllCategories();
 });
 
 Then("I should receive a 200 status code", () => {

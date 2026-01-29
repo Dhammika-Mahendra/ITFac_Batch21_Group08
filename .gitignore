@@ -51,3 +51,6 @@ storybook-static/
 
 # Mac system files
 .DS_Store
+
+#application properties
+application.properties
