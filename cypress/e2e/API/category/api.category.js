@@ -1,6 +1,6 @@
 import { Given, When, Then } from "@badeball/cypress-cucumber-preprocessor";
 import { apiLoginAsAdmin, apiLoginAsUser } from "../../preconditions/login";
-import { getAllCategories, deleteCategory, getAllSubCategories, createSubCategory } from "../../../support/api/category";
+import { getAllCategories, deleteCategory, getAllSubCategories, createSubCategory, getCategoryById } from "../../../support/api/category";
 
 Given("I have logged in as an admin user", () => {
 	return apiLoginAsAdmin();
@@ -285,5 +285,73 @@ Then("the response should contain an error message about foreign key constraint"
 		).to.be.true;
 		
 		cy.log("Confirmed foreign key constraint error response");
+	});
+});
+
+When("I send a GET request to retrieve a category with an invalid string ID", () => {
+	// Use an invalid string ID (non-numeric)
+	const invalidStringId = "invalidString";
+	
+	cy.log(`Attempting to retrieve category with invalid string ID: ${invalidStringId}`);
+	
+	return getCategoryById(invalidStringId, "invalidIdResponse");
+});
+
+Then("I should receive a 400 status code for invalid ID format", () => {
+	return cy.get("@invalidIdResponse").then((response) => {
+		expect(response.status).to.eq(400, 
+			`Expected 400 Bad Request but got ${response.status}. Response: ${JSON.stringify(response.body)}`
+		);
+		cy.log("Received expected 400 status for invalid string ID format");
+	});
+});
+
+Then("the response should contain an error message about invalid ID format", () => {
+	return cy.get("@invalidIdResponse").then((response) => {
+		expect(response.body).to.have.property("status", 400);
+		expect(response.body).to.have.property("error");
+		expect(response.body).to.have.property("message");
+		
+		// Error message should indicate invalid format or type
+		const errorMessage = response.body.message.toLowerCase();
+		const isFormatError = errorMessage.includes("invalid") || 
+							  errorMessage.includes("must be") ||
+							  errorMessage.includes("format") ||
+							  errorMessage.includes("type");
+		
+		expect(isFormatError, 
+			`Error message should indicate invalid format. Got: ${response.body.message}`
+		).to.be.true;
+		
+		cy.log("Confirmed invalid ID format error response");
+	});
+});
+
+When("I send a GET request to retrieve a category with a valid integer category ID", () => {
+	// Use a valid category ID
+	const validCategoryId = 1;
+	
+	cy.log(`Retrieving category with valid integer ID: ${validCategoryId}`);
+	
+	return getCategoryById(validCategoryId, "validCategoryResponse");
+});
+
+Then("I should receive a 200 status code for successful retrieval", () => {
+	return cy.get("@validCategoryResponse").then((response) => {
+		expect(response.status).to.eq(200, 
+			`Expected 200 but got ${response.status}. Response: ${JSON.stringify(response.body)}`
+		);
+		cy.log("Received expected 200 status for category retrieval");
+	});
+});
+
+Then("the response should contain the category details", () => {
+	return cy.get("@validCategoryResponse").then((response) => {
+		expect(response.body).to.have.property("id");
+		expect(response.body).to.have.property("name");
+		
+		cy.log(`Category retrieved successfully with ID: ${response.body.id}`);
+		cy.log(`Category name: ${response.body.name}`);
+		cy.log("Category response structure validated");
 	});
 });

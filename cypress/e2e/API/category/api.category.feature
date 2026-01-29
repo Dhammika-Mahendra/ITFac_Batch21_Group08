@@ -113,3 +113,17 @@ Feature: Category Management
         Given I have logged in as a non-admin user and a category exists
         When I attempt to delete the category
         Then the system should reject the request with an authorization error
+
+    @Cat_User_API_06
+    Scenario: Verify that the system returns a Bad Request error when a User requests a category with an invalid string ID
+        Given I have logged in as a non-admin user
+        When I send a GET request to retrieve a category with an invalid string ID
+        Then I should receive a 400 status code for invalid ID format
+        And the response should contain an error message about invalid ID format
+
+    @Cat_User_API_07
+    Scenario: Verify that a User can successfully retrieve specific plants using a valid integer Category ID
+        Given I have logged in as a non-admin user
+        When I send a GET request to retrieve a category with a valid integer category ID
+        Then I should receive a 200 status code for successful retrieval
+        And the response should contain the category details
