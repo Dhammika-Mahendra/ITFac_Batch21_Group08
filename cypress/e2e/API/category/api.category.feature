@@ -41,7 +41,8 @@ Feature: Category Management
 
     @Cat_Admin_API_06
     Scenario: Verify Admin can delete an existing category
-        Given I have logged in as an admin user and a category exists
+        Given I have logged in as an admin user
+        Given a category exists
         When I send a request to delete the category
         Then the category should be deleted successfully
 

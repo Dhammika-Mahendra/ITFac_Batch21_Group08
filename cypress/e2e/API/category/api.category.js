@@ -57,30 +57,50 @@ Then("the category should be created successfully", () => {
 
 // @Cat_Admin_API_04 -----------------------------------------------
 
-const initialName= "Iris";
-const editName= "Irish";
-const parentId= 19;
-const catId = 89;
+let originalCategory = null;
+let updatedName = "Corn";
 
+// Retrieve all categories and select the one with the highest id
 Given("a category exists", () => {
-	return getCategoryById(89, "existingCategoryResponse").then((response) => {
-		expect(response.status, "fetch existing category status").to.eq(200);
-		expect(response.body.name, "existing category name").to.eq(initialName);
+	return getAllCategories().then((response) => {
+		expect(response.status, "get all categories status").to.eq(200);
+		const categories = response.body;
+		expect(categories, "categories array").to.be.an("array").and.not.empty;
+
+		// Find the category with the highest id
+		originalCategory = categories.reduce((max, cat) => (cat.id > max.id ? cat : max), categories[0]);
+		expect(originalCategory, "original category").to.have.property("id");
 	});
 });
 
 Then("I send a request to edit the category name", () => {
-	let data = {"name":editName,"parentId":parentId};
-	return updateCategory(catId, data, "updateCategoryResponse");
+	const data = { name: updatedName, parentId: originalCategory.parentId || null };
+	return updateCategory(originalCategory.id, data, "updateCategoryResponse");
 });
 
 Then("the category name should be updated successfully", () => {
 	return cy.get("@updateCategoryResponse").then((response) => {
 		expect(response.status, "update category status").to.eq(200);
-		expect(response.body.name, "updated category name").to.eq("Irish");
+		expect(response.body.name, "updated category name").to.eq(updatedName);
 
-		// Revert the category name back to its initial value for cleanup
-		let revertData = {"name":initialName,"parentId":parentId}; 
-		return updateCategory(catId, revertData);
+		// Revert the category name back to its original value for cleanup
+		const revertData = { name: originalCategory.name, parentId: originalCategory.parentId || null };
+		return updateCategory(originalCategory.id, revertData);
+	});
+});
+
+// @Cat_Admin_API_06 -----------------------------------------------
+
+Then("I send a request to delete the category", () => {
+	return deleteCategory(catId, "deleteCategoryResponse");
+});
+
+Then("the category should be deleted successfully", () => {
+	return cy.get("@deleteCategoryResponse").then((response) => {
+		expect(response.status, "delete category status").to.eq(200);
+
+		//Revert by adding the category back
+		let data = {"id":null,"name":initialName,"parent":{"id":parentId,"name":null,"parent":null}};
+		return createCategory(data);
 	});
 });
