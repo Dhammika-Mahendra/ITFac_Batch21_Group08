@@ -54,7 +54,7 @@ export function sellPlant(plantId, payload, responseAlias = "sellPlantResponse")
 	if (!payload) {
 		throw new Error("payload is required to sell a plant.");
 	}
-	return salesRequest({ method: "POST", path: `/api/sales/plant/${plantId}`, body: payload, alias: responseAlias });
+	return salesRequest({ method: "POST", path: `/api/sales/plant/${plantId}`, qs: payload, alias: responseAlias });
 }
 
 export function getAllSales(responseAlias = "salesResponse") {
@@ -145,4 +145,107 @@ export function validateSalesSortedByTotalPrice(response) {
 		).to.be.at.most(nextTotal);
 	}
 	return response;
+}
+//sales UI
+// Utility functions for sales data backup and restoration
+let salesBackup = [];
+
+export function backupSalesData() {
+	return getAllSales().then(() => {
+		return cy.get("@salesResponse").then((response) => {
+			if (response.status === 200 && response.body) {
+				salesBackup = response.body;
+				cy.log(`Backed up ${salesBackup.length} sales records`);
+			}
+		});
+	});
+}
+
+export function restoreSalesData() {
+	cy.log(`Restoring ${salesBackup.length} sales records`);
+	
+	if (salesBackup.length === 0) {
+		return cy.wrap(null);
+	}
+	
+	const baseUrl = ensureBaseUrl();
+	
+	// Restore each sale using the correct endpoint format
+	const restorePromises = salesBackup.map((sale) => {
+		const plantId = sale.plant?.id || sale.plantId;
+		
+		if (!plantId) {
+			cy.log(`Warning: No plantId found for sale, skipping`);
+			return cy.wrap(null);
+		}
+		
+		// Create sale parameters as query string
+		const saleParams = {
+			quantity: sale.quantity,
+			totalPrice: sale.totalPrice,
+			soldAt: sale.soldAt
+		};
+		
+		return cy.get("@authToken").then((token) => {
+			return cy.request({
+				method: "POST",
+				url: `${baseUrl}/api/sales/plant/${plantId}`,
+				headers: {
+					Authorization: `Bearer ${token}`
+				},
+				qs: saleParams,
+				failOnStatusCode: false
+			}).then((response) => {
+				if (response.status === 201 || response.status === 200) {
+					cy.log(`✓ Restored sale for plant ${plantId}`);
+				} else {
+					cy.log(`✗ Failed to restore plant ${plantId}: ${response.status} - ${JSON.stringify(response.body)}`);
+				}
+			});
+		});
+	});
+	
+	return Cypress.Promise.all(restorePromises);
+}
+
+export function deleteAllSales() {
+	return getAllSales().then(() => {
+		return cy.get("@salesResponse").then((response) => {
+			if (response.status === 200 && response.body && response.body.length > 0) {
+				const deletePromises = response.body.map((sale) => 
+					deleteSale(sale.id)
+				);
+				return Cypress.Promise.all(deletePromises);
+			}
+		});
+	});
+}
+
+// Create a test sale for UI testing
+export function createTestSale() {
+	// Use a valid plant ID (assuming plant ID 1 exists, adjust if needed)
+	const plantId = 1;
+	const payload = {
+		quantity: 5,
+		totalPrice: 50.00,
+		soldAt: new Date().toISOString()
+	};
+	
+	return salesRequest({ 
+		method: "POST", 
+		path: `/api/sales/plant/${plantId}`, 
+		qs: payload, 
+		alias: "testSaleResponse",
+		failOnStatusCode: false
+	}).then(() => {
+		return cy.get("@testSaleResponse").then((response) => {
+			if (response.status === 201 || response.status === 200) {
+				cy.log(`Test sale created with ID: ${response.body.id}`);
+				return cy.wrap(response.body).as("testSale");
+			} else {
+				cy.log(`Failed to create test sale: ${response.status} - ${JSON.stringify(response.body)}`);
+				throw new Error(`Failed to create test sale: ${response.status}`);
+			}
+		});
+	});
 }
