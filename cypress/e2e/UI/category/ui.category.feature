@@ -1,4 +1,3 @@
-
 @ui @category
 Feature: Category Management UI
 	As an admin or user, I want to interact with the category management UI
@@ -10,14 +9,19 @@ Feature: Category Management UI
 	@Cat_Admin_UI_01
 	Scenario: Verify Admin view all existing categories
 		Given I am logged in as an admin user
-		When I navigate to the category management page
-		Then I should see a list of all categories
+		When I click the Categories menu option
+		Then I should see a table of list of all categories
 
 	@Cat_Admin_UI_02
 	Scenario: Verify Admin view categories list with pagination
 		Given I am logged in as an admin user
-		When I view the categories list with pagination controls
-		Then I should see categories displayed with pagination
+		When I click the Categories menu option
+		Then I should see a table of list of all categories
+		And I see a pagination control
+		When I click a pagination number
+		Then I should see the corresponding categories for that page
+		When I click a different pagination number
+		Then I should see a different set of categories
 
 	@Cat_Admin_UI_03
 	Scenario: Verify Admin can see Add Category button and accessible
