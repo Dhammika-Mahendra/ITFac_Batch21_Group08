@@ -57,35 +57,39 @@ Then("the category should be created successfully", () => {
 
 // @Cat_Admin_API_04 -----------------------------------------------
 
-let originalCategory = null;
-let updatedName = "MyCat";
+let lastCategory = null;
+let parentId = null;
+const editName = "MyCat";
 
 Given("a category exists", () => {
 	return getAllCategories().then((response) => {
 		expect(response.status, "get all categories status").to.eq(200);
-		const mainCategories = response.body.filter(cat => cat.parentName === "-");
-		expect(mainCategories.length, "main categories count").to.be.greaterThan(0);
+		const categories = response.body;
+		expect(categories, "categories payload").to.be.an("array").and.not.empty;
 
-		// Find the main category with the highest id
-		const lastMainCategory = mainCategories.reduce((prev, curr) => (curr.id > prev.id ? curr : prev));
-		originalCategory = { ...lastMainCategory };
-		expect(originalCategory).to.have.property("id");
+		// Find the category with the highest id
+		lastCategory = categories.reduce((max, cat) => (cat.id > max.id ? cat : max), categories[0]);
+		expect(lastCategory, "last category").to.have.property("id");
+
+		//find the parentId 
+		const parentCategory = categories.find(cat => cat.name === lastCategory.parentName);
+		parentId = parentCategory ? parentCategory.id : null;
 	});
 });
 
 Then("I send a request to edit the category name", () => {
-	const data = { name: updatedName, parentId: null };
-	return updateCategory(originalCategory.id, data, "updateCategoryResponse");
+	let data = { name: editName, parentId: parentId };
+	return updateCategory(lastCategory.id, data, "updateCategoryResponse");
 });
 
 Then("the category name should be updated successfully", () => {
 	return cy.get("@updateCategoryResponse").then((response) => {
 		expect(response.status, "update category status").to.eq(200);
-		expect(response.body.name, "updated category name").to.eq(updatedName);
+		expect(response.body.name, "updated category name").to.eq(editName);
 
 		// Revert the category name back to its original value for cleanup
-		const revertData = { name: originalCategory.name, parentId: null };
-		return updateCategory(originalCategory.id, revertData);
+		let revertData = { name: lastCategory.name, parentId: parentId};
+		return updateCategory(lastCategory.id, revertData);
 	});
 });
 
