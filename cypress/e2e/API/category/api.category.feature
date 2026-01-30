@@ -68,23 +68,28 @@ Feature: Category Management
     @Cat_User_API_02
     Scenario: Verify User can get existing categories with pagination
         Given I have logged in as a non-admin user
+        Given category list exists
         When I request categories with pagination parameters
         Then I should receive a paginated list of categories
+        When I request categories with pagination different parameters
+        Then I should receive a different paginated list of categories
 
     @Cat_User_API_03
     Scenario: Verify User attempt to create new category
         Given I have logged in as a non-admin user
         When I attempt to create a new category
-        Then the system should reject the request with an authorization error
+        Then the system should reject the create request with an authorization error
 
     @Cat_User_API_04
     Scenario: Verify User attempt to edit an existing category
-        Given I have logged in as a non-admin user and a category exists
+        Given I have logged in as a non-admin user
+        Given a category exists
         When I attempt to edit the category name
-        Then the system should reject the request with an authorization error
+        Then the system should reject the edit request with an authorization error
 
     @Cat_User_API_05
     Scenario: Verify User attempt to delete an existing category
-        Given I have logged in as a non-admin user and a category exists
+        Given I have logged in as a non-admin user
+        Given a category exists
         When I attempt to delete the category
-        Then the system should reject the request with an authorization error
+        Then the system should reject the delete request with an authorization error
