@@ -62,3 +62,13 @@ Feature: Sales Management
         And I enter negative quantity "-5"
         And I click on the "Sell" button
         Then the error message "Quantity must be greater than 0" should be displayed
+
+    @Sale_Admin_UI_17
+    Scenario: Verify that quantity validation for 0 when admin create a sale
+        Given I am logged in as admin
+        And I navigate to the sales page
+        And I click on the "Sell Plant" button
+        When I select a plant from the dropdown
+        And I enter quantity "0"
+        And I click on the "Sell" button
+        Then the error message "Quantity must be greater than 0" should be displayed

@@ -115,3 +115,7 @@ When("I select a plant from the dropdown", () => {
 When("I enter negative quantity {string}", (quantity) => {
 	salesPage.enterQuantity(quantity);
 });
+
+When("I enter quantity {string}", (quantity) => {
+	salesPage.enterQuantity(quantity);
+});
