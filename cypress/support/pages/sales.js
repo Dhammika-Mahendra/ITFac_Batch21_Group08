@@ -40,7 +40,7 @@ class SalesPage {
     }
 
     get errorMessage() {
-        return cy.get('.text-danger, .error, .invalid-feedback');
+        return cy.get('form .text-danger, form .error, form .invalid-feedback');
     }
 
     visit() {
@@ -155,6 +155,14 @@ class SalesPage {
         this.plantDropdown.select('-- Select Plant --');
     }
 
+    selectFirstAvailablePlant() {
+        // Select the first available plant (skip the placeholder)
+        this.plantDropdown.find('option').eq(1).then($option => {
+            const plantValue = $option.val();
+            this.plantDropdown.select(plantValue);
+        });
+    }
+
     enterQuantity(quantity) {
         // Clear and enter quantity
         this.quantityInput.clear().type(quantity);
@@ -166,8 +174,16 @@ class SalesPage {
     }
 
     verifyErrorMessageDisplayed(errorMessage) {
-        // Verify the error message is displayed
-        this.errorMessage.should('be.visible').and('contain.text', errorMessage);
+        // Check if it's a quantity validation error (HTML5 validation)
+        if (errorMessage.includes('Quantity must be greater than 0')) {
+            // For quantity validation, check the HTML5 validation message
+            this.quantityInput.then(($input) => {
+                expect($input[0].validationMessage).to.contain(errorMessage);
+            });
+        } else {
+            // For other errors (like "Plant is required"), check the text-danger div
+            this.errorMessage.should('be.visible').and('contain.text', errorMessage);
+        }
     }
 }
 

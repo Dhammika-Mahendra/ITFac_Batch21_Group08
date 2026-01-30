@@ -107,3 +107,11 @@ When("I enter valid quantity {string}", (quantity) => {
 Then("the error message {string} should be displayed", (errorMessage) => {
 	salesPage.verifyErrorMessageDisplayed(errorMessage);
 });
+
+When("I select a plant from the dropdown", () => {
+	salesPage.selectFirstAvailablePlant();
+});
+
+When("I enter negative quantity {string}", (quantity) => {
+	salesPage.enterQuantity(quantity);
+});
