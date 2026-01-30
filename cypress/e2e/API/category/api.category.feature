@@ -17,30 +17,38 @@ Feature: Category Management
     @Cat_Admin_API_02
     Scenario: Verify Admin can get existing categories with pagination
         Given I have logged in as an admin user
+        Given category list exists
         When I request categories with pagination parameters
         Then I should receive a paginated list of categories
+        When I request categories with pagination different parameters
+        Then I should receive a different paginated list of categories
 
     @Cat_Admin_API_03
-    Scenario: Verify Admin is able to create a new category
+    Scenario: Verify Admin is able to create a new main category
         Given I have logged in as an admin user
-        When I send a request to create a new category
+        When I send a request to create a new main category
         Then the category should be created successfully
 
     @Cat_Admin_API_04
     Scenario: Verify Admin can edit an existing category name
-        Given I have logged in as an admin user and a category exists
+        Given I have logged in as an admin user
+        Given a category exists
         When I send a request to edit the category name
         Then the category name should be updated successfully
 
     @Cat_Admin_API_05
     Scenario: Verify Admin edit category name happens within the valid naming constraints
-        Given I have logged in as an admin user and a category exists
-        When I attempt to edit the category name with invalid data
-        Then the system should reject the update with a validation error
+        Given I have logged in as an admin user
+        Given a category exists
+        When I attempt to edit the category name with invalid data - short name
+        Then the system should reject the name update with a validation error
+        When When I attempt to edit the category name with invalid data - long name
+        Then the system should reject the name update with a validation error
 
     @Cat_Admin_API_06
     Scenario: Verify Admin can delete an existing category
-        Given I have logged in as an admin user and a category exists
+        Given I have logged in as an admin user
+        Given a category exists
         When I send a request to delete the category
         Then the category should be deleted successfully
 
