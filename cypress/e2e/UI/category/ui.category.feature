@@ -44,12 +44,14 @@ Feature: Category Management UI
 	@Cat_Admin_UI_06
 	Scenario: Verify Admin can Add Category
 		Given I am logged in as an admin user
+		When I click the Categories menu option
 		When I add a new category using the Add Category button
 		Then the new category should appear in the list
 
 	@Cat_Admin_UI_07
 	Scenario: Verify Admin can Edit category
-		Given I am logged in as an admin user and a category exists
+		Given I am logged in as an admin user
+		When I click the Categories menu option
 		When I edit the category using the Edit Category button
 		Then the category should be updated in the list
 

@@ -23,6 +23,10 @@ class CategoriesPage {
         return this.categoryTableRows.eq(index);
     }
 
+    get firstRow(){
+        return this.categoryTableRowsByIndex(0);
+    }
+
     get paginationControls(){   
         return cy.get('ul.pagination');
     }
@@ -41,6 +45,29 @@ class CategoriesPage {
 
     get addCategoryForm(){
         return cy.get('form[action="/ui/categories/add"]');
+    }
+
+    get addCategoryNameInput(){
+        //input where class="form-control" and name="name" and id=name
+        return this.addCategoryForm.find('input.form-control[name="name"][id="name"]');
+    }
+
+    get addCategorySaveButton(){
+        //button of type=submit
+        return this.addCategoryForm.find('button[type="submit"]');
+    }
+
+    get editCategoryForm(){
+        //form with action has /edit in url
+        return cy.get('form[action*="ui/categories/edit"]');
+    }
+
+    get editCategoryNameInput(){
+        return this.editCategoryForm.find('input.form-control[name="name"][id="name"]');
+    }
+
+    get editCategorySaveButton(){
+        return this.editCategoryForm.find('button[type="submit"]');
     }
 
     editButtonByRowIndex(rowIndex){

@@ -86,3 +86,47 @@ Then("I should see and be able to access the Delete Category button for each cat
         deleteButton.should('be.visible');
     });
 });
+
+// @Cat_Admin_UI_06 -----------------------------------------------------
+
+let newCategoryName = null;
+
+When("I add a new category using the Add Category button",()=>{
+    newCategoryName = "TestCat";
+    categoriesPage.clickAddCategoryButton();
+    categoriesPage.addCategoryNameInput.type(newCategoryName);
+    categoriesPage.addCategorySaveButton.click();
+});
+
+Then("the new category should appear in the list",()=>{
+    categoriesPage.firstRow.find('td').eq(1).should('have.text', newCategoryName);
+
+    //revert by deleteing the added category
+    categoriesPage.clickDeleteButtonByRowIndex(0);
+    cy.on('window:confirm', () => true);
+});
+
+// @Cat_Admin_UI_07 -----------------------------------------------------
+
+let initialCatName = null;
+When("I edit the category using the Edit Category button",()=>{
+    //select first category name (2nd td) from category list and store in initialCatName
+    categoriesPage.categoryTableRowsByIndex(0).find('td').eq(1).invoke('text').then((text)=>{
+        initialCatName = text;
+    });
+
+    //click edit button of first category
+    categoriesPage.clickEditButtonByRowIndex(0);
+ 
+    categoriesPage.editCategoryNameInput.clear().type("Edited");
+    categoriesPage.editCategorySaveButton.click();
+});
+
+Then("the category should be updated in the list",()=>{
+    categoriesPage.categoryTableRowsByIndex(0).find('td').eq(1).should('have.text', 'Edited');
+
+    //revert by editing back to initial name
+    categoriesPage.clickEditButtonByRowIndex(0);
+    categoriesPage.editCategoryNameInput.clear().type(initialCatName);
+    categoriesPage.editCategorySaveButton.click();
+});
