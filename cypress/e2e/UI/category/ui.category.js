@@ -55,3 +55,34 @@ Then("I should see a different set of categories", () => {
         cy.wrap($row).find('td').eq(1).invoke('text').should('not.be.empty');
     });
 });
+
+// @Cat_Admin_UI_03 -----------------------------------------------------
+
+Then("I should see and be able to access the Add Category button",()=>{
+    categoriesPage.addCategoryButton.should('be.visible');
+    categoriesPage.clickAddCategoryButton();
+})
+
+// @Cat_Admin_UI_04 -----------------------------------------------------
+
+Then("I should see and be able to access the Edit Category button for each category",()=>{
+    //loop through each row of tr of tbody
+    categoriesPage.categoryTableRows.each(($row, index) => {
+        //for each row, find the edit button in the 4th td
+        const editButton = categoriesPage.editButtonByRowIndex(index);
+        //verify that the edit button is visible
+        editButton.should('be.visible');
+    });
+});
+
+// @Cat_Admin_UI_05 -----------------------------------------------------
+
+Then("I should see and be able to access the Delete Category button for each category",()=>{
+    //loop through each row of tr of tbody
+    categoriesPage.categoryTableRows.each(($row, index) => {
+        //for each row, find the delete button in the 4th td
+        const deleteButton = categoriesPage.deleteButtonByRowIndex(index);
+        //verify that the delete button is visible
+        deleteButton.should('be.visible');
+    });
+});

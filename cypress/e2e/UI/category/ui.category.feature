@@ -26,19 +26,19 @@ Feature: Category Management UI
 	@Cat_Admin_UI_03
 	Scenario: Verify Admin can see Add Category button and accessible
 		Given I am logged in as an admin user
-		When I view the category management page
+		When I click the Categories menu option
 		Then I should see and be able to access the Add Category button
 
 	@Cat_Admin_UI_04
 	Scenario: Verify Admin can see Edit category button and accessible
 		Given I am logged in as an admin user
-		When I view the category management page
+		When I click the Categories menu option
 		Then I should see and be able to access the Edit Category button for each category
 
 	@Cat_Admin_UI_05
 	Scenario: Verify Admin can see Delete category button and accessible
 		Given I am logged in as an admin user
-		When I view the category management page
+		When I click the Categories menu option
 		Then I should see and be able to access the Delete Category button for each category
 
 	@Cat_Admin_UI_06
