@@ -3,6 +3,10 @@
 Feature: Sales Management
     I want to retrieve and manage sales records
 
+    ************************************************************************ 
+    Sales Admin API Scenarios
+    ************************************************************************
+
     @Sale_Admin_API_01
     Scenario: Admin retrieve sales sorted by date
         Given I have logged in as an admin user
@@ -76,3 +80,7 @@ Feature: Sales Management
         When I attempt to create a sale without authenticating
         Then I should receive a 401 status code
         And the response should contain an unauthorized error message
+
+    ************************************************************************ 
+    Sales User API Scenarios
+    ************************************************************************

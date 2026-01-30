@@ -65,8 +65,7 @@ Then("the sales should be sorted by total price in ascending order", () => {
 });
 
 When("I attempt to create a sale for a non-existent plant", () => {
-	const payload = { id: 99999, quantity: 1 };
-	return sellPlant(99999, payload, "sellPlantResponse");
+	return sellPlant(99999, 1, "sellPlantResponse");
 });
 
 Then("the response should contain a sale not found error message", () => {
@@ -119,7 +118,7 @@ Then("I should receive a 404 delete error response", () => {
 });
 
 When("I attempt to create a sale without specifying a plant", () => {
-	return createSaleWithoutPlant({ quantity: 10 }, "createSaleWithoutPlantResponse");
+	return createSaleWithoutPlant(10, "createSaleWithoutPlantResponse");
 });
 
 Then("I should receive a 500 error response", () => {
@@ -133,8 +132,7 @@ Then("the response should contain an error message about missing plant resource"
 });
 
 When("I attempt to create a sale without authenticating", () => {
-	const payload = { quantity: 40 };
-	return sellPlantWithoutAuth(1, payload, "unauthenticatedSaleResponse");
+	return sellPlantWithoutAuth(1, 40, "unauthenticatedSaleResponse");
 });
 
 Then("I should receive a 401 status code", () => {
