@@ -27,3 +27,10 @@ Feature: Sales Management
         Given I am logged in as admin
         When I navigate to the sales page
         Then the "Sell Plant" button should be visible
+
+    @Sale_Admin_UI_13
+    Scenario: Verify that Sell Plant page is accessible to Admin
+        Given I am logged in as admin
+        And I navigate to the sales page
+        When I click on the "Sell Plant" button
+        Then the Sell Plant page should be displayed and accessible

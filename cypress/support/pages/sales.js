@@ -73,7 +73,38 @@ class SalesPage {
     verifySellPlantButtonVisible(buttonText) {
         // Verify the Sell Plant button is visible
         this.sellPlantButton.should('be.visible');
-        cy.contains('button, a', buttonText).should('be.visible');
+        cy.contains('a', buttonText).should('be.visible');
+    }
+
+    clickSellPlantButton(buttonText) {
+        // Click the Sell Plant button
+        cy.contains('a', buttonText).click();
+    }
+
+    verifySellPlantPageAccessible() {
+        // Verify the URL changed to Sell Plant page
+        cy.url().should('match', /\/ui\/sales\/new$/i); // i for case insensitive
+        
+        // Verify no authorization errors
+        cy.get('body').should('not.contain', '403');
+        cy.get('body').should('not.contain', 'Forbidden');
+        cy.get('body').should('not.contain', 'Unauthorized');
+        
+        // Verify page is loaded 
+        // Page heading
+        cy.get('h3')
+            .should('be.visible')
+            .and('have.text', 'Sell Plant');
+
+        // Sell Plant form
+        cy.get('form[action="/ui/sales"]')
+            .should('exist')
+            .and('be.visible');
+
+        // Plant dropdown
+        cy.get('#plantId')
+            .should('exist')
+            .and('be.visible');
     }
 }
 

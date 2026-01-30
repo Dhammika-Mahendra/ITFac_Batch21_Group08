@@ -75,3 +75,11 @@ Then("the deleted sale should no longer appear in the sales list", () => {
 Then("the {string} button should be visible", (buttonText) => {
 	salesPage.verifySellPlantButtonVisible(buttonText);
 });
+
+When("I click on the {string} button", (buttonText) => {
+	salesPage.clickSellPlantButton(buttonText);
+});
+
+Then("the Sell Plant page should be displayed and accessible", () => {
+	salesPage.verifySellPlantPageAccessible();
+});
