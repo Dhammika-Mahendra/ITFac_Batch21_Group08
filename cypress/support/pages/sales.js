@@ -31,6 +31,18 @@ class SalesPage {
         return cy.get('#plantId, select[name="plantId"]');
     }
 
+    get quantityInput() {
+        return cy.get('#quantity, input[name="quantity"]');
+    }
+
+    get sellButton() {
+        return cy.get('button.btn-primary, button:contains("Sell")');
+    }
+
+    get errorMessage() {
+        return cy.get('.text-danger, .error, .invalid-feedback');
+    }
+
     visit() {
         cy.visit("http://localhost:8080/ui/sales");
     }
@@ -136,6 +148,26 @@ class SalesPage {
         
         // Verify specific plants are present with stock format
         cy.get('#plantId option').should('contain', 'Stock:');
+    }
+
+    leavePlantFieldEmpty() {
+        // Ensure the plant dropdown is set to empty value (default)
+        this.plantDropdown.select('-- Select Plant --');
+    }
+
+    enterQuantity(quantity) {
+        // Clear and enter quantity
+        this.quantityInput.clear().type(quantity);
+    }
+
+    clickSellButton() {
+        // Click the Sell button to submit the form
+        this.sellButton.click();
+    }
+
+    verifyErrorMessageDisplayed(errorMessage) {
+        // Verify the error message is displayed
+        this.errorMessage.should('be.visible').and('contain.text', errorMessage);
     }
 }
 

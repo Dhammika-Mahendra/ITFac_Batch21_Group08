@@ -77,7 +77,11 @@ Then("the {string} button should be visible", (buttonText) => {
 });
 
 When("I click on the {string} button", (buttonText) => {
-	salesPage.clickSellPlantButton(buttonText);
+	if (buttonText === "Sell Plant") {
+		salesPage.clickSellPlantButton(buttonText);
+	} else if (buttonText === "Sell") {
+		salesPage.clickSellButton();
+	}
 });
 
 Then("the Sell Plant page should be displayed and accessible", () => {
@@ -90,4 +94,16 @@ When("I click on the plant dropdown", () => {
 
 Then("the plant dropdown should display all available plants with their current stock", () => {
 	salesPage.verifyPlantDropdownDisplaysPlantsWithStock();
+});
+
+When("I leave the plant field empty", () => {
+	salesPage.leavePlantFieldEmpty();
+});
+
+When("I enter valid quantity {string}", (quantity) => {
+	salesPage.enterQuantity(quantity);
+});
+
+Then("the error message {string} should be displayed", (errorMessage) => {
+	salesPage.verifyErrorMessageDisplayed(errorMessage);
 });

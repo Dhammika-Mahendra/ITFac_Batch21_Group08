@@ -42,3 +42,13 @@ Feature: Sales Management
         And I click on the "Sell Plant" button
         When I click on the plant dropdown
         Then the plant dropdown should display all available plants with their current stock
+
+    @Sale_Admin_UI_15
+    Scenario: Verify that plant selection is mandatory when an admin creates a sale
+        Given I am logged in as admin
+        And I navigate to the sales page
+        And I click on the "Sell Plant" button
+        When I leave the plant field empty
+        And I enter valid quantity "10"
+        And I click on the "Sell" button
+        Then the error message "Plant is required" should be displayed
