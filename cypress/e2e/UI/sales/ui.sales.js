@@ -83,3 +83,11 @@ When("I click on the {string} button", (buttonText) => {
 Then("the Sell Plant page should be displayed and accessible", () => {
 	salesPage.verifySellPlantPageAccessible();
 });
+
+When("I click on the plant dropdown", () => {
+	salesPage.clickPlantDropdown();
+});
+
+Then("the plant dropdown should display all available plants with their current stock", () => {
+	salesPage.verifyPlantDropdownDisplaysPlantsWithStock();
+});

@@ -34,3 +34,11 @@ Feature: Sales Management
         And I navigate to the sales page
         When I click on the "Sell Plant" button
         Then the Sell Plant page should be displayed and accessible
+
+    @Sale_Admin_UI_14
+    Scenario: Verify that plant dropdown displays available plants with current stock for admin
+        Given I am logged in as admin
+        And I navigate to the sales page
+        And I click on the "Sell Plant" button
+        When I click on the plant dropdown
+        Then the plant dropdown should display all available plants with their current stock

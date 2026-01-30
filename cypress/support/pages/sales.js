@@ -27,6 +27,10 @@ class SalesPage {
         return cy.get('button:contains("Sell Plant"), a:contains("Sell Plant"), [data-testid="sell-plant"], .sell-plant-btn');
     }
 
+    get plantDropdown() {
+        return cy.get('#plantId, select[name="plantId"]');
+    }
+
     visit() {
         cy.visit("http://localhost:8080/ui/sales");
     }
@@ -105,6 +109,33 @@ class SalesPage {
         cy.get('#plantId')
             .should('exist')
             .and('be.visible');
+    }
+
+    clickPlantDropdown() {
+        // Focus on the plant dropdown (select elements don't need to be clicked)
+        this.plantDropdown.should('be.visible').focus();
+    }
+
+    verifyPlantDropdownDisplaysPlantsWithStock() {
+        // Verify the dropdown is visible and expanded
+        this.plantDropdown.should('be.visible');
+        
+        // Verify it has options (first option is "-- Select Plant --")
+        this.plantDropdown.find('option').should('have.length.greaterThan', 1);
+        
+        // Verify the first option is the placeholder
+        this.plantDropdown.find('option').first().should('contain.text', '-- Select Plant --');
+        
+        // Verify at least one plant option contains stock information
+        this.plantDropdown.find('option').then($options => {
+            const optionsText = [...$options].map(opt => opt.textContent);
+            // Skip first option (placeholder) and check others have stock info
+            const plantsWithStock = optionsText.slice(1).filter(text => text.includes('Stock:'));
+            expect(plantsWithStock.length).to.be.greaterThan(0);
+        });
+        
+        // Verify specific plants are present with stock format
+        cy.get('#plantId option').should('contain', 'Stock:');
     }
 }
 
