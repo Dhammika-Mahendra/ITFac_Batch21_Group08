@@ -1,24 +1,26 @@
 class SalesPage {
     
     get noSalesMessage() {
-        // Try multiple possible selectors for "no sales" message
-        return cy.get('body').then($body => {
-            // Check for common empty state patterns
-            if ($body.find('.empty-state').length) {
-                return cy.get('.empty-state');
-            } else if ($body.find('.no-data').length) {
-                return cy.get('.no-data');
-            } else if ($body.find('.alert').length) {
-                return cy.get('.alert');
-            } else if ($body.text().includes('No sales')) {
-                return cy.contains(/No sales/i);
-            } else if ($body.text().includes('no records')) {
-                return cy.contains(/no records/i);
-            } else {
-                // Fallback to any text containing "no" or "empty"
-                return cy.get('body');
-            }
-        });
+        cy.get('td').should('contain.text', message);
+    }
+
+    get deleteButtons() {
+        // Common selectors for delete buttons
+        return cy.get('button[title*="Delete"], button[aria-label*="Delete"], .delete-btn, .btn-delete, button:contains("Delete"), [data-testid*="delete"]');
+    }
+
+    get confirmationDialog() {
+        // Common selectors for confirmation dialogs
+        return cy.get('.modal, .dialog, .confirmation, [role="dialog"], .swal2-popup');
+    }
+
+    get confirmButton() {
+        // Common selectors for confirm buttons in dialogs
+        return cy.get('button:contains("Confirm"), button:contains("Yes"), button:contains("OK"), .confirm-btn, .swal2-confirm');
+    }
+
+    get salesTableRows() {
+        return cy.get('table tbody tr, .sales-list > div, .sale-item');
     }
 
     visit() {
@@ -27,6 +29,41 @@ class SalesPage {
 
     visitSalesPage() {
         this.visit();
+    }
+
+    clickDeleteIconOnFirstSale() {
+        // Store the sale info before deletion
+        this.salesTableRows.first().invoke('text').as('deletedSaleInfo');
+        
+        // Click the first delete button
+        this.deleteButtons.first().click();
+    }
+
+    verifyConfirmationPromptAppears() {
+        this.confirmationDialog.should('be.visible');
+    }
+
+    confirmDeletion() {
+        this.confirmButton.click();
+    }
+
+    verifySaleDeleted() {
+        // Wait for the operation to complete
+        cy.wait(500);
+        
+        // Verify the sale is deleted by checking the table updated
+        cy.get('@deletedSaleInfo').then((deletedInfo) => {
+            // The deleted sale should no longer appear
+            cy.get('body').should('not.contain', deletedInfo);
+        });
+    }
+
+    verifySaleNoLongerInList() {
+        // Verify the confirmation dialog is closed
+        this.confirmationDialog.should('not.exist');
+        
+        // Additional verification that page has updated
+        cy.url().should('include', '/ui/sales');
     }
 }
 

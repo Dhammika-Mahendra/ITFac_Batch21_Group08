@@ -54,7 +54,7 @@ export function sellPlant(plantId, payload, responseAlias = "sellPlantResponse")
 	if (!payload) {
 		throw new Error("payload is required to sell a plant.");
 	}
-	return salesRequest({ method: "POST", path: `/api/sales/plant/${plantId}`, body: payload, alias: responseAlias });
+	return salesRequest({ method: "POST", path: `/api/sales/plant/${plantId}`, qs: payload, alias: responseAlias });
 }
 
 export function getAllSales(responseAlias = "salesResponse") {
@@ -199,7 +199,7 @@ export function restoreSalesData() {
 				if (response.status === 201 || response.status === 200) {
 					cy.log(`✓ Restored sale for plant ${plantId}`);
 				} else {
-					cy.log(`✗ Failed to restore plant ${plantId}: ${response.status}`);
+					cy.log(`✗ Failed to restore plant ${plantId}: ${response.status} - ${JSON.stringify(response.body)}`);
 				}
 			});
 		});
@@ -216,6 +216,35 @@ export function deleteAllSales() {
 					deleteSale(sale.id)
 				);
 				return Cypress.Promise.all(deletePromises);
+			}
+		});
+	});
+}
+
+// Create a test sale for UI testing
+export function createTestSale() {
+	// Use a valid plant ID (assuming plant ID 1 exists, adjust if needed)
+	const plantId = 1;
+	const payload = {
+		quantity: 5,
+		totalPrice: 50.00,
+		soldAt: new Date().toISOString()
+	};
+	
+	return salesRequest({ 
+		method: "POST", 
+		path: `/api/sales/plant/${plantId}`, 
+		qs: payload, 
+		alias: "testSaleResponse",
+		failOnStatusCode: false
+	}).then(() => {
+		return cy.get("@testSaleResponse").then((response) => {
+			if (response.status === 201 || response.status === 200) {
+				cy.log(`Test sale created with ID: ${response.body.id}`);
+				return cy.wrap(response.body).as("testSale");
+			} else {
+				cy.log(`Failed to create test sale: ${response.status} - ${JSON.stringify(response.body)}`);
+				throw new Error(`Failed to create test sale: ${response.status}`);
 			}
 		});
 	});
