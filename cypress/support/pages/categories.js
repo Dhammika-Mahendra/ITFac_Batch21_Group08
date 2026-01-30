@@ -52,6 +52,11 @@ class CategoriesPage {
         return this.addCategoryForm.find('input.form-control[name="name"][id="name"]');
     }
 
+    get addCategoryParentNameInput(){
+        //select where class="form-control" and name="parentId" and id="parentId"
+        return this.addCategoryForm.find('select[name="parentId"][id="parentId"]');
+    }
+
     get addCategorySaveButton(){
         //button of type=submit
         return this.addCategoryForm.find('button[type="submit"]');

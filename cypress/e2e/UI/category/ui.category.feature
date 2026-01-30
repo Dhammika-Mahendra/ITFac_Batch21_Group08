@@ -57,7 +57,8 @@ Feature: Category Management UI
 
 	@Cat_Admin_UI_08
 	Scenario: Verify Admin can Delete category
-		Given I am logged in as an admin user and a category exists
+		Given I am logged in as an admin user
+		When I click the Categories menu option
 		When I delete the category using the Delete Category button
 		Then the category should be removed from the list
 
