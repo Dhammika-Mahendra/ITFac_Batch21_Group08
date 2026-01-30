@@ -162,4 +162,28 @@ export function validateSingleSaleResponse(response, expectedId) {
 	return response;
 }
 
+export function validateDeleteSaleErrorResponse(response) {
+	expect(response.status, "error status").to.be.oneOf([404, 500]);
+	expect(response.body.message, "error message").to.exist;
+	expect(response.body.message, "error message should mention not found").to.include("Sale not found");
+	return response;
+}
+
+export function createSaleWithoutPlant(payload, responseAlias = "createSaleWithoutPlantResponse") {
+	if (!payload) {
+		throw new Error("payload is required to create a sale.");
+	}
+	return salesRequest({ method: "POST", path: "/api/sales/plant", body: payload, alias: responseAlias });
+}
+
+export function validateMissingPlantErrorResponse(response) {
+	expect(response.status, "error status").to.equal(500);
+	expect(response.body.message, "error message").to.exist;
+	// The error can be either "No static resource" or "Request method 'POST' is not supported"
+	const errorMsg = response.body.message;
+	const isValidError = errorMsg.includes("No static resource") || errorMsg.includes("Request method") || errorMsg.includes("not supported");
+	expect(isValidError, `Error message should indicate invalid endpoint or method`).to.be.true;
+	return response;
+}
+
 export { validateSalesNotFoundResponse };

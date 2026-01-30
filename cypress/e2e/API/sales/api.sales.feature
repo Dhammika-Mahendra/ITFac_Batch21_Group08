@@ -56,3 +56,17 @@ Feature: Sales Management
         When I retrieve a single sale by ID
         Then I should receive a 200 status code
         And the response should contain a single sale with the correct ID
+
+    @Sale_Admin_API_08
+    Scenario: Admin delete non-existent sale
+        Given I have logged in as an admin user
+        When I attempt to delete a non-existent sale
+        Then I should receive a 404 delete error response
+        And the delete response should contain a sale not found error message
+
+    @Sale_Admin_API_09
+    Scenario: Admin create sale with empty plant selection
+        Given I have logged in as an admin user
+        When I attempt to create a sale without specifying a plant
+        Then I should receive a 500 error response
+        And the response should contain an error message about missing plant resource

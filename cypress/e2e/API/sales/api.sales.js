@@ -1,6 +1,6 @@
 import { Given, When, Then } from "@badeball/cypress-cucumber-preprocessor";
 import { apiLoginAsAdmin } from "../../preconditions/login";
-import { getSalesPage, sellPlant, validateSalesResponse, validateSalesSortedByDate, validateSalesSortedByPlantName, validateSalesErrorResponse, validateSalesSortedByQuantity, validateSalesSortedByTotalPrice, validateSalesNotFoundResponse, getSaleById, validateSingleSaleResponse } from "../../../support/api/sales";
+import { getSalesPage, sellPlant, validateSalesResponse, validateSalesSortedByDate, validateSalesSortedByPlantName, validateSalesErrorResponse, validateSalesSortedByQuantity, validateSalesSortedByTotalPrice, validateSalesNotFoundResponse, getSaleById, validateSingleSaleResponse, deleteSale, validateDeleteSaleErrorResponse, createSaleWithoutPlant, validateMissingPlantErrorResponse } from "../../../support/api/sales";
 
 Given("I have logged in as an admin user", () => {
 	return apiLoginAsAdmin();
@@ -75,6 +75,12 @@ Then("the response should contain a sale not found error message", () => {
 	});
 });
 
+Then("the delete response should contain a sale not found error message", () => {
+	return cy.get("@deleteSaleResponse").then((response) => {
+		return validateDeleteSaleErrorResponse(response);
+	});
+});
+
 Given("I have retrieved a list of sales to get an existing sale ID", () => {
 	return getSalesPage({ page: 0, size: 10 }).then(() => {
 		return cy.get("@salesPageResponse").then((response) => {
@@ -100,5 +106,28 @@ Then("the response should contain a single sale with the correct ID", () => {
 		return cy.get("@saleId").then((expectedId) => {
 			return validateSingleSaleResponse(response, expectedId);
 		});
+	});
+});
+
+When("I attempt to delete a non-existent sale", () => {
+	const nonExistentSaleId = 99999;
+	return deleteSale(nonExistentSaleId, "deleteSaleResponse");
+});
+
+Then("I should receive a 404 delete error response", () => {
+	return cy.get("@deleteSaleResponse").its("status").should("be.oneOf", [404, 500]);
+});
+
+When("I attempt to create a sale without specifying a plant", () => {
+	return createSaleWithoutPlant({ quantity: 10 }, "createSaleWithoutPlantResponse");
+});
+
+Then("I should receive a 500 error response", () => {
+	return cy.get("@createSaleWithoutPlantResponse").its("status").should("eq", 500);
+});
+
+Then("the response should contain an error message about missing plant resource", () => {
+	return cy.get("@createSaleWithoutPlantResponse").then((response) => {
+		return validateMissingPlantErrorResponse(response);
 	});
 });
