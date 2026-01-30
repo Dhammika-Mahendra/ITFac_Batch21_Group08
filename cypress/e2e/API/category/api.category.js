@@ -58,23 +58,23 @@ Then("the category should be created successfully", () => {
 // @Cat_Admin_API_04 -----------------------------------------------
 
 let originalCategory = null;
-let updatedName = "Corn";
+let updatedName = "MyCat";
 
-// Retrieve all categories and select the one with the highest id
 Given("a category exists", () => {
 	return getAllCategories().then((response) => {
 		expect(response.status, "get all categories status").to.eq(200);
-		const categories = response.body;
-		expect(categories, "categories array").to.be.an("array").and.not.empty;
+		const mainCategories = response.body.filter(cat => cat.parentName === "-");
+		expect(mainCategories.length, "main categories count").to.be.greaterThan(0);
 
-		// Find the category with the highest id
-		originalCategory = categories.reduce((max, cat) => (cat.id > max.id ? cat : max), categories[0]);
-		expect(originalCategory, "original category").to.have.property("id");
+		// Find the main category with the highest id
+		const lastMainCategory = mainCategories.reduce((prev, curr) => (curr.id > prev.id ? curr : prev));
+		originalCategory = { ...lastMainCategory };
+		expect(originalCategory).to.have.property("id");
 	});
 });
 
 Then("I send a request to edit the category name", () => {
-	const data = { name: updatedName, parentId: originalCategory.parentId || null };
+	const data = { name: updatedName, parentId: null };
 	return updateCategory(originalCategory.id, data, "updateCategoryResponse");
 });
 
@@ -84,7 +84,7 @@ Then("the category name should be updated successfully", () => {
 		expect(response.body.name, "updated category name").to.eq(updatedName);
 
 		// Revert the category name back to its original value for cleanup
-		const revertData = { name: originalCategory.name, parentId: originalCategory.parentId || null };
+		const revertData = { name: originalCategory.name, parentId: null };
 		return updateCategory(originalCategory.id, revertData);
 	});
 });
