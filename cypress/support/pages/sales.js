@@ -23,6 +23,10 @@ class SalesPage {
         return cy.get('table tbody tr, .sales-list > div, .sale-item');
     }
 
+    get sellPlantButton() {
+        return cy.get('button:contains("Sell Plant"), a:contains("Sell Plant"), [data-testid="sell-plant"], .sell-plant-btn');
+    }
+
     visit() {
         cy.visit("http://localhost:8080/ui/sales");
     }
@@ -64,6 +68,12 @@ class SalesPage {
         
         // Additional verification that page has updated
         cy.url().should('include', '/ui/sales');
+    }
+
+    verifySellPlantButtonVisible(buttonText) {
+        // Verify the Sell Plant button is visible
+        this.sellPlantButton.should('be.visible');
+        cy.contains('button, a', buttonText).should('be.visible');
     }
 }
 

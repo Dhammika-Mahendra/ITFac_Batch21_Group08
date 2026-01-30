@@ -21,3 +21,9 @@ Feature: Sales Management
     #     When I confirm the deletion
     #     Then the sale should be deleted
     #     And the deleted sale should no longer appear in the sales list
+
+    @Sale_Admin_UI_12
+    Scenario: Verify that "Sell Plant" button is visible to Admin
+        Given I am logged in as admin
+        When I navigate to the sales page
+        Then the "Sell Plant" button should be visible

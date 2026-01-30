@@ -71,3 +71,7 @@ Then("the sale should be deleted", () => {
 Then("the deleted sale should no longer appear in the sales list", () => {
 	salesPage.verifySaleNoLongerInList();
 });
+
+Then("the {string} button should be visible", (buttonText) => {
+	salesPage.verifySellPlantButtonVisible(buttonText);
+});
