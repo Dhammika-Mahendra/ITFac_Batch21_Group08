@@ -70,3 +70,9 @@ Feature: Sales Management
         When I attempt to create a sale without specifying a plant
         Then I should receive a 500 error response
         And the response should contain an error message about missing plant resource
+
+    @Sale_Admin_API_10
+    Scenario: Unauthenticated admin cannot create sale
+        When I attempt to create a sale without authenticating
+        Then I should receive a 401 status code
+        And the response should contain an unauthorized error message

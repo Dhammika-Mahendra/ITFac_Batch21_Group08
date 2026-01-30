@@ -186,4 +186,30 @@ export function validateMissingPlantErrorResponse(response) {
 	return response;
 }
 
+export function sellPlantWithoutAuth(plantId, payload, responseAlias = "unauthenticatedSaleResponse") {
+	if (!plantId && plantId !== 0) {
+		throw new Error("plantId is required to sell a plant.");
+	}
+	if (!payload) {
+		throw new Error("payload is required to sell a plant.");
+	}
+	const baseUrl = ensureBaseUrl();
+	const url = `${baseUrl}/api/sales/plant/${plantId}`;
+	return cy
+		.request({
+			method: "POST",
+			url,
+			body: payload,
+			failOnStatusCode: false,
+		})
+		.as(responseAlias);
+}
+
+export function validateUnauthorizedErrorResponse(response) {
+	expect(response.status, "error status").to.equal(401);
+	expect(response.body.message, "error message").to.exist;
+	expect(response.body.message, "error message should mention Unauthorized").to.include("Unauthorized");
+	return response;
+}
+
 export { validateSalesNotFoundResponse };

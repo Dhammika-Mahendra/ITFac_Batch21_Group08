@@ -1,6 +1,6 @@
 import { Given, When, Then } from "@badeball/cypress-cucumber-preprocessor";
 import { apiLoginAsAdmin } from "../../preconditions/login";
-import { getSalesPage, sellPlant, validateSalesResponse, validateSalesSortedByDate, validateSalesSortedByPlantName, validateSalesErrorResponse, validateSalesSortedByQuantity, validateSalesSortedByTotalPrice, validateSalesNotFoundResponse, getSaleById, validateSingleSaleResponse, deleteSale, validateDeleteSaleErrorResponse, createSaleWithoutPlant, validateMissingPlantErrorResponse } from "../../../support/api/sales";
+import { getSalesPage, sellPlant, validateSalesResponse, validateSalesSortedByDate, validateSalesSortedByPlantName, validateSalesErrorResponse, validateSalesSortedByQuantity, validateSalesSortedByTotalPrice, validateSalesNotFoundResponse, getSaleById, validateSingleSaleResponse, deleteSale, validateDeleteSaleErrorResponse, createSaleWithoutPlant, validateMissingPlantErrorResponse, sellPlantWithoutAuth, validateUnauthorizedErrorResponse } from "../../../support/api/sales";
 
 Given("I have logged in as an admin user", () => {
 	return apiLoginAsAdmin();
@@ -129,5 +129,20 @@ Then("I should receive a 500 error response", () => {
 Then("the response should contain an error message about missing plant resource", () => {
 	return cy.get("@createSaleWithoutPlantResponse").then((response) => {
 		return validateMissingPlantErrorResponse(response);
+	});
+});
+
+When("I attempt to create a sale without authenticating", () => {
+	const payload = { quantity: 40 };
+	return sellPlantWithoutAuth(1, payload, "unauthenticatedSaleResponse");
+});
+
+Then("I should receive a 401 status code", () => {
+	return cy.get("@unauthenticatedSaleResponse").its("status").should("eq", 401);
+});
+
+Then("the response should contain an unauthorized error message", () => {
+	return cy.get("@unauthenticatedSaleResponse").then((response) => {
+		return validateUnauthorizedErrorResponse(response);
 	});
 });
