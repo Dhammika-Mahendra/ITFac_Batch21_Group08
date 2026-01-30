@@ -17,8 +17,11 @@ Feature: Category Management
     @Cat_Admin_API_02
     Scenario: Verify Admin can get existing categories with pagination
         Given I have logged in as an admin user
+        Given category list exists
         When I request categories with pagination parameters
         Then I should receive a paginated list of categories
+        When I request categories with pagination different parameters
+        Then I should receive a different paginated list of categories
 
     @Cat_Admin_API_03
     Scenario: Verify Admin is able to create a new main category
@@ -36,8 +39,11 @@ Feature: Category Management
     @Cat_Admin_API_05
     Scenario: Verify Admin edit category name happens within the valid naming constraints
         Given I have logged in as an admin user
-        When I attempt to edit the category name with invalid data
-        Then the system should reject the update with a validation error
+        Given a category exists
+        When I attempt to edit the category name with invalid data - short name
+        Then the system should reject the name update with a validation error
+        When When I attempt to edit the category name with invalid data - long name
+        Then the system should reject the name update with a validation error
 
     @Cat_Admin_API_06
     Scenario: Verify Admin can delete an existing category

@@ -1,6 +1,6 @@
-import { Given, When, Then } from "@badeball/cypress-cucumber-preprocessor";
+import { Given, When, Then} from "@badeball/cypress-cucumber-preprocessor";
 import { apiLoginAsAdmin, apiLoginAsUser } from "../../preconditions/login";
-import { createCategory, getAllCategories, deleteCategory, updateCategory, getCategoryById } from "../../../support/api/category";
+import { createCategory, getAllCategories, deleteCategory, updateCategory, getCategoryById, searchCategories } from "../../../support/api/category";
 
 Given("I have logged in as an admin user", () => {
 	return apiLoginAsAdmin();
@@ -31,6 +31,65 @@ Then("the response should contain a list of categories", () => {
 		//verify subcategories exist (parentName != null)
 		const subCategories = response.body.filter(category => category.parentName !== null);
 		expect(subCategories.length, "subcategories count").to.be.greaterThan(0);
+	});
+});
+
+// @Cat_Admin_API_02 -----------------------------------------------
+
+Given("category list exists", () => {
+	return getAllCategories().then((response) => {
+		expect(response.status, "get all categories status").to.eq(200);
+		const categories = response.body;
+		expect(categories, "categories payload").to.be.an("array").and.not.empty;
+	});
+});
+
+let categoriesPage0 = null;
+let categoriesPage1 = null;
+
+When("I request categories with pagination parameters", () => {
+	const page = 0;
+	const size = 5;
+	const sortField = "id";
+	const sortDir = "asc";
+	return searchCategories({ page, size, sortField, sortDir, responseAlias: "categoriesPageResponse" });
+});
+
+Then("I should receive a paginated list of categories", () => {
+	return cy.get("@categoriesPageResponse").then((response) => {
+		expect(response.status, "paginated categories status").to.eq(200);
+		const categoriesPage = response.body;
+		expect(categoriesPage.content, "paginated categories payload").to.be.an("array").and.have.length.of.at.most(5);
+		categoriesPage0 = categoriesPage.content;
+	});
+});
+
+// Additional steps for different pagination parameters
+
+When("I request categories with pagination different parameters", () => {
+	const page = 1;
+	const size = 5;
+	const sortField = "id";
+	const sortDir = "asc";
+	return searchCategories({ page, size, sortField, sortDir, responseAlias: "categoriesPageResponse1" });
+});
+
+Then("I should receive a different paginated list of categories", () => {
+	return cy.get("@categoriesPageResponse1").then((response) => {
+		expect(response.status, "paginated categories status").to.eq(200);
+		const categoriesPage = response.body;
+		expect(categoriesPage.content, "paginated categories payload").to.be.an("array").and.have.length.of.at.most(5);
+		categoriesPage1 = categoriesPage.content;
+
+		// a. Compare last element id of page 0 with first element id of page 1
+		if (categoriesPage0 && categoriesPage0.length > 0 && categoriesPage1 && categoriesPage1.length > 0) {
+			const lastIdPage0 = categoriesPage0[categoriesPage0.length - 1].id;
+			const firstIdPage1 = categoriesPage1[0].id;
+			expect(firstIdPage1, "last id of page 0").to.be.lessThan(lastIdPage0);
+		}
+
+		// b. Ensure content at page 0 is different than content at page 1
+		expect(categoriesPage0, "page 0 content").to.not.deep.equal(categoriesPage1);
 	});
 });
 
@@ -92,6 +151,25 @@ Then("the category name should be updated successfully", () => {
 		return updateCategory(lastCategory.id, revertData);
 	});
 });
+
+// @Cat_Admin_API_05 -----------------------------------------------
+
+When("I attempt to edit the category name with invalid data - short name",()=>{
+	let data = { name: "ru", parentId: parentId };
+	return updateCategory(lastCategory.id, data, "updateCategoryResponse");
+});
+
+Then("the system should reject the name update with a validation error", () => {
+	return cy.get("@updateCategoryResponse").then((response) => {
+		expect(response.status, "update category status").to.eq(500);
+	});
+});
+
+When("When I attempt to edit the category name with invalid data - long name",()=>{
+	let data = { name: "dragonflower daffadile", parentId: parentId };
+	return updateCategory(lastCategory.id, data, "updateCategoryResponse");
+});
+
 
 // @Cat_Admin_API_06 -----------------------------------------------
 
