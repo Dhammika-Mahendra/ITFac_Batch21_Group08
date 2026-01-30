@@ -96,15 +96,15 @@ Then("the category name should be updated successfully", () => {
 // @Cat_Admin_API_06 -----------------------------------------------
 
 Then("I send a request to delete the category", () => {
-	return deleteCategory(catId, "deleteCategoryResponse");
+	return deleteCategory(lastCategory.id, "deleteCategoryResponse");
 });
 
 Then("the category should be deleted successfully", () => {
 	return cy.get("@deleteCategoryResponse").then((response) => {
-		expect(response.status, "delete category status").to.eq(200);
+		expect(response.status, "delete category status").to.eq(204);
 
 		//Revert by adding the category back
-		let data = {"id":null,"name":initialName,"parent":{"id":parentId,"name":null,"parent":null}};
+		let data = {"id":null,"name":lastCategory.name,"parent":{"id":parentId,"name":null,"parent":null}};
 		return createCategory(data);
 	});
 });
