@@ -81,6 +81,11 @@ Feature: Sales Management
         Then I should receive a 401 status code
         And the response should contain an unauthorized error message
 
-    ************************************************************************ 
-    Sales User API Scenarios
-    ************************************************************************
+    # Sales User API Scenarios
+
+    @Sale_User_API_01
+    Scenario: User attempt to retrieve sales with invalid pagination parameters
+        Given I have logged in as a testuser
+        When I call the sales pagination API endpoint with page 0 and size 0
+        Then I should receive a 200 status code
+        And the response should contain a list of sales

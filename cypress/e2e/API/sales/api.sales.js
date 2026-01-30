@@ -1,5 +1,5 @@
 import { Given, When, Then } from "@badeball/cypress-cucumber-preprocessor";
-import { apiLoginAsAdmin } from "../../preconditions/login";
+import { apiLoginAsAdmin, apiLoginAsUser } from "../../preconditions/login";
 import { getSalesPage, sellPlant, validateSalesResponse, validateSalesSortedByDate, validateSalesSortedByPlantName, validateSalesErrorResponse, validateSalesSortedByQuantity, validateSalesSortedByTotalPrice, validateSalesNotFoundResponse, getSaleById, validateSingleSaleResponse, deleteSale, validateDeleteSaleErrorResponse, createSaleWithoutPlant, validateMissingPlantErrorResponse, sellPlantWithoutAuth, validateUnauthorizedErrorResponse } from "../../../support/api/sales";
 
 Given("I have logged in as an admin user", () => {
@@ -7,12 +7,12 @@ Given("I have logged in as an admin user", () => {
 });
 
 When("I call the sales pagination API endpoint with page {int}, size {int} and sort {word} descending", (page, size, sortField) => {
-	const query = { page, size, sort: `${sortField},desc` };
+	const query = { page, size, sort: [`${sortField},desc`] };
 	return getSalesPage(query);
 });
 
 When("I call the sales pagination API endpoint with page {int}, size {int} and sort {word}", (page, size, sortField) => {
-	const query = { page, size, sort: sortField };
+	const query = { page, size, sort: [sortField] };
 	return getSalesPage(query);
 });
 
@@ -143,4 +143,13 @@ Then("the response should contain an unauthorized error message", () => {
 	return cy.get("@unauthenticatedSaleResponse").then((response) => {
 		return validateUnauthorizedErrorResponse(response);
 	});
+});
+
+Given("I have logged in as a testuser", () => {
+	return apiLoginAsUser();
+});
+
+When("I call the sales pagination API endpoint with page {int} and size {int}", (page, size) => {
+	const query = { page, size };
+	return getSalesPage(query, "invalidParamsResponse");
 });
