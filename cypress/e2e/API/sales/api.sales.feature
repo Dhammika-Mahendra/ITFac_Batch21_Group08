@@ -3,9 +3,9 @@
 Feature: Sales Management
     I want to retrieve and manage sales records
 
-    ************************************************************************ 
-    Sales Admin API Scenarios
-    ************************************************************************
+    #************************************************************************ 
+    #Sales Admin API Scenarios
+    #************************************************************************
 
     @Sale_Admin_API_01
     Scenario: Admin retrieve sales sorted by date
@@ -81,7 +81,9 @@ Feature: Sales Management
         Then I should receive a 401 status code
         And the response should contain an unauthorized error message
 
+    #************************************************************************
     # Sales User API Scenarios
+    #************************************************************************
 
     @Sale_User_API_01
     Scenario: User attempt to retrieve sales with invalid pagination parameters
