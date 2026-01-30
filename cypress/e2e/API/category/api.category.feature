@@ -40,6 +40,8 @@ Feature: Category Management
     Scenario: Verify Admin edit category name happens within the valid naming constraints
         Given I have logged in as an admin user
         Given a category exists
+        When I attempt to edit the category name with invalid data - empty name
+        Then the system should reject the name update with a validation error
         When I attempt to edit the category name with invalid data - short name
         Then the system should reject the name update with a validation error
         When When I attempt to edit the category name with invalid data - long name

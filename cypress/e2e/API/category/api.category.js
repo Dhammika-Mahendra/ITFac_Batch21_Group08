@@ -154,8 +154,18 @@ Then("the category name should be updated successfully", () => {
 
 // @Cat_Admin_API_05 -----------------------------------------------
 
+When("I attempt to edit the category name with invalid data - empty name",()=>{
+	let data = { name: "", parentId: parentId };
+	return updateCategory(lastCategory.id, data, "updateCategoryResponse");
+});
+
 When("I attempt to edit the category name with invalid data - short name",()=>{
 	let data = { name: "ru", parentId: parentId };
+	return updateCategory(lastCategory.id, data, "updateCategoryResponse");
+});
+
+When("When I attempt to edit the category name with invalid data - long name",()=>{
+	let data = { name: "dragonflower daffadile", parentId: parentId };
 	return updateCategory(lastCategory.id, data, "updateCategoryResponse");
 });
 
@@ -163,11 +173,6 @@ Then("the system should reject the name update with a validation error", () => {
 	return cy.get("@updateCategoryResponse").then((response) => {
 		expect(response.status, "update category status").to.eq(500);
 	});
-});
-
-When("When I attempt to edit the category name with invalid data - long name",()=>{
-	let data = { name: "dragonflower daffadile", parentId: parentId };
-	return updateCategory(lastCategory.id, data, "updateCategoryResponse");
 });
 
 
