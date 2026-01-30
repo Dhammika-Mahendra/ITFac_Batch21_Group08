@@ -64,8 +64,11 @@ Feature: Category Management UI
 
 	@Cat_Admin_UI_09
 	Scenario: Verify Admin edit category name within the valid naming constraints
-		Given I am logged in as an admin user and a category exists
-		When I attempt to edit the category name with invalid data
+		Given I am logged in as an admin user
+		When I click the Categories menu option
+		When I attempt to edit the category name with invalid data - short name
+		Then the system should show a validation error and not update the category
+		When I attempt to edit the category name with invalid data - long name
 		Then the system should show a validation error and not update the category
 
     #----------------------------------------------

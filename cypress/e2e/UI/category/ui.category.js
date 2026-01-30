@@ -161,3 +161,23 @@ Then("the category should be removed from the list",()=>{
     categoriesPage.addCategoryParentNameInput.select(initialParentCatName);
     categoriesPage.addCategorySaveButton.click();
 });
+
+// @Cat_Admin_UI_09 -----------------------------------------------------
+
+When("I attempt to edit the category name with invalid data - short name",()=>{
+    //click edit button of first category
+    categoriesPage.clickEditButtonByRowIndex(0);
+ 
+    categoriesPage.editCategoryNameInput.clear().type("Ir");
+    categoriesPage.editCategorySaveButton.click();
+});
+
+Then("the system should show a validation error and not update the category",()=>{
+    categoriesPage.invalidNameMessage.should('be.visible');
+});
+
+When("I attempt to edit the category name with invalid data - long name",()=>{
+    //click edit button of first category
+    categoriesPage.editCategoryNameInput.clear().type("Irish Dragonflower");
+    categoriesPage.editCategorySaveButton.click();
+});

@@ -90,6 +90,10 @@ class CategoriesPage {
     clickDeleteButtonByRowIndex(rowIndex){
         this.deleteButtonByRowIndex(rowIndex).click();
     }
+
+    get invalidNameMessage(){
+        return cy.get('div.invalid-feedback').contains('Category name must be between 3 and 10 characters');
+    }
 }
 
 export const categoriesPage = new CategoriesPage();
