@@ -198,6 +198,25 @@ class SalesPage {
             expect(plantNames).to.deep.equal(sortedNames);
         });
     }
+
+    verifySalesSortedByQuantity() {
+        // Extract quantities from the table and verify they are sorted
+        const quantities = [];
+        
+        this.salesTableRows.each(($row) => {
+            // Get the quantity column (typically the second column)
+            cy.wrap($row).find('td').eq(1).invoke('text').then((quantityText) => {
+                const quantity = parseInt(quantityText.trim());
+                if (!isNaN(quantity)) {
+                    quantities.push(quantity);
+                }
+            });
+        }).then(() => {
+            // Verify quantities are sorted numerically
+            const sortedQuantities = [...quantities].sort((a, b) => a - b);
+            expect(quantities).to.deep.equal(sortedQuantities);
+        });
+    }
 }
 
 export const salesPage = new SalesPage();

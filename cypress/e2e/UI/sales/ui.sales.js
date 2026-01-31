@@ -40,6 +40,18 @@ After({ tags: "@Sale_Admin_UI_03" }, () => {
 	});
 });
 
+Before({ tags: "@Sale_Admin_UI_04" }, () => {
+	apiLoginAsAdmin().then(() => {
+		backupSalesData();
+	});
+});
+
+After({ tags: "@Sale_Admin_UI_04" }, () => {
+	apiLoginAsAdmin().then(() => {
+		restoreSalesData();
+	});
+});
+
 Before({ tags: "@Sale_Admin_UI_10" }, () => {
 	apiLoginAsAdmin().then(() => {
 		backupSalesData();
@@ -147,4 +159,8 @@ When("I click on the {string} column header", (columnName) => {
 
 Then("the sales should be sorted by Plant Name", () => {
 	salesPage.verifySalesSortedByPlantName();
+});
+
+Then("the sales should be sorted by Quantity", () => {
+	salesPage.verifySalesSortedByQuantity();
 });

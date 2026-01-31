@@ -32,6 +32,14 @@ Feature: Sales Management
         And I click on the "Plant name" column header
         Then the sales should be sorted by Plant Name
 
+    @Sale_Admin_UI_04
+    Scenario: Verify that Admin can sort the sales by Quantity
+        Given I am logged in as admin
+        And sales exist in the system
+        When I navigate to the sales page
+        And I click on the "Quantity" column header
+        Then the sales should be sorted by Quantity
+
     # @Sale_Admin_UI_10
     # Scenario: Verify that "No sales found" message is displayed for admin when no sales exist
     #     Given I am logged in as admin
