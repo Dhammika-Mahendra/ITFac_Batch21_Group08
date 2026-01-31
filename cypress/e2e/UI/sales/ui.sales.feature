@@ -157,3 +157,10 @@ Feature: Sales Management
         And sales exist in the system
         When I navigate to the Sales page
         Then the sales list should be displayed with pagination information
+
+    @Sale_User_UI_05
+    Scenario: Verify that user can view sales are displayed in descending order by sold date
+        Given I am logged in as testuser
+        And sales exist in the system
+        When I navigate to the Sales page
+        Then the sales should be displayed in descending order by Sold date

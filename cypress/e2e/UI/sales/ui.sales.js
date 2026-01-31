@@ -112,6 +112,10 @@ Before({ tags: "@Sale_User_UI_04" }, () => {
 	// No backup needed for user view test
 });
 
+Before({ tags: "@Sale_User_UI_05" }, () => {
+	// No backup needed for user view test
+});
+
 Before({ tags: "@Sale_Admin_UI_10" }, () => {
 	apiLoginAsAdmin().then(() => {
 		backupSalesData();
