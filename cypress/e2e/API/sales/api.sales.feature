@@ -91,3 +91,19 @@ Feature: Sales Management
         When I call the sales pagination API endpoint with page 0 and size 0
         Then I should receive a 200 status code
         And the response should contain a list of sales
+
+    @Sale_User_API_02
+    Scenario: User retrieve sales sorted by quantity
+        Given I have logged in as a testuser
+        When I call the sales pagination API endpoint with page 0, size 10 and sort quantity
+        Then I should receive a 200 status code
+        And the response should contain a list of sales
+        And the sales should be sorted by quantity in ascending order
+
+    @Sale_User_API_03
+    Scenario: User retrieve sales sorted by date
+        Given I have logged in as a testuser
+        When I call the sales pagination API endpoint with page 0, size 10 and sort soldAt descending
+        Then I should receive a 200 status code
+        And the response should contain a list of sales
+        And the sales should be sorted by soldAt in descending order
