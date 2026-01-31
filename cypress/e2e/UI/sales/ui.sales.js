@@ -137,3 +137,7 @@ When("I click on {string} column header to change sort order", (columnName) => {
 Then("the sales records should be sorted correctly by Plant Name", () => {
 	salesPage.verifySalesSortedByPlantName();
 });
+
+Then("the sales records should be sorted correctly by Quantity", () => {
+	salesPage.verifySalesSortedByQuantity();
+});

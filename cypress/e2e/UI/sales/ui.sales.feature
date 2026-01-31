@@ -87,3 +87,11 @@ Feature: Sales Management
         When I navigate to the sales page
         And I click on "Plant" column header to change sort order
         Then the sales records should be sorted correctly by Plant Name
+
+    @Sale_User_UI_07
+    Scenario: Verify that user can sort the sales by Quantity
+        Given I am logged in as user
+        And sales exist
+        When I navigate to the sales page
+        And I click on "Quantity" column header to change sort order
+        Then the sales records should be sorted correctly by Quantity

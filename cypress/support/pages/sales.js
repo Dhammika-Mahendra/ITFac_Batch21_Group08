@@ -209,6 +209,25 @@ class SalesPage {
         // Also verify the URL contains the sort parameters
         cy.url().should('include', 'sortField=plant.name');
     }
+
+    verifySalesSortedByQuantity() {
+        // Wait for the page to reload after sort
+        cy.wait(500);
+        
+        // Get all quantity values from the table (second column)
+        cy.get('table tbody tr td:nth-child(2)').then($cells => {
+            const quantities = [...$cells].map(cell => parseInt(cell.textContent.trim()));
+            
+            // Create a sorted copy
+            const sortedQuantities = [...quantities].sort((a, b) => a - b);
+            
+            // Verify the quantities are in sorted order
+            expect(quantities).to.deep.equal(sortedQuantities);
+        });
+        
+        // Also verify the URL contains the sort parameters
+        cy.url().should('include', 'sortField=quantity');
+    }
 }
 
 export const salesPage = new SalesPage();
