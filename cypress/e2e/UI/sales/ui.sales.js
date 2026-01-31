@@ -72,6 +72,18 @@ Before({ tags: "@Sale_Admin_UI_07" }, () => {
 	apiLoginAsAdmin();
 });
 
+Before({ tags: "@Sale_Admin_UI_08" }, () => {
+	apiLoginAsAdmin().then(() => {
+		backupSalesData();
+	});
+});
+
+After({ tags: "@Sale_Admin_UI_08" }, () => {
+	apiLoginAsAdmin().then(() => {
+		restoreSalesData();
+	});
+});
+
 Before({ tags: "@Sale_Admin_UI_10" }, () => {
 	apiLoginAsAdmin().then(() => {
 		backupSalesData();
@@ -211,4 +223,16 @@ Then("an error message should appear for Quantity field", () => {
 
 When("I enter a non-numeric value in the Quantity field", () => {
 	salesPage.enterNonNumericQuantity();
+});
+
+When("I select a plant from the dropdown", () => {
+	salesPage.selectPlantFromDropdown();
+});
+
+When("I enter a valid quantity", () => {
+	salesPage.enterValidQuantity();
+});
+
+Then("admin should be redirected to the sales list page", () => {
+	salesPage.verifyRedirectedToSalesList();
 });

@@ -66,6 +66,16 @@ Feature: Sales Management
         And I submit the form
         Then an error message should appear for Quantity field
 
+    @Sale_Admin_UI_08
+    Scenario: Verify that after a successful plant selling, admin redirects to sales list automatically
+        Given I am logged in as admin
+        And I navigate to the sales page
+        And I click on the "Sell Plant" button
+        When I select a plant from the dropdown
+        And I enter a valid quantity
+        And I submit the form
+        Then admin should be redirected to the sales list page
+
     # @Sale_Admin_UI_10
     # Scenario: Verify that "No sales found" message is displayed for admin when no sales exist
     #     Given I am logged in as admin

@@ -273,6 +273,26 @@ class SalesPage {
         // Enter non-numeric value in quantity field
         this.quantityField.type('abc@#$%');
     }
+
+    selectPlantFromDropdown() {
+        // Select the first available plant from the dropdown
+        this.plantDropdown.select(1);
+        cy.wait(300);
+    }
+
+    enterValidQuantity() {
+        // Clear quantity field and enter a valid quantity value
+        this.quantityField.clear().type('1');
+    }
+
+    verifyRedirectedToSalesList() {
+        // Verify user is redirected to sales list page
+        cy.url().should('include', '/ui/sales');
+        cy.url().should('not.include', '/ui/sales/new');
+        
+        // Verify sales list is displayed
+        this.salesTable.should('exist').and('be.visible');
+    }
 }
 
 export const salesPage = new SalesPage();
