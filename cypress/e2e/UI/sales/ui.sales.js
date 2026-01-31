@@ -52,6 +52,18 @@ After({ tags: "@Sale_Admin_UI_04" }, () => {
 	});
 });
 
+Before({ tags: "@Sale_Admin_UI_05" }, () => {
+	apiLoginAsAdmin().then(() => {
+		backupSalesData();
+	});
+});
+
+After({ tags: "@Sale_Admin_UI_05" }, () => {
+	apiLoginAsAdmin().then(() => {
+		restoreSalesData();
+	});
+});
+
 Before({ tags: "@Sale_Admin_UI_10" }, () => {
 	apiLoginAsAdmin().then(() => {
 		backupSalesData();
@@ -163,4 +175,8 @@ Then("the sales should be sorted by Plant Name", () => {
 
 Then("the sales should be sorted by Quantity", () => {
 	salesPage.verifySalesSortedByQuantity();
+});
+
+Then("the sales should be sorted by Total price", () => {
+	salesPage.verifySalesSortedByTotalPrice();
 });
