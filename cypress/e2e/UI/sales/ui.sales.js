@@ -4,6 +4,18 @@ import { salesPage } from "../../../support/pages/sales";
 import { uiLoginAsAdmin, apiLoginAsAdmin } from "../../preconditions/login";
 import { backupSalesData, restoreSalesData, deleteAllSales, createTestSale } from "../../../support/api/sales";
 
+Before({ tags: "@Sale_Admin_UI_01" }, () => {
+	apiLoginAsAdmin().then(() => {
+		backupSalesData();
+	});
+});
+
+After({ tags: "@Sale_Admin_UI_01" }, () => {
+	apiLoginAsAdmin().then(() => {
+		restoreSalesData();
+	});
+});
+
 Before({ tags: "@Sale_Admin_UI_10" }, () => {
 	apiLoginAsAdmin().then(() => {
 		backupSalesData();
@@ -90,4 +102,8 @@ When("I click on the plant dropdown", () => {
 
 Then("the plant dropdown should display all available plants with their current stock", () => {
 	salesPage.verifyPlantDropdownDisplaysPlantsWithStock();
+});
+
+Then("the sales list should be displayed with pagination information", () => {
+	salesPage.verifySalesListWithPagination();
 });

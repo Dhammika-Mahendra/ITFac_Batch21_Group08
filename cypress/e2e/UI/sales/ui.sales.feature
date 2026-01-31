@@ -1,8 +1,19 @@
 @ui @sales
 Feature: Sales Management
+
+    #************************************************************************
+    # Sales Admin UI Scenarios
+    #************************************************************************
+    
     As an admin user
     I want to manage sales records
     So that I can monitor sales activity
+
+    @Sale_Admin_UI_01
+    Scenario: Verify admin can view sales list with pagination information
+        Given I am logged in as admin
+        When I navigate to the sales page
+        Then the sales list should be displayed with pagination information
 
     # @Sale_Admin_UI_10
     # Scenario: Verify that "No sales found" message is displayed for admin when no sales exist

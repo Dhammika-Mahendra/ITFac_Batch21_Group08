@@ -31,6 +31,10 @@ class SalesPage {
         return cy.get('#plantId, select[name="plantId"]');
     }
 
+    get salesTable() {
+        return cy.get('table, .sales-list, [data-testid="sales-table"]');
+    }
+
     visit() {
         cy.visit("http://localhost:8080/ui/sales");
     }
@@ -136,6 +140,17 @@ class SalesPage {
         
         // Verify specific plants are present with stock format
         cy.get('#plantId option').should('contain', 'Stock:');
+    }
+
+    verifySalesListWithPagination() {
+        // Verify sales list is displayed
+        this.salesTable.should('exist').and('be.visible');
+        
+        // Verify sales records are present
+        this.salesTableRows.should('have.length.greaterThan', 0);
+        
+        // Verify pagination information is displayed
+        cy.get('nav[aria-label="Pagination"], .pagination, .pager, [data-testid="pagination"]').should('be.visible');
     }
 }
 
