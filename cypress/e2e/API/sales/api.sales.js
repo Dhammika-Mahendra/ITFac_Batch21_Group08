@@ -16,6 +16,11 @@ When("I call the sales pagination API endpoint with page {int}, size {int} and s
 	return getSalesPage(query);
 });
 
+When("I call the sales pagination API endpoint with page {int}, size {int}", (page, size) => {
+	const query = { page, size };
+	return getSalesPage(query);
+});
+
 Then("I should receive a 200 status code", () => {
 	return cy.get("@salesPageResponse").its("status").should("eq", 200);
 });

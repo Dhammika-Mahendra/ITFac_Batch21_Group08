@@ -107,3 +107,10 @@ Feature: Sales Management
         Then I should receive a 200 status code
         And the response should contain a list of sales
         And the sales should be sorted by soldAt in descending order
+
+    @Sale_User_API_04
+    Scenario: User retrieve sales with pagination
+        Given I have logged in as a testuser
+        When I call the sales pagination API endpoint with page 0, size 10
+        Then I should receive a 200 status code
+        And the response should contain a list of sales
