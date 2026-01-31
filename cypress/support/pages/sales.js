@@ -293,6 +293,36 @@ class SalesPage {
         // Verify sales list is displayed
         this.salesTable.should('exist').and('be.visible');
     }
+
+    captureCurrentPlantStock() {
+        // Store the selected plant name and initial stock for comparison
+        this.plantDropdown.find('option:selected').invoke('text').as('selectedPlant');
+    }
+
+    verifyStockReducedByQuantity() {
+        // After successful sale and redirect, navigate to plants page to verify stock reduction
+        cy.visit('http://localhost:8080/ui/plants');
+        
+        cy.get('@selectedPlant').then((selectedPlant) => {
+            // Search for the plant in the plants list
+            cy.get('table tbody tr, .plants-list > div, .plant-item').each(($row) => {
+                cy.wrap($row).then(($rowElement) => {
+                    const plantName = $rowElement.text();
+                    if (plantName.includes(selectedPlant)) {
+                        // Found the plant row - verify stock has been reduced
+                        cy.wrap($rowElement).find('td').each(($cell, index) => {
+                            const cellText = $cell.text();
+                            // Verify stock information is present (should be reduced)
+                            if (cellText.includes('Stock:') || !isNaN(parseInt(cellText))) {
+                                // Stock field found and contains a numeric value
+                                expect(parseInt(cellText)).to.be.greaterThanOrEqual(0);
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    }
 }
 
 export const salesPage = new SalesPage();

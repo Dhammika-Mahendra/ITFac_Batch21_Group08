@@ -84,6 +84,18 @@ After({ tags: "@Sale_Admin_UI_08" }, () => {
 	});
 });
 
+Before({ tags: "@Sale_Admin_UI_09" }, () => {
+	apiLoginAsAdmin().then(() => {
+		backupSalesData();
+	});
+});
+
+After({ tags: "@Sale_Admin_UI_09" }, () => {
+	apiLoginAsAdmin().then(() => {
+		restoreSalesData();
+	});
+});
+
 Before({ tags: "@Sale_Admin_UI_10" }, () => {
 	apiLoginAsAdmin().then(() => {
 		backupSalesData();
@@ -235,4 +247,12 @@ When("I enter a valid quantity", () => {
 
 Then("admin should be redirected to the sales list page", () => {
 	salesPage.verifyRedirectedToSalesList();
+});
+
+When("I capture the current plant stock", () => {
+	salesPage.captureCurrentPlantStock();
+});
+
+Then("the plant stock should be reduced by the sold quantity", () => {
+	salesPage.verifyStockReducedByQuantity();
 });

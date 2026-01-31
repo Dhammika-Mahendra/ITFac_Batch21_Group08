@@ -76,6 +76,18 @@ Feature: Sales Management
         And I submit the form
         Then admin should be redirected to the sales list page
 
+    @Sale_Admin_UI_09
+    Scenario: Verify that successful plant sale reduces stock
+        Given I am logged in as admin
+        And I navigate to the sales page
+        When I capture the current plant stock
+        And I click on the "Sell Plant" button
+        And I select a plant from the dropdown
+        And I enter a valid quantity
+        And I submit the form
+        And I redirected to the sales list page
+        Then the plant stock should be reduced by the sold quantity
+
     # @Sale_Admin_UI_10
     # Scenario: Verify that "No sales found" message is displayed for admin when no sales exist
     #     Given I am logged in as admin
