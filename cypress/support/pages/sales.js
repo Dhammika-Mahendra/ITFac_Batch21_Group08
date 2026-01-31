@@ -185,6 +185,30 @@ class SalesPage {
             this.errorMessage.should('be.visible').and('contain.text', errorMessage);
         }
     }
+
+    clickColumnHeader(columnName) {
+        // Click on the column header link to sort
+        cy.get('table thead th').contains('a', columnName).click();
+    }
+
+    verifySalesSortedByPlantName() {
+        // Wait for the page to reload after sort
+        cy.wait(500);
+        
+        // Get all plant names from the table
+        cy.get('table tbody tr td:first-child').then($cells => {
+            const plantNames = [...$cells].map(cell => cell.textContent.trim());
+            
+            // Create a sorted copy
+            const sortedPlantNames = [...plantNames].sort();
+            
+            // Verify the plant names are in sorted order
+            expect(plantNames).to.deep.equal(sortedPlantNames);
+        });
+        
+        // Also verify the URL contains the sort parameters
+        cy.url().should('include', 'sortField=plant.name');
+    }
 }
 
 export const salesPage = new SalesPage();

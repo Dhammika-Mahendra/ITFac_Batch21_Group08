@@ -1,9 +1,12 @@
 @ui @sales
 Feature: Sales Management
-    As an admin user
+    As an admin or user
     I want to manage sales records
     So that I can monitor sales activity
 
+    #----------------------------------------------
+    #           Admin User Scenarios
+    #----------------------------------------------
     # @Sale_Admin_UI_10
     # Scenario: Verify that "No sales found" message is displayed for admin when no sales exist
     #     Given I am logged in as admin
@@ -72,3 +75,15 @@ Feature: Sales Management
         And I enter quantity "0"
         And I click on the "Sell" button
         Then the error message "Quantity must be greater than 0" should be displayed
+
+    #----------------------------------------------
+    #           Non Admin User Scenarios
+    #----------------------------------------------
+
+    @Sale_User_UI_06
+    Scenario: Verify that user can sort the sales by Plant Name
+        Given I am logged in as user
+        And sales exist
+        When I navigate to the sales page
+        And I click on "Plant" column header to change sort order
+        Then the sales records should be sorted correctly by Plant Name

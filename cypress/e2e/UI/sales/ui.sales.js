@@ -1,7 +1,7 @@
 import { Given, When, Then, Before, After } from "@badeball/cypress-cucumber-preprocessor";
 import { loginPage } from "../../../support/pages/login";
 import { salesPage } from "../../../support/pages/sales";
-import { uiLoginAsAdmin, apiLoginAsAdmin } from "../../preconditions/login";
+import { uiLoginAsAdmin, uiLoginAsUser, apiLoginAsAdmin } from "../../preconditions/login";
 import { backupSalesData, restoreSalesData, deleteAllSales, createTestSale } from "../../../support/api/sales";
 
 Before({ tags: "@Sale_Admin_UI_10" }, () => {
@@ -118,4 +118,22 @@ When("I enter negative quantity {string}", (quantity) => {
 
 When("I enter quantity {string}", (quantity) => {
 	salesPage.enterQuantity(quantity);
+});
+
+Given("I am logged in as user", () => {
+	loginPage.visitLoginPage();
+	uiLoginAsUser();
+});
+
+Given("sales exist", () => {
+	// Sales already exist in the system - no action needed
+	cy.log("Sales exist in the system");
+});
+
+When("I click on {string} column header to change sort order", (columnName) => {
+	salesPage.clickColumnHeader(columnName);
+});
+
+Then("the sales records should be sorted correctly by Plant Name", () => {
+	salesPage.verifySalesSortedByPlantName();
 });
