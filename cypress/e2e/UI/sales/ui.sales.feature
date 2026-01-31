@@ -95,3 +95,11 @@ Feature: Sales Management
         When I navigate to the sales page
         And I click on "Quantity" column header to change sort order
         Then the sales records should be sorted correctly by Quantity
+
+    @Sale_User_UI_08
+    Scenario: Verify that user can sort the sales by Total Price
+        Given I am logged in as user
+        And sales exist
+        When I navigate to the sales page
+        And I click on "Total Price" column header to change sort order
+        Then the sales records should be sorted correctly by Total Price

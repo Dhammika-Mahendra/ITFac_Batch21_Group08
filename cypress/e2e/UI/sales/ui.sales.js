@@ -141,3 +141,7 @@ Then("the sales records should be sorted correctly by Plant Name", () => {
 Then("the sales records should be sorted correctly by Quantity", () => {
 	salesPage.verifySalesSortedByQuantity();
 });
+
+Then("the sales records should be sorted correctly by Total Price", () => {
+	salesPage.verifySalesSortedByTotalPrice();
+});

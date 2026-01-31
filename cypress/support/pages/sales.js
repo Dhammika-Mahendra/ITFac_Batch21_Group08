@@ -228,6 +228,25 @@ class SalesPage {
         // Also verify the URL contains the sort parameters
         cy.url().should('include', 'sortField=quantity');
     }
+
+    verifySalesSortedByTotalPrice() {
+        // Wait for the page to reload after sort
+        cy.wait(500);
+        
+        // Get all total price values from the table (third column)
+        cy.get('table tbody tr td:nth-child(3)').then($cells => {
+            const prices = [...$cells].map(cell => parseFloat(cell.textContent.trim()));
+            
+            // Create a sorted copy
+            const sortedPrices = [...prices].sort((a, b) => a - b);
+            
+            // Verify the prices are in sorted order
+            expect(prices).to.deep.equal(sortedPrices);
+        });
+        
+        // Also verify the URL contains the sort parameters
+        cy.url().should('include', 'sortField=totalPrice');
+    }
 }
 
 export const salesPage = new SalesPage();
