@@ -28,6 +28,18 @@ After({ tags: "@Sale_Admin_UI_02" }, () => {
 	});
 });
 
+Before({ tags: "@Sale_Admin_UI_03" }, () => {
+	apiLoginAsAdmin().then(() => {
+		backupSalesData();
+	});
+});
+
+After({ tags: "@Sale_Admin_UI_03" }, () => {
+	apiLoginAsAdmin().then(() => {
+		restoreSalesData();
+	});
+});
+
 Before({ tags: "@Sale_Admin_UI_10" }, () => {
 	apiLoginAsAdmin().then(() => {
 		backupSalesData();
@@ -127,4 +139,12 @@ Given("sales exist in the system", () => {
 
 Then("the sales should be displayed in descending order by sold date", () => {
 	salesPage.verifySalesSortedBySoldDateDescending();
+});
+
+When("I click on the {string} column header", (columnName) => {
+	salesPage.clickColumnHeader(columnName);
+});
+
+Then("the sales should be sorted by Plant Name", () => {
+	salesPage.verifySalesSortedByPlantName();
 });

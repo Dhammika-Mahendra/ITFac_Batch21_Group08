@@ -21,7 +21,16 @@ Feature: Sales Management
         Given I am logged in as admin
         And sales exist in the system
         When I navigate to the sales page
+        And I click on the "Sold date" column header
         Then the sales should be displayed in descending order by sold date
+
+    @Sale_Admin_UI_03
+    Scenario: Verify that Admin can sort the sales by Plant Name
+        Given I am logged in as admin
+        And sales exist in the system
+        When I navigate to the sales page
+        And I click on the "Plant name" column header
+        Then the sales should be sorted by Plant Name
 
     # @Sale_Admin_UI_10
     # Scenario: Verify that "No sales found" message is displayed for admin when no sales exist
