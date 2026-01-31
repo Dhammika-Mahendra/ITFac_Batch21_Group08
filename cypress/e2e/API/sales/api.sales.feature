@@ -114,3 +114,9 @@ Feature: Sales Management
         When I call the sales pagination API endpoint with page 0, size 10
         Then I should receive a 200 status code
         And the response should contain a list of sales
+
+    @Sale_User_API_05
+    Scenario: Unauthenticated user cannot retrieve sales
+        When I attempt to retrieve sales without authenticating
+        Then I should receive a 401 status code
+        And the response should contain an unauthorized error message

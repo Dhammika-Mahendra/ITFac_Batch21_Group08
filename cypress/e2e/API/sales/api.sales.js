@@ -158,3 +158,13 @@ When("I call the sales pagination API endpoint with page {int} and size {int}", 
 	const query = { page, size };
 	return getSalesPage(query, "invalidParamsResponse");
 });
+
+When("I attempt to retrieve sales without authenticating", () => {
+	const baseUrl = Cypress.env("BASE_URL").replace(/\/$/, "");
+	return cy.request({
+		method: "GET",
+		url: `${baseUrl}/api/sales/page`,
+		qs: { page: 0, size: 10 },
+		failOnStatusCode: false
+	}).as("unauthenticatedSaleResponse");
+});
