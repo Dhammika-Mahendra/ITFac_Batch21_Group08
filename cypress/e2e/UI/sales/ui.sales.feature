@@ -133,7 +133,13 @@ Feature: Sales Management
     #************************************************************************
 
     @Sale_User_UI_01
-    Scenario: Verify that user cannot see Sell Plant button on Sales page
+    Scenario: Verify that user cannot access Sales page
         Given I am logged in as testuser
-        When I navigate to the sales page
-        Then the "Sell Plant" button should not be visible to user
+        When I navigate to the Sell Plant page
+        Then I should be denied access to the sales page
+
+    @Sale_User_UI_02
+    Scenario: Verify that "Sell Plant" button is not visible to User
+        Given I am logged in as testuser
+        When I navigate to the Sell Plant page
+        Then the "Sell Plant" button should not be visible on the page

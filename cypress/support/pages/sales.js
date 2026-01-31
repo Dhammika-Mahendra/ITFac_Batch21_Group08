@@ -337,6 +337,20 @@ class SalesPage {
             }
         });
     }
+
+    verifyButtonNotVisibleOnPage(buttonText) {
+        // Verify the button is not visible on the page
+        cy.get('body').then(($body) => {
+            const buttonSelector = `button:contains("${buttonText}"), a:contains("${buttonText}"), [data-testid="sell-plant"], .sell-plant-btn`;
+            if ($body.find(buttonSelector).length > 0) {
+                // Button exists, verify it's not visible
+                cy.get(buttonSelector).should('not.be.visible');
+            } else {
+                // Button doesn't exist at all
+                cy.get(buttonSelector).should('not.exist');
+            }
+        });
+    }
 }
 
 export const salesPage = new SalesPage();

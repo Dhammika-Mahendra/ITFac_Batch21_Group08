@@ -100,6 +100,10 @@ Before({ tags: "@Sale_User_UI_01" }, () => {
 	// No backup needed for user access test
 });
 
+Before({ tags: "@Sale_User_UI_02" }, () => {
+	// No backup needed for user access test
+});
+
 Before({ tags: "@Sale_Admin_UI_10" }, () => {
 	apiLoginAsAdmin().then(() => {
 		backupSalesData();
@@ -271,4 +275,8 @@ Then("the plant stock should be reduced by the sold quantity", () => {
 
 Then("the {string} button should not be visible to user", (buttonText) => {
 	salesPage.verifySellPlantButtonNotVisible(buttonText);
+});
+
+Then("the {string} button should not be visible on the page", (buttonText) => {
+	salesPage.verifyButtonNotVisibleOnPage(buttonText);
 });
