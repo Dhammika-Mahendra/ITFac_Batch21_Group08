@@ -68,6 +68,10 @@ Before({ tags: "@Sale_Admin_UI_06" }, () => {
 	apiLoginAsAdmin();
 });
 
+Before({ tags: "@Sale_Admin_UI_07" }, () => {
+	apiLoginAsAdmin();
+});
+
 Before({ tags: "@Sale_Admin_UI_10" }, () => {
 	apiLoginAsAdmin().then(() => {
 		backupSalesData();
@@ -203,4 +207,8 @@ When("I submit the form", () => {
 
 Then("an error message should appear for Quantity field", () => {
 	salesPage.verifyQuantityFieldValidationError();
+});
+
+When("I enter a non-numeric value in the Quantity field", () => {
+	salesPage.enterNonNumericQuantity();
 });

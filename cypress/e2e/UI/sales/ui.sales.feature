@@ -57,6 +57,15 @@ Feature: Sales Management
         And I submit the form
         Then an error message should appear for Quantity field
 
+    @Sale_Admin_UI_07
+    Scenario: Verify validation for non numeric quantity
+        Given I am logged in as admin
+        And I am on the Sales page
+        And I click on the "Sell Plant" button
+        When I enter a non-numeric value in the Quantity field
+        And I submit the form
+        Then an error message should appear for Quantity field
+
     # @Sale_Admin_UI_10
     # Scenario: Verify that "No sales found" message is displayed for admin when no sales exist
     #     Given I am logged in as admin

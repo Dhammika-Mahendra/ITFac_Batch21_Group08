@@ -268,6 +268,11 @@ class SalesPage {
         // Alternative: check for error in label/span near quantity field
         cy.get('[data-testid="quantity-error"], .quantity-error, .error, .invalid-feedback').should('be.visible');
     }
+
+    enterNonNumericQuantity() {
+        // Enter non-numeric value in quantity field
+        this.quantityField.type('abc@#$%');
+    }
 }
 
 export const salesPage = new SalesPage();
