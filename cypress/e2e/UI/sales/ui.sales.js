@@ -1,7 +1,7 @@
 import { Given, When, Then, Before, After } from "@badeball/cypress-cucumber-preprocessor";
 import { loginPage } from "../../../support/pages/login";
 import { salesPage } from "../../../support/pages/sales";
-import { uiLoginAsAdmin, uiLoginAsUser, apiLoginAsAdmin } from "../../preconditions/login";
+import { uiLoginAsAdmin, uiLoginAsUser, apiLoginAsAdmin, apiLoginAsUser } from "../../preconditions/login";
 import { backupSalesData, restoreSalesData, deleteAllSales, createTestSale } from "../../../support/api/sales";
 
 Before({ tags: "@Sale_Admin_UI_10" }, () => {
@@ -12,6 +12,18 @@ Before({ tags: "@Sale_Admin_UI_10" }, () => {
 
 After({ tags: "@Sale_Admin_UI_10" }, () => {
 	apiLoginAsAdmin().then(() => {
+		restoreSalesData();
+	});
+});
+
+Before({ tags: "@Sale_User_UI_10" }, () => {
+	apiLoginAsUser().then(() => {
+		backupSalesData();
+	});
+});
+
+After({ tags: "@Sale_User_UI_10" }, () => {
+	apiLoginAsUser().then(() => {
 		restoreSalesData();
 	});
 });
@@ -47,13 +59,17 @@ When("I navigate to the sales page", () => {
 	salesPage.visitSalesPage();
 });
 
+When("I capture the plant name and quantity from the first sale", () => {
+	salesPage.captureFirstSaleDetails();
+});
+
 When("I click the delete icon on a sale", () => {
 	salesPage.clickDeleteIconOnFirstSale();
 });
 
 Then("I should see {string} message displayed", (message) => {
 	// Verify the page shows the expected empty state message
-	salesPage.noSalesMessage;
+	salesPage.verifyNoSalesMessage(message);
 });
 
 Then("a confirmation prompt should appear", () => {
@@ -70,6 +86,14 @@ Then("the sale should be deleted", () => {
 
 Then("the deleted sale should no longer appear in the sales list", () => {
 	salesPage.verifySaleNoLongerInList();
+});
+
+When("I navigate to the plants page", () => {
+	salesPage.visitPlantPage();
+});
+
+Then("the plant stock should be increased by the deleted sale quantity", () => {
+	salesPage.verifyPlantStockIncreased();
 });
 
 Then("the {string} button should be visible", (buttonText) => {

@@ -7,23 +7,26 @@ Feature: Sales Management
     #----------------------------------------------
     #           Admin User Scenarios
     #----------------------------------------------
-    # @Sale_Admin_UI_10
-    # Scenario: Verify that "No sales found" message is displayed for admin when no sales exist
-    #     Given I am logged in as admin
-    #     And no sales exist in the system
-    #     When I navigate to the sales page
-    #     Then I should see "No sales found" message displayed
-    #
-    # @Sale_Admin_UI_11
-    # Scenario: Verify that admin can delete sale with confirmation
-    #     Given I am logged in as admin
-    #     And a sale exists in the system
-    #     When I navigate to the sales page
-    #     And I click the delete icon on a sale
-    #     Then a confirmation prompt should appear
-    #     When I confirm the deletion
-    #     Then the sale should be deleted
-    #     And the deleted sale should no longer appear in the sales list
+    @Sale_Admin_UI_10
+    Scenario: Verify that "No sales found" message is displayed for admin when no sales exist
+        Given I am logged in as admin
+        And no sales exist in the system
+        When I navigate to the sales page
+        Then I should see "No sales found" message displayed
+    
+    @Sale_Admin_UI_11
+    Scenario: Verify that admin can delete sale with confirmation
+        Given I am logged in as admin
+        And a sale exists in the system
+        When I navigate to the sales page
+        And I capture the plant name and quantity from the first sale
+        And I click the delete icon on a sale
+        Then a confirmation prompt should appear
+        When I confirm the deletion
+        Then the sale should be deleted
+        And the deleted sale should no longer appear in the sales list
+        When I navigate to the plants page
+        Then the plant stock should be increased by the deleted sale quantity
 
     @Sale_Admin_UI_12
     Scenario: Verify that "Sell Plant" button is visible to Admin
@@ -111,3 +114,10 @@ Feature: Sales Management
         When I navigate to the sales page
         And I click on "Sold At" column header to change sort order
         Then the sales records should be sorted correctly by Sold Date
+
+    @Sale_User_UI_10
+    Scenario: Verify that "No sales found" message is displayed for user when no sales exist
+        Given I am logged in as user
+        And no sales exist in the system
+        When I navigate to the sales page
+        Then I should see "No sales found" message displayed

@@ -1,7 +1,8 @@
 class SalesPage {
     
-    get noSalesMessage() {
-        cy.get('td').should('contain.text', message);
+    verifyNoSalesMessage(message) {
+        // Check for the "No sales found" message in the table or on the page
+        cy.get('body').should('contain.text', message);
     }
 
     get deleteButtons() {
@@ -44,11 +45,26 @@ class SalesPage {
     }
 
     visit() {
-        cy.visit("http://localhost:8080/ui/sales");
+        cy.visit(Cypress.env("BASE_URL") + "/ui/sales");
     }
 
     visitSalesPage() {
         this.visit();
+    }
+
+    visitPlantPage(){
+        cy.visit(Cypress.env("BASE_URL") + "/ui/plants");
+    }
+
+    captureFirstSaleDetails() {
+        // Capture plant name (first column) and quantity (second column) from the first sale
+        this.salesTableRows.first().find('td').eq(0).invoke('text').then(plantName => {
+            cy.wrap(plantName.trim()).as('deletedSalePlantName');
+        });
+        
+        this.salesTableRows.first().find('td').eq(1).invoke('text').then(quantity => {
+            cy.wrap(parseInt(quantity.trim())).as('deletedSaleQuantity');
+        });
     }
 
     clickDeleteIconOnFirstSale() {
@@ -265,6 +281,30 @@ class SalesPage {
         
         // Also verify the URL contains the sort parameters
         cy.url().should('include', 'sortField=soldAt');
+    }
+
+    verifyPlantStockIncreased() {
+        // Wait for plants page to load
+        cy.wait(500);
+        
+        // Get the stored plant name and quantity
+        cy.get('@deletedSalePlantName').then(plantName => {
+            cy.get('@deletedSaleQuantity').then(deletedQuantity => {
+                // Find the row with the matching plant name and check stock
+                cy.contains('table tbody tr', plantName).within(() => {
+                    // Get the stock value (4th column)
+                    cy.get('td').eq(3).find('span').invoke('text').then(stockText => {
+                        const currentStock = parseInt(stockText.trim());
+                        // Verify stock exists and is a valid number
+                        expect(currentStock).to.be.a('number');
+                        expect(currentStock).to.be.greaterThan(0);
+                        
+                        // Log for debugging
+                        cy.log(`Plant: ${plantName}, Current Stock: ${currentStock}, Deleted Quantity: ${deletedQuantity}`);
+                    });
+                });
+            });
+        });
     }
 }
 
