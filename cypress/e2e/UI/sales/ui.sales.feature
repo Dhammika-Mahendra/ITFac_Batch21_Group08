@@ -48,6 +48,15 @@ Feature: Sales Management
         And I click on the "Total price" column header
         Then the sales should be sorted by Total price
 
+    @Sale_Admin_UI_06
+    Scenario: Verify validation for empty quantity
+        Given I am logged in as admin
+        And I am on the Sales page
+        And I click on the "Sell Plant" button
+        When I leave the Quantity field empty
+        And I submit the form
+        Then an error message should appear for Quantity field
+
     # @Sale_Admin_UI_10
     # Scenario: Verify that "No sales found" message is displayed for admin when no sales exist
     #     Given I am logged in as admin

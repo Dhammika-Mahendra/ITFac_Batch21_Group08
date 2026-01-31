@@ -237,6 +237,37 @@ class SalesPage {
             expect(prices).to.deep.equal(sortedPrices);
         });
     }
+
+    get quantityField() {
+        return cy.get('input[name="quantity"], input[id="quantity"], [data-testid="quantity-input"]');
+    }
+
+    get submitButton() {
+        return cy.get('button[type="submit"], button:contains("Submit"), button:contains("Sell"), [data-testid="submit-btn"]');
+    }
+
+    clearQuantityField() {
+        // Clear the quantity field to leave it empty
+        this.quantityField.clear();
+    }
+
+    submitSellPlantForm() {
+        // Click the submit button to submit the form
+        this.submitButton.click();
+        cy.wait(500);
+    }
+
+    verifyQuantityFieldValidationError() {
+        // Verify validation error message appears near the quantity field
+        // Check for error message in common locations
+        cy.get('input[name="quantity"], input[id="quantity"]').then(($field) => {
+            // Look for error message near the field
+            cy.get('body').should('contain.text', 'Quantity must be greater than 0').or('contain.text', 'Quantity is required');
+        });
+        
+        // Alternative: check for error in label/span near quantity field
+        cy.get('[data-testid="quantity-error"], .quantity-error, .error, .invalid-feedback').should('be.visible');
+    }
 }
 
 export const salesPage = new SalesPage();

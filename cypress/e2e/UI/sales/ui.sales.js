@@ -64,6 +64,10 @@ After({ tags: "@Sale_Admin_UI_05" }, () => {
 	});
 });
 
+Before({ tags: "@Sale_Admin_UI_06" }, () => {
+	apiLoginAsAdmin();
+});
+
 Before({ tags: "@Sale_Admin_UI_10" }, () => {
 	apiLoginAsAdmin().then(() => {
 		backupSalesData();
@@ -179,4 +183,24 @@ Then("the sales should be sorted by Quantity", () => {
 
 Then("the sales should be sorted by Total price", () => {
 	salesPage.verifySalesSortedByTotalPrice();
+});
+
+Given("I am on the Sell Plant page", () => {
+	loginPage.visitLoginPage();
+	uiLoginAsAdmin();
+	salesPage.visitSalesPage();
+	salesPage.clickSellPlantButton("Sell Plant");
+});
+
+When("I leave the Quantity field empty", () => {
+	// Ensure quantity field is empty - clear any existing value
+	salesPage.clearQuantityField();
+});
+
+When("I submit the form", () => {
+	salesPage.submitSellPlantForm();
+});
+
+Then("an error message should appear for Quantity field", () => {
+	salesPage.verifyQuantityFieldValidationError();
 });
