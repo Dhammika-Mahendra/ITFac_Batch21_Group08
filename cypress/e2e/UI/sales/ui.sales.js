@@ -96,6 +96,10 @@ After({ tags: "@Sale_Admin_UI_09" }, () => {
 	});
 });
 
+Before({ tags: "@Sale_User_UI_01" }, () => {
+	// No backup needed for user access test
+});
+
 Before({ tags: "@Sale_Admin_UI_10" }, () => {
 	apiLoginAsAdmin().then(() => {
 		backupSalesData();
@@ -123,6 +127,14 @@ After({ tags: "@Sale_Admin_UI_11" }, () => {
 Given("I am logged in as admin", () => {
 	loginPage.visitLoginPage();
 	uiLoginAsAdmin();
+});
+
+Given("I am logged in as testuser", () => {
+	loginPage.visitLoginPage();
+	cy.get('input[name="username"], input[id="username"]').type('testuser');
+	cy.get('input[name="password"], input[id="password"]').type('test123');
+	cy.get('button[type="submit"], button:contains("Login")').click();
+	cy.url().should('include', '/ui/dashboard');
 });
 
 Given("no sales exist in the system", () => {
@@ -255,4 +267,8 @@ When("I capture the current plant stock", () => {
 
 Then("the plant stock should be reduced by the sold quantity", () => {
 	salesPage.verifyStockReducedByQuantity();
+});
+
+Then("the {string} button should not be visible to user", (buttonText) => {
+	salesPage.verifySellPlantButtonNotVisible(buttonText);
 });

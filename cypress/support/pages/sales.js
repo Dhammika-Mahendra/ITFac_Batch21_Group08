@@ -323,6 +323,20 @@ class SalesPage {
             });
         });
     }
+
+    verifySellPlantButtonNotVisible(buttonText) {
+        // Verify the "Sell Plant" button is not visible to regular user
+        // The button should either not exist or not be visible
+        cy.get('body').then(($body) => {
+            if ($body.find(`button:contains("${buttonText}"), a:contains("${buttonText}"), [data-testid="sell-plant"]`).length > 0) {
+                // Button exists, verify it's not visible
+                cy.get(`button:contains("${buttonText}"), a:contains("${buttonText}"), [data-testid="sell-plant"]`).should('not.be.visible');
+            } else {
+                // Button doesn't exist at all - user doesn't have access
+                cy.get(`button:contains("${buttonText}"), a:contains("${buttonText}"), [data-testid="sell-plant"]`).should('not.exist');
+            }
+        });
+    }
 }
 
 export const salesPage = new SalesPage();

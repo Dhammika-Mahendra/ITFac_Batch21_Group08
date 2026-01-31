@@ -126,3 +126,14 @@ Feature: Sales Management
         And I click on the "Sell Plant" button
         When I click on the plant dropdown
         Then the plant dropdown should display all available plants with their current stock
+
+
+    #************************************************************************
+    # Sales User UI Scenarios
+    #************************************************************************
+
+    @Sale_User_UI_01
+    Scenario: Verify that user cannot see Sell Plant button on Sales page
+        Given I am logged in as testuser
+        When I navigate to the sales page
+        Then the "Sell Plant" button should not be visible to user
