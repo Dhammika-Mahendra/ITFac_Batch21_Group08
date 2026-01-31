@@ -103,3 +103,11 @@ Feature: Sales Management
         When I navigate to the sales page
         And I click on "Total Price" column header to change sort order
         Then the sales records should be sorted correctly by Total Price
+
+    @Sale_User_UI_09
+    Scenario: Verify that user can sort the sales by Sold Date
+        Given I am logged in as user
+        And sales exist
+        When I navigate to the sales page
+        And I click on "Sold At" column header to change sort order
+        Then the sales records should be sorted correctly by Sold Date

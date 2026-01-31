@@ -247,6 +247,25 @@ class SalesPage {
         // Also verify the URL contains the sort parameters
         cy.url().should('include', 'sortField=totalPrice');
     }
+
+    verifySalesSortedBySoldDate() {
+        // Wait for the page to reload after sort
+        cy.wait(500);
+        
+        // Get all sold date values from the table (fourth column)
+        cy.get('table tbody tr td:nth-child(4)').then($cells => {
+            const dates = [...$cells].map(cell => new Date(cell.textContent.trim()));
+            
+            // Create a sorted copy
+            const sortedDates = [...dates].sort((a, b) => a - b);
+            
+            // Verify the dates are in sorted order
+            expect(dates.map(d => d.getTime())).to.deep.equal(sortedDates.map(d => d.getTime()));
+        });
+        
+        // Also verify the URL contains the sort parameters
+        cy.url().should('include', 'sortField=soldAt');
+    }
 }
 
 export const salesPage = new SalesPage();
