@@ -37,10 +37,14 @@ class SalesPage {
 
     visit() {
         cy.visit("http://localhost:8080/ui/sales");
+        // Wait for page to load and verify it's accessible
+        cy.get('body').should('exist');
     }
 
     visitSalesPage() {
         this.visit();
+        // Verify page content loads
+        this.salesTable.should('exist');
     }
 
     clickDeleteIconOnFirstSale() {
@@ -349,6 +353,50 @@ class SalesPage {
                 // Button doesn't exist at all
                 cy.get(buttonSelector).should('not.exist');
             }
+        });
+    }
+
+    checkForDeleteActions() {
+        // Check if there are any delete buttons visible for the user
+        cy.get('body').then(($body) => {
+            // Store whether delete buttons exist
+            const deleteButtonExists = $body.find('button[title*="Delete"], button[aria-label*="Delete"], .delete-btn, .btn-delete, button:contains("Delete"), [data-testid*="delete"]').length > 0;
+            cy.wrap(deleteButtonExists).as('deleteButtonExists');
+        });
+    }
+
+    verifyDeleteButtonNotAvailableToUser() {
+        // Verify delete actions are not available to user
+        cy.get('body').then(($body) => {
+            const deleteSelectors = [
+                'button[title*="Delete"]',
+                'button[aria-label*="Delete"]',
+                '.delete-btn',
+                '.btn-delete',
+                'button:contains("Delete")',
+                '[data-testid*="delete"]'
+            ];
+
+            // Check each selector
+            deleteSelectors.forEach((selector) => {
+                if ($body.find(selector).length > 0) {
+                    // Delete button exists, verify it's not visible
+                    cy.get(selector).each(($element) => {
+                        cy.wrap($element).should('not.be.visible');
+                    });
+                }
+            });
+        });
+
+        // Also verify by checking the table rows don't have delete action columns
+        this.salesTableRows.each(($row) => {
+            cy.wrap($row).then(($rowElement) => {
+                const rowText = $rowElement.text();
+                // Verify no delete icon/button is present in the row
+                if ($rowElement.find('button[title*="Delete"], button[aria-label*="Delete"]').length > 0) {
+                    cy.wrap($rowElement).find('button[title*="Delete"], button[aria-label*="Delete"]').should('not.be.visible');
+                }
+            });
         });
     }
 }

@@ -135,11 +135,25 @@ Feature: Sales Management
     @Sale_User_UI_01
     Scenario: Verify that user cannot access Sales page
         Given I am logged in as testuser
-        When I navigate to the Sell Plant page
+        When I navigate to the Sales page
         Then I should be denied access to the sales page
 
     @Sale_User_UI_02
     Scenario: Verify that "Sell Plant" button is not visible to User
         Given I am logged in as testuser
-        When I navigate to the Sell Plant page
+        When I navigate to the Sales page
         Then the "Sell Plant" button should not be visible on the page
+
+    @Sale_User_UI_03
+    Scenario: Verify that testuser cannot delete a row from Sales page
+        Given I am logged in as testuser
+        And I navigate to the Sales page
+        When I check for delete actions on sales records
+        Then delete button should not be visible or available to user
+
+    @Sale_User_UI_04
+    Scenario: Verify that user can view sales list with pagination information
+        Given I am logged in as testuser
+        And sales exist in the system
+        When I navigate to the Sales page
+        Then the sales list should be displayed with pagination information

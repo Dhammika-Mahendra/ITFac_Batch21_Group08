@@ -104,6 +104,14 @@ Before({ tags: "@Sale_User_UI_02" }, () => {
 	// No backup needed for user access test
 });
 
+Before({ tags: "@Sale_User_UI_03" }, () => {
+	// No backup needed for user access test
+});
+
+Before({ tags: "@Sale_User_UI_04" }, () => {
+	// No backup needed for user view test
+});
+
 Before({ tags: "@Sale_Admin_UI_10" }, () => {
 	apiLoginAsAdmin().then(() => {
 		backupSalesData();
@@ -153,6 +161,12 @@ Given("a sale exists in the system", () => {
 
 When("I navigate to the sales page", () => {
 	salesPage.visitSalesPage();
+	cy.url().should('include', '/ui/sales');
+});
+
+When("I navigate to the Sales page", () => {
+	salesPage.visitSalesPage();
+	cy.url().should('include', '/ui/sales');
 });
 
 When("I click the delete icon on a sale", () => {
@@ -279,4 +293,12 @@ Then("the {string} button should not be visible to user", (buttonText) => {
 
 Then("the {string} button should not be visible on the page", (buttonText) => {
 	salesPage.verifyButtonNotVisibleOnPage(buttonText);
+});
+
+When("I check for delete actions on sales records", () => {
+	salesPage.checkForDeleteActions();
+});
+
+Then("delete button should not be visible or available to user", () => {
+	salesPage.verifyDeleteButtonNotAvailableToUser();
 });
