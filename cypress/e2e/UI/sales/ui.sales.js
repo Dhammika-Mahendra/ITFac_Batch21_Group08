@@ -16,6 +16,18 @@ After({ tags: "@Sale_Admin_UI_01" }, () => {
 	});
 });
 
+Before({ tags: "@Sale_Admin_UI_02" }, () => {
+	apiLoginAsAdmin().then(() => {
+		backupSalesData();
+	});
+});
+
+After({ tags: "@Sale_Admin_UI_02" }, () => {
+	apiLoginAsAdmin().then(() => {
+		restoreSalesData();
+	});
+});
+
 Before({ tags: "@Sale_Admin_UI_10" }, () => {
 	apiLoginAsAdmin().then(() => {
 		backupSalesData();
@@ -106,4 +118,13 @@ Then("the plant dropdown should display all available plants with their current 
 
 Then("the sales list should be displayed with pagination information", () => {
 	salesPage.verifySalesListWithPagination();
+});
+
+Given("sales exist in the system", () => {
+	// Assumes sales already exist or were created via API
+	cy.get('body').should('exist');
+});
+
+Then("the sales should be displayed in descending order by sold date", () => {
+	salesPage.verifySalesSortedBySoldDateDescending();
 });

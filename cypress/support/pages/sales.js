@@ -152,6 +152,27 @@ class SalesPage {
         // Verify pagination information is displayed
         cy.get('nav[aria-label="Pagination"], .pagination, .pager, [data-testid="pagination"]').should('be.visible');
     }
+
+    verifySalesSortedBySoldDateDescending() {
+        // Extract sold dates from the table and verify they are in descending order
+        const dates = [];
+        
+        this.salesTableRows.each(($row, index) => {
+            // Get the sold date column (usually the last column)
+            cy.wrap($row).find('td').last().invoke('text').then((dateText) => {
+                if (dateText && dateText.trim()) {
+                    dates.push(dateText.trim());
+                }
+            });
+        }).then(() => {
+            // Verify dates are in descending order (most recent first)
+            for (let i = 0; i < dates.length - 1; i++) {
+                const currentDate = new Date(dates[i]);
+                const nextDate = new Date(dates[i + 1]);
+                expect(currentDate.getTime()).to.be.greaterThanOrEqual(nextDate.getTime());
+            }
+        });
+    }
 }
 
 export const salesPage = new SalesPage();

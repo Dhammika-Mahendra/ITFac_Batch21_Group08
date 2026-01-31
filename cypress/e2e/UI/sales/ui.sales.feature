@@ -12,8 +12,16 @@ Feature: Sales Management
     @Sale_Admin_UI_01
     Scenario: Verify admin can view sales list with pagination information
         Given I am logged in as admin
+        And sales exist in the system
         When I navigate to the sales page
         Then the sales list should be displayed with pagination information
+
+    @Sale_Admin_UI_02
+    Scenario: Verify that admin can view sales by descending order of sold date
+        Given I am logged in as admin
+        And sales exist in the system
+        When I navigate to the sales page
+        Then the sales should be displayed in descending order by sold date
 
     # @Sale_Admin_UI_10
     # Scenario: Verify that "No sales found" message is displayed for admin when no sales exist
