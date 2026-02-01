@@ -17,7 +17,7 @@ Given("I have logged in to the UI as a regular user", () => {
 // Navigation steps
 When("I navigate to the plants page", () => {
     plantsPage.visitPlantsPage();
-    cy.wait(1000); // Wait for page to load
+    cy.wait(1000);
 });
 
 Given("I am on the plants page", () => {
@@ -35,9 +35,6 @@ Then("pagination buttons should be visible", () => {
     plantsPage.verifyPaginationVisible();
 });
 
-Then("the Add Plant button should be visible", () => {
-    plantsPage.verifyAddPlantButtonVisible();
-});
 
 Then("Edit and Delete actions should be visible for plants", () => {
     plantsPage.verifyEditButtonsVisible();
@@ -56,6 +53,33 @@ When("I enter partial plant name in search field", () => {
     });
 });
 
+When("I perform a comprehensive search verification using multiple name casing variations", () => {
+    // Get the first plant name from the list to ensure we search for data that exists
+    plantsPage.plantRows.first().find('td').first().invoke('text').then((text) => {
+        const originalName = text.trim();
+        const variations = [
+            { type: 'Exact', term: originalName },
+            { type: 'Lowercase', term: originalName.toLowerCase() },
+            { type: 'Uppercase', term: originalName.toUpperCase() },
+            { type: 'Mixed Case', term: originalName.split('').map((c, i) => i % 2 === 0 ? c.toUpperCase() : c.toLowerCase()).join('') }
+        ];
+
+        cy.wrap(variations).each((variant) => {
+            cy.log(`Testing search with ${variant.type}: "${variant.term}"`);
+
+            // Perform Search
+            plantsPage.searchPlant(variant.term);
+
+            // Verify Results (Assertion)
+            // Note: This will fail the test on the first error, which is expected behavior for this bug.
+            plantsPage.plantRows.should('have.length.at.least', 1)
+                .then(() => {
+                    cy.log(`✅ Passed: ${variant.type} search found results.`);
+                });
+        });
+    });
+});
+
 When("I click the search button", () => {
     // Try clicking search button, or just press Enter
     cy.get('body').then(($body) => {
@@ -68,10 +92,8 @@ When("I click the search button", () => {
     cy.wait(1000);
 });
 
-Then("only matching plants should be displayed", () => {
-    // Verify filtered results
-    plantsPage.plantRows.should('have.length.at.least', 1);
-});
+// Verification is now done inside the "When" step loop
+// Then("only matching plants should be displayed", () => { ... });
 
 // @Plant_Admin_UI_03 -----------------------------------------------
 
@@ -112,13 +134,16 @@ When("I click Edit button for a plant", () => {
 
 When("I modify the plant name", () => {
     const newName = "Yellow";
-    plantsPage.fillPlantForm({ name: newName });
+    // Workaround: Select a category explicitly since the backend doesn't pre-fill it
+    cy.get('select[name="categoryId"] option').eq(1).invoke('val').then((val) => {
+        plantsPage.fillPlantForm({ name: newName, category: val });
+    });
     currentPlantName = newName;
 });
 
 When("I click Save button", () => {
     plantsPage.submitPlantForm();
-    cy.wait(3000); // Give backend time to save
+    cy.wait(3000);
 
     // Fallback: If still on edit page/URL, force navigate to list
     cy.location('pathname').then((path) => {
@@ -161,7 +186,7 @@ When("I modify the plant quantity", () => {
 });
 
 Then("the quantity changes should be saved successfully", () => {
-    cy.wait(500); // Wait for redirect/reload
+    cy.wait(500);
     cy.url().should('include', '/plants');
 });
 

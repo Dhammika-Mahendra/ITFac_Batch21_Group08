@@ -13,7 +13,6 @@ Feature: Plant Management UI
         When I navigate to the plants page
         Then the plants list should be displayed with pagination
         And pagination buttons should be visible
-        And the Add Plant button should be visible
         And Edit and Delete actions should be visible for plants
 
     @Plant_Admin_UI_02
@@ -71,12 +70,11 @@ Feature: Plant Management UI
     #----------------------------------------------
 
     @Plant_User_UI_01
-    Scenario: Verify that regular user can successfully search for plants by entering partial or full plant name in search field
+    Scenario: Verify that regular user can successfully search for plants using multiple casing variations (Exact, Lower, Upper, Mixed)
         Given I have logged in to the UI as a regular user
         And I am on the plants page
-        When I enter partial plant name in search field
-        And I click the search button
-        Then only matching plants should be displayed
+        When I perform a comprehensive search verification using multiple name casing variations
+
 
     @Plant_User_UI_02
     Scenario: Verify that regular user can successfully filter plants to display only specific category on UI

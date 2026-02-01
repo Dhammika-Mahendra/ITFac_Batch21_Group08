@@ -42,7 +42,8 @@ class PlantsPage {
     }
 
     get plantRows() {
-        return cy.get('table tbody tr');
+        // Exclude the "No plants found" row so we don't count it as a result
+        return cy.get('table tbody tr').not(':contains("No plants found")');
     }
 
     get paginationControls() {
@@ -228,6 +229,8 @@ class PlantsPage {
         cy.get('input[name="name"], input#name').should('not.have.value', '');
         cy.get('input[name="price"], input#price').should('not.have.value', '');
         cy.get('input[name="quantity"], input#quantity').should('not.have.value', '');
+        // STRICT CHECK: Ensure category is also selected (this is expected to fail due to the UI bug)
+        cy.get('select[name="categoryId"]').should('not.have.value', '');
         return this;
     }
 }
