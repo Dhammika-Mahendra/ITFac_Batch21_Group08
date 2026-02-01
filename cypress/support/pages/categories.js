@@ -36,11 +36,24 @@ class CategoriesPage {
     }
 
     get addCategoryButton(){
-        return cy.get('a.btn.btn-primary').contains('Add A Category');
+        return cy.get('a.btn.btn-primary').contains('Add Category');
     }
 
     clickAddCategoryButton(){
         this.addCategoryButton.click();
+    }
+
+    verifyNoAddCategoryButton(){
+        //verify in <form> with class="row g-2 mb-3" has no texts "Add Category" in any element
+        cy.get('form.row.g-2.mb-3').should('not.contain.text', 'Add Category');
+    }
+
+    verifyDeleteButtonDisabled(){
+        this.deleteButtonByRowIndex(0).should('be.disabled');
+    }
+
+    verifyEditButtonDisabled(){
+        this.editButtonByRowIndex(0).should('be.disabled');
     }
 
     get addCategoryForm(){
@@ -89,6 +102,10 @@ class CategoriesPage {
 
     clickDeleteButtonByRowIndex(rowIndex){
         this.deleteButtonByRowIndex(rowIndex).click();
+    }
+
+    invalidNameMessage(msg){
+        return cy.get('div.invalid-feedback').contains(msg);
     }
 }
 

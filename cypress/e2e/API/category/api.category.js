@@ -154,8 +154,18 @@ Then("the category name should be updated successfully", () => {
 
 // @Cat_Admin_API_05 -----------------------------------------------
 
+When("I attempt to edit the category name with invalid data - empty name",()=>{
+	let data = { name: "", parentId: parentId };
+	return updateCategory(lastCategory.id, data, "updateCategoryResponse");
+});
+
 When("I attempt to edit the category name with invalid data - short name",()=>{
 	let data = { name: "ru", parentId: parentId };
+	return updateCategory(lastCategory.id, data, "updateCategoryResponse");
+});
+
+When("When I attempt to edit the category name with invalid data - long name",()=>{
+	let data = { name: "dragonflower daffadile", parentId: parentId };
 	return updateCategory(lastCategory.id, data, "updateCategoryResponse");
 });
 
@@ -163,11 +173,6 @@ Then("the system should reject the name update with a validation error", () => {
 	return cy.get("@updateCategoryResponse").then((response) => {
 		expect(response.status, "update category status").to.eq(500);
 	});
-});
-
-When("When I attempt to edit the category name with invalid data - long name",()=>{
-	let data = { name: "dragonflower daffadile", parentId: parentId };
-	return updateCategory(lastCategory.id, data, "updateCategoryResponse");
 });
 
 
@@ -184,5 +189,44 @@ Then("the category should be deleted successfully", () => {
 		//Revert by adding the category back
 		let data = {"id":null,"name":lastCategory.name,"parent":{"id":parentId,"name":null,"parent":null}};
 		return createCategory(data);
+	});
+});
+
+// @Cat_User_API_03 -----------------------------------------------
+
+When("I attempt to create a new category", () => {
+	let data = {"id":null,"name":"UserCat","parent":{"id":null,"name":null,"parent":null}};
+	return createCategory(data, "createCategoryResponse");
+});
+
+Then("the system should reject the create request with an authorization error", () => {
+	return cy.get("@createCategoryResponse").then((response) => {
+		expect(response.status, "create category status").to.eq(403);
+	});
+});
+
+// @Cat_User_API_04 -----------------------------------------------
+
+When("I attempt to edit the category name", () => {
+	let data = { name: editName, parentId: parentId };
+	return updateCategory(lastCategory.id, data, "updateCategoryResponse");
+});
+
+Then("the system should reject the edit request with an authorization error", () => {
+	return cy.get("@updateCategoryResponse").then((response) => {
+		expect(response.status, "update category status").to.eq(403);
+	});
+});
+
+
+// @Cat_User_API_05 -----------------------------------------------
+
+When("I attempt to delete the category", () => {
+	return deleteCategory(lastCategory.id, "deleteCategoryResponse");
+});
+
+Then("the system should reject the delete request with an authorization error", () => {
+	return cy.get("@deleteCategoryResponse").then((response) => {
+		expect(response.status, "delete category status").to.eq(403);
 	});
 });

@@ -1,11 +1,16 @@
 import { Given, When, Then } from "@badeball/cypress-cucumber-preprocessor";
 import { loginPage } from "../../../support/pages/login";
-import { uiLoginAsAdmin } from "../../preconditions/login";
+import { uiLoginAsAdmin, uiLoginAsUser } from "../../preconditions/login";
 import { categoriesPage } from "../../../support/pages/categories";
 
 Given("I am logged in as an admin user", () => {
     loginPage.visitLoginPage();
     uiLoginAsAdmin();
+});
+
+Given("I am logged in as a non-admin user", () => {
+    loginPage.visitLoginPage();
+    uiLoginAsUser();
 });
 
 // @Cat_Admin_UI_01 -----------------------------------------------------
@@ -156,8 +161,71 @@ Then("the category should be removed from the list",()=>{
         });
 
     //revert by adding the deleted category back
-    categoriesPage.clickAddCategoryButton();
+    cy.get('a.btn.btn-primary').contains('Add A Category').click();
     categoriesPage.addCategoryNameInput.type(initialCatName);
     categoriesPage.addCategoryParentNameInput.select(initialParentCatName);
     categoriesPage.addCategorySaveButton.click();
 });
+
+// @Cat_Admin_UI_09 -----------------------------------------------------
+
+When("I attempt to edit the category name with invalid data - empty",()=>{ 
+    //click edit button of first category
+    categoriesPage.clickEditButtonByRowIndex(0);    
+    categoriesPage.editCategoryNameInput.clear();
+    categoriesPage.editCategorySaveButton.click();
+});
+
+Then("the system should show a validation error - empty name",()=>{
+    categoriesPage.invalidNameMessage("Category name is required").should('be.visible');
+});
+
+When("I attempt to edit the category name with invalid data - short name",()=>{
+    //click edit button of first category
+    categoriesPage.clickEditButtonByRowIndex(0);
+ 
+    categoriesPage.editCategoryNameInput.clear().type("Ir");
+    categoriesPage.editCategorySaveButton.click();
+});
+
+Then("the system should show a validation error and not update the category - short name",()=>{
+    categoriesPage.invalidNameMessage("Category name must be between 3 and 10 characters").should('be.visible');
+});
+
+When("I attempt to edit the category name with invalid data - long name",()=>{
+    //click edit button of first category
+    categoriesPage.editCategoryNameInput.clear().type("Irish Dragonflower");
+    categoriesPage.editCategorySaveButton.click();
+});
+
+Then("the system should show a validation error and not update the category - long name",()=>{
+    categoriesPage.invalidNameMessage("Category name must be between 3 and 10 characters").should('be.visible');
+});
+
+// @Cat_User_UI_03 -----------------------------------------------------
+
+Then("I should not see the Add Category button",()=>{
+    categoriesPage.verifyNoAddCategoryButton();
+});
+
+// @Cat_User_UI_04 -----------------------------------------------------
+
+Then("I should not see the Edit Category button for any category",()=>{
+    categoriesPage.verifyEditButtonDisabled();
+});
+
+// @Cat_User_UI_05 -----------------------------------------------------
+
+Then("a category exists", () => {
+    categoriesPage.categoryTableRows.should('have.length.greaterThan', 0);
+    //verify that the second <td> elements are not empty for each <tr>
+    categoriesPage.categoryTableRows.each(($row) => {
+        cy.wrap($row).find('td').eq(1).invoke('text').should('not.be.empty');
+    });
+    
+});
+
+Then("I should not see the Delete Category button for any category",()=>{
+    categoriesPage.verifyDeleteButtonDisabled();
+});
+
