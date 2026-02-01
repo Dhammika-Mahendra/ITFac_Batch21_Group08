@@ -30,6 +30,6 @@ INSERT INTO plants (name, price, quantity, category_id) VALUES
 ('Orange Marigold Plant', 950.00, 45, (SELECT id FROM categories WHERE name='Marigold' LIMIT 1)),
 
 -- BLUE FLOWERS
-('Blue Hydrangea Plant', 2400.00, 9, (SELECT id FROM categories WHERE name='Hydrangea' LIMIT 1)),
+('Blue Hydrangea Plant', 2400.00, 2, (SELECT id FROM categories WHERE name='Hydrangea' LIMIT 1)),
 ('Blue Bluebell Plant', 1800.00, 16, (SELECT id FROM categories WHERE name='Bluebell' LIMIT 1)),
 ('Blue Cornflower Plant', 1500.00, 21, (SELECT id FROM categories WHERE name='Cornflower' LIMIT 1));
