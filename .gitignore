@@ -54,3 +54,10 @@ storybook-static/
 
 #application properties
 application.properties
+
+# Cypress screenshots and videos
+cypress/screenshots/
+cypress/videos/
+
+# Assignment instructions
+Assignment Instructions-20260117/
