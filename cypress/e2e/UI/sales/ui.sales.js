@@ -3,6 +3,7 @@ import { loginPage } from "../../../support/pages/login";
 import { salesPage } from "../../../support/pages/sales";
 import { uiLoginAsAdmin, uiLoginAsUser, apiLoginAsAdmin, apiLoginAsUser } from "../../preconditions/login";
 import { backupSalesData as sqlBackupSalesData, restoreSalesData as sqlRestoreSalesData, deleteAllSales as sqlDeleteAllSales } from "../../../support/sql/sqlSales";
+import { backupSalesData, restoreSalesData } from "../../../support/api/sales.js";
 
 Before({ tags: "@Sale_Admin_UI_01" }, () => {
 	apiLoginAsAdmin().then(() => {
@@ -174,6 +175,11 @@ When("I navigate to the sales page", () => {
 	cy.url().should('include', '/ui/sales');
 });
 
+When("I navigate to the Sales page", () => {
+	salesPage.visitSalesPage();
+	cy.url().should('include', '/ui/sales');
+});
+
 When("I capture the plant name and quantity from the first sale", () => {
 	salesPage.captureFirstSaleDetails();
 });
@@ -296,16 +302,13 @@ When("I select a plant from the dropdown", () => {
 	salesPage.selectPlantFromDropdown();
 });
 
+
 When("I enter a valid quantity", () => {
 	salesPage.enterValidQuantity();
 });
 
 Then("admin should be redirected to the sales list page", () => {
 	salesPage.verifyRedirectedToSalesList();
-});
-
-When("I capture the current plant stock", () => {
-	salesPage.captureCurrentPlantStock();
 });
 
 Then("the plant stock should be reduced by the sold quantity", () => {
@@ -339,7 +342,7 @@ Then("the error message {string} should be displayed", (errorMessage) => {
 	salesPage.verifyErrorMessageDisplayed(errorMessage);
 });
 
-When("I select a plant from the dropdown", () => {
+When("I select first available plant from the dropdown", () => {
 	salesPage.selectFirstAvailablePlant();
 });
 
