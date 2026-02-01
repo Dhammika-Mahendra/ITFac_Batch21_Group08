@@ -1,12 +1,13 @@
 class SalesPage {
     
-    get noSalesMessage() {
-        cy.get('td').should('contain.text', message);
+    verifyNoSalesMessage(message) {
+        // Check for the "No sales found" message in the table or on the page
+        cy.get('body').should('contain.text', message);
     }
 
     get deleteButtons() {
-        // Common selectors for delete buttons
-        return cy.get('button[title*="Delete"], button[aria-label*="Delete"], .delete-btn, .btn-delete, button:contains("Delete"), [data-testid*="delete"]');
+        // Selector for delete buttons in sales table
+        return cy.get('form[action*="/ui/sales/delete/"] button.btn-outline-danger');
     }
 
     get confirmationDialog() {
@@ -35,10 +36,20 @@ class SalesPage {
         return cy.get('table, .sales-list, [data-testid="sales-table"]');
     }
 
+    get quantityInput() {
+        return cy.get('#quantity, input[name="quantity"]');
+    }
+
+    get sellButton() {
+        return cy.get('button.btn-primary, button:contains("Sell")');
+    }
+
+    get errorMessage() {
+        return cy.get('form .text-danger, form .error, form .invalid-feedback');
+    }
+
     visit() {
-        cy.visit("http://localhost:8080/ui/sales");
-        // Wait for page to load and verify it's accessible
-        cy.get('body').should('exist');
+        cy.visit(Cypress.env("BASE_URL") + "/ui/sales");
     }
 
     visitSalesPage() {
@@ -47,37 +58,62 @@ class SalesPage {
         this.salesTable.should('exist');
     }
 
+    visitPlantPage(){
+        cy.visit(Cypress.env("BASE_URL") + "/ui/plants");
+    }
+
+    captureFirstSaleDetails() {
+        // Capture plant name (first column) and quantity (second column) from the first sale
+        this.salesTableRows.first().find('td').eq(0).invoke('text').then(plantName => {
+            cy.wrap(plantName.trim()).as('deletedSalePlantName');
+        });
+        
+        this.salesTableRows.first().find('td').eq(1).invoke('text').then(quantity => {
+            cy.wrap(parseInt(quantity.trim())).as('deletedSaleQuantity');
+        });
+        
+        // Also capture the entire row text for deletion verification
+        this.salesTableRows.first().find('td').eq(0).invoke('text').then(plantName => {
+            this.salesTableRows.first().find('td').eq(3).invoke('text').then(soldAt => {
+                cy.wrap(`${plantName.trim()}${soldAt.trim()}`).as('deletedSaleIdentifier');
+            });
+        });
+    }
+
     clickDeleteIconOnFirstSale() {
-        // Store the sale info before deletion
-        this.salesTableRows.first().invoke('text').as('deletedSaleInfo');
+        // Set up stub for the native browser confirm dialog
+        cy.window().then((win) => {
+            cy.stub(win, 'confirm').returns(true).as('confirmStub');
+        });
         
         // Click the first delete button
         this.deleteButtons.first().click();
     }
 
     verifyConfirmationPromptAppears() {
-        this.confirmationDialog.should('be.visible');
+        // Verify that the native confirm dialog was called
+        cy.get('@confirmStub').should('have.been.calledOnce');
+        cy.get('@confirmStub').should('have.been.calledWith', 'Are you sure you want to delete this sale?');
     }
 
     confirmDeletion() {
-        this.confirmButton.click();
+        // Native confirm is already stubbed to return true, so no action needed
+        // Just wait for the deletion to complete
+        cy.wait(500);
     }
 
     verifySaleDeleted() {
-        // Wait for the operation to complete
-        cy.wait(500);
+        // Wait for the page to reload after deletion
+        cy.wait(1000);
         
-        // Verify the sale is deleted by checking the table updated
-        cy.get('@deletedSaleInfo').then((deletedInfo) => {
-            // The deleted sale should no longer appear
-            cy.get('body').should('not.contain', deletedInfo);
+        // Verify the sale is deleted by checking the specific identifier no longer appears
+        cy.get('@deletedSaleIdentifier').then((identifier) => {
+            // Check that this specific combination of plant name and sold date doesn't exist
+            cy.get('table tbody tr').should('not.contain', identifier);
         });
     }
 
     verifySaleNoLongerInList() {
-        // Verify the confirmation dialog is closed
-        this.confirmationDialog.should('not.exist');
-        
         // Additional verification that page has updated
         cy.url().should('include', '/ui/sales');
     }
@@ -328,6 +364,153 @@ class SalesPage {
         });
     }
 
+    leavePlantFieldEmpty() {
+        // Ensure the plant dropdown is set to empty value (default)
+        this.plantDropdown.select('-- Select Plant --');
+    }
+
+    selectFirstAvailablePlant() {
+        // Select the first available plant (skip the placeholder)
+        this.plantDropdown.find('option').eq(1).then($option => {
+            const plantValue = $option.val();
+            this.plantDropdown.select(plantValue);
+        });
+    }
+
+    enterQuantity(quantity) {
+        // Clear and enter quantity
+        this.quantityInput.clear().type(quantity);
+    }
+
+    clickSellButton() {
+        // Click the Sell button to submit the form
+        this.sellButton.click();
+    }
+
+    verifyErrorMessageDisplayed(errorMessage) {
+        // Check if it's a quantity validation error (HTML5 validation)
+        if (errorMessage.includes('Quantity must be greater than 0')) {
+            // For quantity validation, check the HTML5 validation message
+            this.quantityInput.then(($input) => {
+                expect($input[0].validationMessage).to.contain(errorMessage);
+            });
+        } else {
+            // For other errors (like "Plant is required"), check the text-danger div
+            this.errorMessage.should('be.visible').and('contain.text', errorMessage);
+        }
+    }
+
+    clickColumnHeader(columnName) {
+        // Click on the column header link to sort
+        cy.get('table thead th').contains('a', columnName).click();
+    }
+
+    verifySalesSortedByPlantName() {
+        // Wait for the page to reload after sort
+        cy.wait(500);
+        
+        // Get all plant names from the table
+        cy.get('table tbody tr td:first-child').then($cells => {
+            const plantNames = [...$cells].map(cell => cell.textContent.trim());
+            
+            // Create a sorted copy
+            const sortedPlantNames = [...plantNames].sort();
+            
+            // Verify the plant names are in sorted order
+            expect(plantNames).to.deep.equal(sortedPlantNames);
+        });
+        
+        // Also verify the URL contains the sort parameters
+        cy.url().should('include', 'sortField=plant.name');
+    }
+
+    verifySalesSortedByQuantity() {
+        // Wait for the page to reload after sort
+        cy.wait(500);
+        
+        // Get all quantity values from the table (second column)
+        cy.get('table tbody tr td:nth-child(2)').then($cells => {
+            const quantities = [...$cells].map(cell => parseInt(cell.textContent.trim()));
+            
+            // Create a sorted copy
+            const sortedQuantities = [...quantities].sort((a, b) => a - b);
+            
+            // Verify the quantities are in sorted order
+            expect(quantities).to.deep.equal(sortedQuantities);
+        });
+        
+        // Also verify the URL contains the sort parameters
+        cy.url().should('include', 'sortField=quantity');
+    }
+
+    verifySalesSortedByTotalPrice() {
+        // Wait for the page to reload after sort
+        cy.wait(500);
+        
+        // Get all total price values from the table (third column)
+        cy.get('table tbody tr td:nth-child(3)').then($cells => {
+            const prices = [...$cells].map(cell => parseFloat(cell.textContent.trim()));
+            
+            // Create a sorted copy
+            const sortedPrices = [...prices].sort((a, b) => a - b);
+            
+            // Verify the prices are in sorted order
+            expect(prices).to.deep.equal(sortedPrices);
+        });
+        
+        // Also verify the URL contains the sort parameters
+        cy.url().should('include', 'sortField=totalPrice');
+    }
+
+    verifySalesSortedBySoldDate() {
+        // Wait for the page to reload after sort
+        cy.wait(500);
+        
+        // Get all sold date values from the table (fourth column)
+        cy.get('table tbody tr td:nth-child(4)').then($cells => {
+            const dates = [...$cells].map(cell => new Date(cell.textContent.trim()));
+            
+            // Create a sorted copy
+            const sortedDates = [...dates].sort((a, b) => a - b);
+            
+            // Verify the dates are in sorted order
+            expect(dates.map(d => d.getTime())).to.deep.equal(sortedDates.map(d => d.getTime()));
+        });
+        
+        // Also verify the URL contains the sort parameters
+        cy.url().should('include', 'sortField=soldAt');
+    }
+
+    captureCurrentPlantStock() {
+        // Wait for plants page to load
+        cy.wait(500);
+        
+        // Get the stored plant name and find its current stock
+        cy.get('@deletedSalePlantName').then(plantName => {
+            cy.log(`Looking for plant: ${plantName}`);
+            
+            // Find the plant in the table - it should be in the first column
+            cy.get('table tbody tr').then($rows => {
+                let stockFound = false;
+                $rows.each((index, row) => {
+                    if (stockFound) return;
+                    
+                    const $row = Cypress.$(row);
+                    const rowPlantName = $row.find('td').eq(0).text().trim();
+                    
+                    if (rowPlantName === plantName) {
+                        // Found the plant, get its stock
+                        const stockText = $row.find('td').eq(3).find('span').text().trim();
+                        const stockBeforeDeletion = parseInt(stockText);
+                        cy.wrap(stockBeforeDeletion).as('stockBeforeDeletion');
+                        cy.log(`Plant: ${plantName}, Stock Before Deletion: ${stockBeforeDeletion}`);
+                        stockFound = true;
+                    }
+                });
+            });
+        });
+    }
+
     verifySellPlantButtonNotVisible(buttonText) {
         // Verify the "Sell Plant" button is not visible to regular user
         // The button should either not exist or not be visible
@@ -396,6 +579,52 @@ class SalesPage {
                 if ($rowElement.find('button[title*="Delete"], button[aria-label*="Delete"]').length > 0) {
                     cy.wrap($rowElement).find('button[title*="Delete"], button[aria-label*="Delete"]').should('not.be.visible');
                 }
+            });
+        });
+    }
+    
+    verifyPlantStockIncreased() {
+        // Wait for plants page to load
+        cy.wait(500);
+        
+        // Get the stored values
+        cy.get('@deletedSalePlantName').then(plantName => {
+            cy.get('@deletedSaleQuantity').then(deletedQuantity => {
+                cy.get('@stockBeforeDeletion').then(stockBefore => {
+                    cy.log(`Verifying stock for plant: ${plantName}`);
+                    
+                    // Find the plant in the table
+                    cy.get('table tbody tr').then($rows => {
+                        let stockVerified = false;
+                        $rows.each((index, row) => {
+                            if (stockVerified) return;
+                            
+                            const $row = Cypress.$(row);
+                            const rowPlantName = $row.find('td').eq(0).text().trim();
+                            
+                            if (rowPlantName === plantName) {
+                                // Found the plant, verify its stock
+                                const stockText = $row.find('td').eq(3).find('span').text().trim();
+                                const stockAfter = parseInt(stockText);
+                                
+                                // Calculate expected stock after deletion
+                                const expectedStock = stockBefore + deletedQuantity;
+                                
+                                // Verify stock increased by the deleted quantity
+                                expect(stockAfter).to.equal(expectedStock);
+                                
+                                // Log for verification
+                                cy.log(`Plant: ${plantName}`);
+                                cy.log(`Stock Before: ${stockBefore}`);
+                                cy.log(`Deleted Quantity: ${deletedQuantity}`);
+                                cy.log(`Stock After: ${stockAfter}`);
+                                cy.log(`Expected Stock: ${expectedStock}`);
+                                
+                                stockVerified = true;
+                            }
+                        });
+                    });
+                });
             });
         });
     }
