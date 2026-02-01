@@ -17,9 +17,11 @@ Feature: Sales Management
     @Sale_Admin_UI_11
     Scenario: Verify that admin can delete sale with confirmation
         Given I am logged in as admin
-        And a sale exists in the system
         When I navigate to the sales page
         And I capture the plant name and quantity from the first sale
+        And I navigate to the plants page
+        And I capture the current plant stock
+        When I navigate to the sales page
         And I click the delete icon on a sale
         Then a confirmation prompt should appear
         When I confirm the deletion

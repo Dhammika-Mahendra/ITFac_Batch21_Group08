@@ -2,42 +2,43 @@ import { Given, When, Then, Before, After } from "@badeball/cypress-cucumber-pre
 import { loginPage } from "../../../support/pages/login";
 import { salesPage } from "../../../support/pages/sales";
 import { uiLoginAsAdmin, uiLoginAsUser, apiLoginAsAdmin, apiLoginAsUser } from "../../preconditions/login";
-import { backupSalesData, restoreSalesData, deleteAllSales, createTestSale } from "../../../support/api/sales";
+// import { createTestSale } from "../../../support/api/sales";
+import { backupSalesData as sqlBackupSalesData, restoreSalesData as sqlRestoreSalesData, deleteAllSales as sqlDeleteAllSales } from "../../../support/sql/sqlSales";
 
 Before({ tags: "@Sale_Admin_UI_10" }, () => {
-	apiLoginAsAdmin().then(() => {
-		backupSalesData();
+	cy.then(() => {
+		sqlBackupSalesData();
 	});
 });
 
 After({ tags: "@Sale_Admin_UI_10" }, () => {
-	apiLoginAsAdmin().then(() => {
-		restoreSalesData();
-	});
+	cy.then(() => {
+    sqlRestoreSalesData();
+  	});
 });
 
 Before({ tags: "@Sale_User_UI_10" }, () => {
-	apiLoginAsUser().then(() => {
-		backupSalesData();
+	cy.then(() => {
+		sqlBackupSalesData();
 	});
 });
 
 After({ tags: "@Sale_User_UI_10" }, () => {
-	apiLoginAsUser().then(() => {
-		restoreSalesData();
-	});
+	cy.then(() => {
+    	sqlRestoreSalesData();
+  	});
 });
 
 Before({ tags: "@Sale_Admin_UI_11" }, () => {
-	apiLoginAsAdmin().then(() => {
-		backupSalesData();
+	cy.then(() => {
+		sqlBackupSalesData();
 	});
 });
 
 After({ tags: "@Sale_Admin_UI_11" }, () => {
-	apiLoginAsAdmin().then(() => {
-		restoreSalesData();
-	});
+	cy.then(() => {
+    	sqlRestoreSalesData();
+  	});
 });
 
 Given("I am logged in as admin", () => {
@@ -46,14 +47,14 @@ Given("I am logged in as admin", () => {
 });
 
 Given("no sales exist in the system", () => {
-	deleteAllSales();
+	sqlDeleteAllSales();
 });
 
-Given("a sale exists in the system", () => {
-	apiLoginAsAdmin().then(() => {
-		createTestSale();
-	});
-});
+// Given("a sale exists in the system", () => {
+// 	apiLoginAsAdmin().then(() => {
+// 		createTestSale();
+// 	});
+// });
 
 When("I navigate to the sales page", () => {
 	salesPage.visitSalesPage();
@@ -61,6 +62,10 @@ When("I navigate to the sales page", () => {
 
 When("I capture the plant name and quantity from the first sale", () => {
 	salesPage.captureFirstSaleDetails();
+});
+
+When("I capture the current plant stock", () => {
+	salesPage.captureCurrentPlantStock();
 });
 
 When("I click the delete icon on a sale", () => {
