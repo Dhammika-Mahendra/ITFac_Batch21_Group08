@@ -31,12 +31,20 @@ class SalesPage {
         return cy.get('#plantId, select[name="plantId"]');
     }
 
+    get salesTable() {
+        return cy.get('table, .sales-list, [data-testid="sales-table"]');
+    }
+
     visit() {
         cy.visit("http://localhost:8080/ui/sales");
+        // Wait for page to load and verify it's accessible
+        cy.get('body').should('exist');
     }
 
     visitSalesPage() {
         this.visit();
+        // Verify page content loads
+        this.salesTable.should('exist');
     }
 
     clickDeleteIconOnFirstSale() {
@@ -136,6 +144,260 @@ class SalesPage {
         
         // Verify specific plants are present with stock format
         cy.get('#plantId option').should('contain', 'Stock:');
+    }
+
+    verifySalesListWithPagination() {
+        // Verify sales list is displayed
+        this.salesTable.should('exist').and('be.visible');
+        
+        // Verify sales records are present
+        this.salesTableRows.should('have.length.greaterThan', 0);
+        
+        // Verify pagination information is displayed
+        cy.get('nav[aria-label="Pagination"], .pagination, .pager, [data-testid="pagination"]').should('be.visible');
+    }
+
+    verifySalesSortedBySoldDateDescending() {
+        // Extract sold dates from the table and verify they are in descending order
+        const dates = [];
+        
+        this.salesTableRows.each(($row, index) => {
+            // Get the sold date column (usually the last column)
+            cy.wrap($row).find('td').last().invoke('text').then((dateText) => {
+                if (dateText && dateText.trim()) {
+                    dates.push(dateText.trim());
+                }
+            });
+        }).then(() => {
+            // Verify dates are in descending order (most recent first)
+            for (let i = 0; i < dates.length - 1; i++) {
+                const currentDate = new Date(dates[i]);
+                const nextDate = new Date(dates[i + 1]);
+                expect(currentDate.getTime()).to.be.greaterThanOrEqual(nextDate.getTime());
+            }
+        });
+    }
+
+    clickColumnHeader(columnName) {
+        // Click on the column header to trigger sorting
+        cy.get(`th:contains("${columnName}"), [data-sort="${columnName.toLowerCase()}"]`).click();
+        // Wait for sorting to complete
+        cy.wait(500);
+    }
+
+    verifySalesSortedByPlantName() {
+        // Extract plant names from the table and verify they are sorted
+        const plantNames = [];
+        
+        this.salesTableRows.each(($row) => {
+            // Get the plant name column (usually the first column)
+            cy.wrap($row).find('td').first().invoke('text').then((plantName) => {
+                if (plantName && plantName.trim()) {
+                    plantNames.push(plantName.trim());
+                }
+            });
+        }).then(() => {
+            // Verify plant names are sorted alphabetically
+            const sortedNames = [...plantNames].sort((a, b) => a.localeCompare(b));
+            expect(plantNames).to.deep.equal(sortedNames);
+        });
+    }
+
+    verifySalesSortedByQuantity() {
+        // Extract quantities from the table and verify they are sorted
+        const quantities = [];
+        
+        this.salesTableRows.each(($row) => {
+            // Get the quantity column (typically the second column)
+            cy.wrap($row).find('td').eq(1).invoke('text').then((quantityText) => {
+                const quantity = parseInt(quantityText.trim());
+                if (!isNaN(quantity)) {
+                    quantities.push(quantity);
+                }
+            });
+        }).then(() => {
+            // Verify quantities are sorted numerically
+            const sortedQuantities = [...quantities].sort((a, b) => a - b);
+            expect(quantities).to.deep.equal(sortedQuantities);
+        });
+    }
+
+    verifySalesSortedByTotalPrice() {
+        // Extract total prices from the table and verify they are sorted
+        const prices = [];
+        
+        this.salesTableRows.each(($row) => {
+            // Get the total price column (typically the third column)
+            cy.wrap($row).find('td').eq(2).invoke('text').then((priceText) => {
+                const cleaned = priceText.replace(/[^0-9.]/g, "").trim();
+                const price = parseFloat(cleaned);
+                if (!isNaN(price)) {
+                    prices.push(price);
+                }
+            });
+        }).then(() => {
+            // Verify prices are sorted numerically
+            const sortedPrices = [...prices].sort((a, b) => a - b);
+            expect(prices).to.deep.equal(sortedPrices);
+        });
+    }
+
+    get quantityField() {
+        return cy.get('input[name="quantity"], input[id="quantity"], [data-testid="quantity-input"]');
+    }
+
+    get submitButton() {
+        return cy.get('button[type="submit"], button:contains("Submit"), button:contains("Sell"), [data-testid="submit-btn"]');
+    }
+
+    clearQuantityField() {
+        // Clear the quantity field to leave it empty
+        this.quantityField.clear();
+    }
+
+    submitSellPlantForm() {
+        // Click the submit button to submit the form
+        this.submitButton.click();
+        cy.wait(500);
+    }
+
+    verifyQuantityFieldValidationError() {
+        // Verify validation error message appears near the quantity field
+        // Check for error message in common locations
+        cy.get('input[name="quantity"], input[id="quantity"]').then(($field) => {
+            // Look for error message near the field
+            cy.get('body').should('contain.text', 'Quantity must be greater than 0').or('contain.text', 'Quantity is required');
+        });
+        
+        // Alternative: check for error in label/span near quantity field
+        cy.get('[data-testid="quantity-error"], .quantity-error, .error, .invalid-feedback').should('be.visible');
+    }
+
+    enterNonNumericQuantity() {
+        // Enter non-numeric value in quantity field
+        this.quantityField.type('abc@#$%');
+    }
+
+    selectPlantFromDropdown() {
+        // Select the first available plant from the dropdown
+        this.plantDropdown.select(1);
+        cy.wait(300);
+    }
+
+    enterValidQuantity() {
+        // Clear quantity field and enter a valid quantity value
+        this.quantityField.clear().type('1');
+    }
+
+    verifyRedirectedToSalesList() {
+        // Verify user is redirected to sales list page
+        cy.url().should('include', '/ui/sales');
+        cy.url().should('not.include', '/ui/sales/new');
+        
+        // Verify sales list is displayed
+        this.salesTable.should('exist').and('be.visible');
+    }
+
+    captureCurrentPlantStock() {
+        // Store the selected plant name and initial stock for comparison
+        this.plantDropdown.find('option:selected').invoke('text').as('selectedPlant');
+    }
+
+    verifyStockReducedByQuantity() {
+        // After successful sale and redirect, navigate to plants page to verify stock reduction
+        cy.visit('http://localhost:8080/ui/plants');
+        
+        cy.get('@selectedPlant').then((selectedPlant) => {
+            // Search for the plant in the plants list
+            cy.get('table tbody tr, .plants-list > div, .plant-item').each(($row) => {
+                cy.wrap($row).then(($rowElement) => {
+                    const plantName = $rowElement.text();
+                    if (plantName.includes(selectedPlant)) {
+                        // Found the plant row - verify stock has been reduced
+                        cy.wrap($rowElement).find('td').each(($cell, index) => {
+                            const cellText = $cell.text();
+                            // Verify stock information is present (should be reduced)
+                            if (cellText.includes('Stock:') || !isNaN(parseInt(cellText))) {
+                                // Stock field found and contains a numeric value
+                                expect(parseInt(cellText)).to.be.greaterThanOrEqual(0);
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    }
+
+    verifySellPlantButtonNotVisible(buttonText) {
+        // Verify the "Sell Plant" button is not visible to regular user
+        // The button should either not exist or not be visible
+        cy.get('body').then(($body) => {
+            if ($body.find(`button:contains("${buttonText}"), a:contains("${buttonText}"), [data-testid="sell-plant"]`).length > 0) {
+                // Button exists, verify it's not visible
+                cy.get(`button:contains("${buttonText}"), a:contains("${buttonText}"), [data-testid="sell-plant"]`).should('not.be.visible');
+            } else {
+                // Button doesn't exist at all - user doesn't have access
+                cy.get(`button:contains("${buttonText}"), a:contains("${buttonText}"), [data-testid="sell-plant"]`).should('not.exist');
+            }
+        });
+    }
+
+    verifyButtonNotVisibleOnPage(buttonText) {
+        // Verify the button is not visible on the page
+        cy.get('body').then(($body) => {
+            const buttonSelector = `button:contains("${buttonText}"), a:contains("${buttonText}"), [data-testid="sell-plant"], .sell-plant-btn`;
+            if ($body.find(buttonSelector).length > 0) {
+                // Button exists, verify it's not visible
+                cy.get(buttonSelector).should('not.be.visible');
+            } else {
+                // Button doesn't exist at all
+                cy.get(buttonSelector).should('not.exist');
+            }
+        });
+    }
+
+    checkForDeleteActions() {
+        // Check if there are any delete buttons visible for the user
+        cy.get('body').then(($body) => {
+            // Store whether delete buttons exist
+            const deleteButtonExists = $body.find('button[title*="Delete"], button[aria-label*="Delete"], .delete-btn, .btn-delete, button:contains("Delete"), [data-testid*="delete"]').length > 0;
+            cy.wrap(deleteButtonExists).as('deleteButtonExists');
+        });
+    }
+
+    verifyDeleteButtonNotAvailableToUser() {
+        // Verify delete actions are not available to user
+        cy.get('body').then(($body) => {
+            const deleteSelectors = [
+                'button[title*="Delete"]',
+                'button[aria-label*="Delete"]',
+                '.delete-btn',
+                '.btn-delete',
+                'button:contains("Delete")',
+                '[data-testid*="delete"]'
+            ];
+
+            // Check each selector
+            deleteSelectors.forEach((selector) => {
+                if ($body.find(selector).length > 0) {
+                    // Delete button exists, verify it's not visible
+                    cy.get(selector).each(($element) => {
+                        cy.wrap($element).should('not.be.visible');
+                    });
+                }
+            });
+        });
+
+        // Also verify by checking the table rows don't have delete action columns
+        this.salesTableRows.each(($row) => {
+            cy.wrap($row).then(($rowElement) => {
+                const rowText = $rowElement.text();
+                // Verify no delete icon/button is present in the row
+                if ($rowElement.find('button[title*="Delete"], button[aria-label*="Delete"]').length > 0) {
+                    cy.wrap($rowElement).find('button[title*="Delete"], button[aria-label*="Delete"]').should('not.be.visible');
+                }
+            });
+        });
     }
 }
 

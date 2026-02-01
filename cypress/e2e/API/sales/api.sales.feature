@@ -3,9 +3,9 @@
 Feature: Sales Management
     I want to retrieve and manage sales records
 
-    ************************************************************************ 
-    Sales Admin API Scenarios
-    ************************************************************************
+    #************************************************************************ 
+    #Sales Admin API Scenarios
+    #************************************************************************
 
     @Sale_Admin_API_01
     Scenario: Admin retrieve sales sorted by date
@@ -81,7 +81,9 @@ Feature: Sales Management
         Then I should receive a 401 status code
         And the response should contain an unauthorized error message
 
+    #************************************************************************
     # Sales User API Scenarios
+    #************************************************************************
 
     @Sale_User_API_01
     Scenario: User attempt to retrieve sales with invalid pagination parameters
@@ -89,3 +91,32 @@ Feature: Sales Management
         When I call the sales pagination API endpoint with page 0 and size 0
         Then I should receive a 200 status code
         And the response should contain a list of sales
+
+    @Sale_User_API_02
+    Scenario: User retrieve sales sorted by quantity
+        Given I have logged in as a testuser
+        When I call the sales pagination API endpoint with page 0, size 10 and sort quantity
+        Then I should receive a 200 status code
+        And the response should contain a list of sales
+        And the sales should be sorted by quantity in ascending order
+
+    @Sale_User_API_03
+    Scenario: User retrieve sales sorted by date
+        Given I have logged in as a testuser
+        When I call the sales pagination API endpoint with page 0, size 10 and sort soldAt descending
+        Then I should receive a 200 status code
+        And the response should contain a list of sales
+        And the sales should be sorted by soldAt in descending order
+
+    @Sale_User_API_04
+    Scenario: User retrieve sales with pagination
+        Given I have logged in as a testuser
+        When I call the sales pagination API endpoint with page 0, size 10
+        Then I should receive a 200 status code
+        And the response should contain a list of sales
+
+    @Sale_User_API_05
+    Scenario: Unauthenticated user cannot retrieve sales
+        When I attempt to retrieve sales without authenticating
+        Then I should receive a 401 status code
+        And the response should contain an unauthorized error message
