@@ -1,7 +1,8 @@
 {
   "devDependencies": {
     "@bahmutov/cypress-esbuild-preprocessor": "^2.2.0",
-    "cypress": "^15.9.0"
+    "cypress": "^15.9.0",
+    "mysql2": "^3.16.2"
   },
   "dependencies": {
     "@badeball/cypress-cucumber-preprocessor": "^24.0.0"
