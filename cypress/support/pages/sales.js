@@ -482,31 +482,24 @@ class SalesPage {
     }
 
     captureCurrentPlantStock() {
-        // Wait for plants page to load
-        cy.wait(500);
-        
-        // Get the stored plant name and find its current stock
-        cy.get('@deletedSalePlantName').then(plantName => {
-            cy.log(`Looking for plant: ${plantName}`);
-            
-            // Find the plant in the table - it should be in the first column
-            cy.get('table tbody tr').then($rows => {
-                let stockFound = false;
-                $rows.each((index, row) => {
-                    if (stockFound) return;
-                    
-                    const $row = Cypress.$(row);
-                    const rowPlantName = $row.find('td').eq(0).text().trim();
-                    
-                    if (rowPlantName === plantName) {
-                        // Found the plant, get its stock
-                        const stockText = $row.find('td').eq(3).find('span').text().trim();
-                        const stockBeforeDeletion = parseInt(stockText);
-                        cy.wrap(stockBeforeDeletion).as('stockBeforeDeletion');
-                        cy.log(`Plant: ${plantName}, Stock Before Deletion: ${stockBeforeDeletion}`);
-                        stockFound = true;
-                    }
-                });
+        cy.get('@deletedSalePlantName').then((plantName) => {
+
+            cy.get('table tbody tr')
+            .contains('td', plantName)          
+            .parent('tr')                
+            .find('td').eq(3)            
+            .find('span').first()              
+            .invoke('text')
+            .then((stockText) => {
+                const stockBeforeDeletion = parseInt(stockText.trim());
+
+                expect(
+                stockBeforeDeletion,
+                `Stock before deletion should exist for plant ${plantName}`
+                ).to.not.be.NaN;
+
+                cy.wrap(stockBeforeDeletion).as('stockBeforeDeletion');
+                cy.log(`Stock before deletion for ${plantName}: ${stockBeforeDeletion}`);
             });
         });
     }
