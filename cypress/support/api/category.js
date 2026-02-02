@@ -93,8 +93,28 @@ export function getAllSubCategories(responseAlias = "subCategoriesResponse") {
 	return categoryRequest({ path: "/api/categories/sub-categories", alias: responseAlias });
 }
 
-export function searchCategories(query = {}, responseAlias = "categoriesPageResponse") {
-	return categoryRequest({ path: "/api/categories/page", qs: query, alias: responseAlias });
+export function searchCategories({
+  page,
+  size,
+  name,
+  parentId,
+  sortField,
+  sortDir,
+  responseAlias = "categoriesPageResponse",
+} = {}) {
+  const query = {};
+  if (page !== undefined) query.page = page;
+  if (size !== undefined) query.size = size;
+  if (name !== undefined) query.name = name;
+  if (parentId !== undefined) query.parentId = parentId;
+  if (sortField !== undefined) query.sortField = sortField;
+  if (sortDir !== undefined) query.sortDir = sortDir;
+
+  return categoryRequest({
+    path: "/api/categories/page",
+    qs: query,
+    alias: responseAlias,
+  });
 }
 
 export function getMainCategories(responseAlias = "mainCategoriesResponse") {
