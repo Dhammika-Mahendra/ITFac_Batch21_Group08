@@ -1,6 +1,6 @@
 import { Given, When, Then } from "@badeball/cypress-cucumber-preprocessor";
 import { apiLoginAsAdmin, apiLoginAsUser } from "../../preconditions/login";
-import { getSalesPage, sellPlant, validateSalesResponse, validateSalesSortedByDate, validateSalesSortedByPlantName, validateSalesErrorResponse, validateSalesSortedByQuantity, validateSalesSortedByTotalPrice, validateSalesNotFoundResponse, getSaleById, validateSingleSaleResponse, deleteSale, validateDeleteSaleErrorResponse, createSaleWithoutPlant, validateMissingPlantErrorResponse, sellPlantWithoutAuth, validateUnauthorizedErrorResponse, validateNegativeQuantityOrZeroErrorResponse, validateDecimalQuantityErrorResponse, validateNonNumericQuantityErrorResponse } from "../../../support/api/sales";
+import { getSalesPage, sellPlant, validateSalesResponse, validateSalesSortedByDate, validateSalesSortedByPlantName, validateSalesErrorResponse, validateSalesSortedByQuantity, validateSalesSortedByTotalPrice, validateSalesNotFoundResponse, getSaleById, validateSingleSaleResponse, deleteSale, validateDeleteSaleErrorResponse, createSaleWithoutPlant, validateMissingPlantErrorResponse, sellPlantWithoutAuth, validateUnauthorizedErrorResponse, validateNegativeQuantityOrZeroErrorResponse, validateDecimalQuantityErrorResponse, validateNonNumericQuantityErrorResponse, getPlantWithStock, createSaleExceedingStock, validateInsufficientStockErrorResponse } from "../../../support/api/sales";
 
 Given("I have logged in as an admin user", () => {
 	return apiLoginAsAdmin();
@@ -213,4 +213,22 @@ Then("the response should contain a non-numeric type conversion error message", 
 
 Then("I should receive a 400 status code for zero quantity", () => {
 	return cy.get("@negativeQuantityResponse").its("status").should("eq", 400);
+});
+
+Given("I have retrieved a plant with available stock", () => {
+	return getPlantWithStock();
+});
+
+When("I attempt to create a sale with quantity exceeding available stock", () => {
+	return createSaleExceedingStock();
+});
+
+Then("I should receive a 400 status code for insufficient stock", () => {
+	return cy.get("@insufficientStockResponse").its("status").should("eq", 400);
+});
+
+Then("the response should contain an insufficient stock error message", () => {
+	return cy.get("@insufficientStockResponse").then((response) => {
+		return validateInsufficientStockErrorResponse(response);
+	});
 });

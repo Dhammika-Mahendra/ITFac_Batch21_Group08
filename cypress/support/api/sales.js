@@ -253,6 +253,74 @@ export function validateNonNumericQuantityErrorResponse(response) {
 	return response;
 }
 
+export function getPlantWithStock() {
+	const baseUrl = ensureBaseUrl();
+	const url = `${baseUrl}/api/plants`;
+	
+	return cy.get("@authToken").then((token) => {
+		if (!token) {
+			throw new Error(AUTH_TOKEN_ERROR);
+		}
+		return cy
+			.request({
+				method: "GET",
+				url,
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+				failOnStatusCode: false,
+			})
+			.as("plantsResponse")
+			.then((response) => {
+				const plants = response.body;
+				if (!plants || !Array.isArray(plants) || plants.length === 0) {
+					throw new Error("No plants found in the system");
+				}
+				
+				// Prefer plant with stock > 0, but fallback to any plant with defined stock
+				let selectedPlant = plants.find(p => p.stock !== undefined && p.stock > 0);
+				
+				if (!selectedPlant) {
+					// If no plant has stock > 0, use any plant with stock field defined
+					selectedPlant = plants.find(p => p.stock !== undefined);
+				}
+				
+				if (!selectedPlant) {
+					// Last resort: use first plant
+					selectedPlant = plants[0];
+					cy.log("Warning: Using plant without stock field defined");
+				}
+				
+				const stock = selectedPlant.stock !== undefined ? selectedPlant.stock : 0;
+				cy.log(`Found plant - ID: ${selectedPlant.id}, Available Stock: ${stock}`);
+				
+				// Chain cy.wrap commands properly
+				return cy.wrap(selectedPlant.id).as("plantId").then(() => {
+					return cy.wrap(stock).as("plantStock");
+				});
+			});
+	});
+}
+
+export function createSaleExceedingStock() {
+	return cy.get("@plantId").then((plantId) => {
+		return cy.get("@plantStock").then((stock) => {
+			const exceedingQuantity = stock + 100;
+			cy.log(`Attempting to sell ${exceedingQuantity} units when only ${stock} available`);
+			return sellPlant(plantId, exceedingQuantity, "insufficientStockResponse");
+		});
+	});
+}
+
+export function validateInsufficientStockErrorResponse(response) {
+	expect(response.status, "error status").to.equal(400);
+	expect(response.body.message, "error message").to.exist;
+	const errorMsg = response.body.message.toLowerCase();
+	const isValidError = errorMsg.includes("stock") || errorMsg.includes("insufficient") || errorMsg.includes("not enough") || errorMsg.includes("exceed");
+	expect(isValidError, "Error message should indicate insufficient stock").to.be.true;
+	return response;
+}
+
 export { validateSalesNotFoundResponse };
 
 //sales UI

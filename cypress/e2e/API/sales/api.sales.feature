@@ -111,6 +111,14 @@ Feature: Sales Management
         Then I should receive a 400 status code for zero quantity
         And the response should contain an error message "Quantity must be greater than 0"
 
+    @Sale_Admin_API_15
+    Scenario: Admin cannot create sale exceeding available stock
+        Given I have logged in as an admin user
+        And I have retrieved a plant with available stock
+        When I attempt to create a sale with quantity exceeding available stock
+        Then I should receive a 400 status code for insufficient stock
+        And the response should contain an insufficient stock error message
+
         
     #************************************************************************
     # Sales User API Scenarios
