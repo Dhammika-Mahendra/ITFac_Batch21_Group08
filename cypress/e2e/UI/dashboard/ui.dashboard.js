@@ -19,8 +19,11 @@ Then("I should be redirected to the dashboard", () => {
 	cy.url().should("include", "/ui/dashboard");
 });
 
-Then("Navigation menu highlights the active page", () => {
+Then("Navigation menu highlights the active pages", () => {
 	dashboardPage.verifyActiveDashboardLink();
+	dashboardPage.verifyActiveCategoriesLink();
+	dashboardPage.verifyActivePlantsLink();
+	dashboardPage.verifyActiveSalesLink();
 });
 
 Then("Category, Plants and Sales summary information will be displayed", () => {

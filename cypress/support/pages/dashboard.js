@@ -10,8 +10,22 @@ class DashboardPage {
             .should("have.class", "active");
     }
 
-    get summaryCardContainer() {
-        return cy.get('.row.g-4');
+    verifyActiveCategoriesLink() {
+        this.navigationMenu
+            .find("a[href='/ui/categories']")
+            .should("have.class", "active");
+    }
+
+    verifyActivePlantsLink() {
+        this.navigationMenu
+            .find("a[href='/ui/plants']")
+            .should("have.class", "active");
+    }
+
+    verifyActiveSalesLink() {
+        this.navigationMenu
+            .find("a[href='/ui/sales']")
+            .should("have.class", "active");
     }
 
     verifyCategoriesCard() {

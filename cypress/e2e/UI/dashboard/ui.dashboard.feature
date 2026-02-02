@@ -9,7 +9,7 @@ Feature: Dashboard Access
         Given I open the login page
         When I sign in with valid admin user credentials
         Then I should be redirected to the dashboard
-        And Navigation menu highlights the active page
+        And Navigation menu highlights the active pages
         And Category, Plants and Sales summary information will be displayed
 
     @Dash_User_UI_01
@@ -17,7 +17,7 @@ Feature: Dashboard Access
         Given I open the login page
         When I sign in with valid non-admin user credentials
         Then I should be redirected to the dashboard
-        And Navigation menu highlights the active page
+        And Navigation menu highlights the active pages
         And Category, Plants and Sales summary information will be displayed
 
     
