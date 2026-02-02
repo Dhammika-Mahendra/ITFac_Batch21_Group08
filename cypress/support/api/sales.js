@@ -235,6 +235,15 @@ export function validateNegativeQuantityErrorResponse(response, expectedMessage)
 	return response;
 }
 
+export function validateDecimalQuantityErrorResponse(response) {
+	expect(response.status, "error status").to.equal(500);
+	expect(response.body.message, "error message").to.exist;
+	const errorMsg = response.body.message;
+	const isValidError = errorMsg.includes("Failed to convert") && errorMsg.includes("java.lang.String") && errorMsg.includes("int");
+	expect(isValidError, "Error message should indicate type conversion failure from String to int").to.be.true;
+	return response;
+}
+
 export { validateSalesNotFoundResponse };
 
 //sales UI

@@ -90,6 +90,13 @@ Feature: Sales Management
         Then I should receive a 400 status code for negative quantity
         And the response should contain an error message "Quantity must be greater than 0"
 
+    @Sale_Admin_API_12
+    Scenario: Admin cannot create sale with decimal quantity
+        Given I have logged in as an admin user
+        When I attempt to create a sale for plant 3 with decimal quantity 2.5
+        Then I should receive a 500 status code for decimal quantity
+        And the response should contain a type conversion error message
+
         
     #************************************************************************
     # Sales User API Scenarios
