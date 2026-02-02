@@ -113,3 +113,11 @@ Feature: Plant Management API
         And multiple plants with different quantities exist
         When I sort plants by quantity in descending order
         Then plants should be sorted by quantity from highest to lowest
+
+    @Plant_User_API_08
+    Scenario: Verify that a User can retrieve plants by valid category ID
+        Given I have logged in as a regular user
+        And a valid category with plants exists
+        When I send a GET request to retrieve plants by category ID
+        Then I should receive a 200 status code for plants by category
+        And the response should contain plants from the specified category

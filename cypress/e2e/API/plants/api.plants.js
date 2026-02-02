@@ -390,3 +390,39 @@ Then("plants should be sorted by quantity from highest to lowest", () => {
         }
     });
 });
+
+// @Plant_User_API_08 -----------------------------------------------
+
+let validCategoryId = null;
+
+Given("a valid category with plants exists", () => {
+    return getAllCategories().then((response) => {
+        expect(response.status, "get categories status").to.eq(200);
+        const categories = response.body;
+        expect(categories, "categories").to.be.an("array").and.not.empty;
+        validCategoryId = categories.find(cat => cat.id)?.id || categories[0].id;
+    });
+});
+
+When("I send a GET request to retrieve plants by category ID", () => {
+    return getPlantsByCategory(validCategoryId, "plantsByCategoryResponse");
+});
+
+Then("I should receive a 200 status code for plants by category", () => {
+    return cy.get("@plantsByCategoryResponse").its("status").should("eq", 200);
+});
+
+Then("the response should contain plants from the specified category", () => {
+    return cy.get("@plantsByCategoryResponse").then((response) => {
+        expect(response.status, "status").to.eq(200);
+        const plants = Array.isArray(response.body) ? response.body : (response.body.content || response.body);
+        expect(plants, "plants array").to.be.an("array");
+        
+        if (plants.length > 0) {
+            plants.forEach((plant) => {
+                expect(plant, "plant object").to.have.property("category");
+                expect(plant.category.id, "category id").to.eq(validCategoryId);
+            });
+        }
+    });
+});
