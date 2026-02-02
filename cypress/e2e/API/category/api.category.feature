@@ -54,6 +54,41 @@ Feature: Category Management
         When I send a request to delete the category
         Then the category should be deleted successfully
 
+    @Cat_Admin_API_07
+    Scenario: Verify that an Admin can successfully delete an existing category using a valid Category ID
+        Given I have logged in as an admin user and a category exists
+        When I send a DELETE request to the category endpoint with a valid category ID
+        Then I should receive a 204 status code for deletion
+        And the category should be deleted successfully
+
+    @Cat_Admin_API_08
+    Scenario: Verify that the system handles errors when an Admin attempts to delete a category with an invalid Category ID
+        Given I have logged in as an admin user
+        When I send a DELETE request to the category endpoint with an invalid category ID
+        Then I should receive a 404 status code for deletion
+        And the response should contain an error message about category not found
+
+    @Cat_Admin_API_09
+    Scenario: Verify that an admin can successfully create a main category by submitting a category with an empty Parent Category
+        Given I have logged in as an admin user
+        When I send a POST request to create a main category with empty parent
+        Then I should receive a 201 status code for creation
+        And the response should contain the created main category details
+
+    @Cat_Admin_API_10
+    Scenario: Verify that a restricted admin is denied access when attempting to create a category with a valid parent ID
+        Given I have logged in as an admin user
+        When I send a POST request to create a sub-category with a valid parent ID
+        Then I should receive a 201 status code for sub-category creation
+        And the response should contain the created sub-category details
+
+    @Cat_Admin_API_11
+    Scenario: Verify that a restricted admin is denied access when attempting to create a category with an invalid parent ID
+        Given I have logged in as an admin user
+        When I send a POST request to create a sub-category with an invalid parent ID
+        Then I should receive a 500 status code for invalid parent
+        And the response should contain an error message about foreign key constraint
+
     #----------------------------------------------
     #          Non-Admin User Scenarios 
     #----------------------------------------------
@@ -92,4 +127,19 @@ Feature: Category Management
         Given I have logged in as a non-admin user
         Given a category exists
         When I attempt to delete the category
-        Then the system should reject the delete request with an authorization error
+        Then the system should reject the request with an authorization error
+
+    @Cat_User_API_06
+    Scenario: Verify that the system returns a Bad Request error when a User requests a category with an invalid category ID
+        Given I have logged in as a non-admin user
+        When I send a GET request to retrieve a category with an invalid string ID
+        Then I should receive a 400 status code for invalid ID format
+        And the response should contain an error message about invalid ID format
+
+    @Cat_User_API_07
+    Scenario: Verify that a User can successfully retrieve specific plants using a valid integer Category ID
+        Given I have logged in as a non-admin user
+        When I send a GET request to retrieve a category with a valid integer category ID
+        Then I should receive a 200 status code for successful retrieval
+        And the response should contain the category details
+
