@@ -1,6 +1,6 @@
 import { Given, When, Then } from "@badeball/cypress-cucumber-preprocessor";
 import { apiLoginAsAdmin, apiLoginAsUser } from "../../preconditions/login";
-import { createPlant, getAllPlants, deletePlant, updatePlant, getPlantById, searchPlants, getPlantsByCategory } from "../../../support/api/plants";
+import { createPlant, getAllPlants, deletePlant, updatePlant, getPlantById, searchPlants, getPlantsByCategory, getAllPlantsUnauthorized, searchPlantsUnauthorized } from "../../../support/api/plants";
 import { getAllCategories, updateCategory } from "../../../support/api/category";
 
 // Login steps
@@ -424,5 +424,73 @@ Then("the response should contain plants from the specified category", () => {
                 expect(plant.category.id, "category id").to.eq(validCategoryId);
             });
         }
+    });
+});
+
+// @Plant_User_API_09 -----------------------------------------------
+
+When("I send a GET request to retrieve plants by invalid category ID", () => {
+    const invalidCategoryId = 999999;
+    return getPlantsByCategory(invalidCategoryId, "plantsByInvalidCategoryResponse");
+});
+
+Then("I should receive a 404 or 400 status code for invalid category", () => {
+    return cy.get("@plantsByInvalidCategoryResponse").then((response) => {
+        expect(response.status, "invalid category status").to.be.oneOf([400, 404]);
+    });
+});
+
+Then("the response should contain an error message about category not found", () => {
+    return cy.get("@plantsByInvalidCategoryResponse").then((response) => {
+        expect(response.body, "error response").to.have.property("status");
+        expect(response.body, "error response").to.have.property("error");
+        expect(response.body, "error response").to.have.property("message");
+        
+        const errorMessage = response.body.message.toLowerCase();
+        const isCategoryError = errorMessage.includes("category") || 
+                               errorMessage.includes("not found") ||
+                               errorMessage.includes("does not exist");
+        
+        expect(isCategoryError, 
+            `Error message should indicate category not found. Got: ${response.body.message}`
+        ).to.be.true;
+    });
+});
+
+// @Plant_User_API_10 -----------------------------------------------
+
+When("I send a GET request to plants endpoint with invalid token", () => {
+    return getAllPlantsUnauthorized("invalid-token-123", "unauthorizedPlantsResponse");
+});
+
+Then("I should receive a 401 Unauthorized status code", () => {
+    return cy.get("@unauthorizedPlantsResponse").its("status").should("eq", 401);
+});
+
+Then("the response should indicate access is denied", () => {
+    return cy.get("@unauthorizedPlantsResponse").then((response) => {
+        expect(response.status, "unauthorized status").to.eq(401);
+        expect(response.body, "error response").to.have.property("status", 401);
+        expect(response.body, "error response").to.have.property("error");
+        expect(response.body, "error response").to.have.property("message");
+    });
+});
+
+// @Plant_User_API_11 -----------------------------------------------
+
+When("I send a GET request to search plants with invalid token", () => {
+    return searchPlantsUnauthorized({ name: "Fern" }, "invalid-token-123", "unauthorizedSearchResponse");
+});
+
+Then("I should receive a 401 Unauthorized status code for search", () => {
+    return cy.get("@unauthorizedSearchResponse").its("status").should("eq", 401);
+});
+
+Then("the response should indicate search access is denied", () => {
+    return cy.get("@unauthorizedSearchResponse").then((response) => {
+        expect(response.status, "unauthorized search status").to.eq(401);
+        expect(response.body, "error response").to.have.property("status", 401);
+        expect(response.body, "error response").to.have.property("error");
+        expect(response.body, "error response").to.have.property("message");
     });
 });

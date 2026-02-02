@@ -121,3 +121,22 @@ Feature: Plant Management API
         When I send a GET request to retrieve plants by category ID
         Then I should receive a 200 status code for plants by category
         And the response should contain plants from the specified category
+
+    @Plant_User_API_09
+    Scenario: Verify that a User cannot retrieve plants by invalid or non-existing category ID
+        Given I have logged in as a regular user
+        When I send a GET request to retrieve plants by invalid category ID
+        Then I should receive a 404 or 400 status code for invalid category
+        And the response should contain an error message about category not found
+
+    @Plant_User_API_10
+    Scenario: Verify that the system returns a 401 Unauthorized error when accessing the plant list with an invalid or empty token
+        When I send a GET request to plants endpoint with invalid token
+        Then I should receive a 401 Unauthorized status code
+        And the response should indicate access is denied
+
+    @Plant_User_API_11
+    Scenario: Verify that the system returns a 401 Unauthorized error when searching for plants with an invalid or empty token
+        When I send a GET request to search plants with invalid token
+        Then I should receive a 401 Unauthorized status code for search
+        And the response should indicate search access is denied
