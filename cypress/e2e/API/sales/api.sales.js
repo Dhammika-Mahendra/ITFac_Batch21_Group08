@@ -1,6 +1,6 @@
 import { Given, When, Then } from "@badeball/cypress-cucumber-preprocessor";
 import { apiLoginAsAdmin, apiLoginAsUser } from "../../preconditions/login";
-import { getSalesPage, sellPlant, validateSalesResponse, validateSalesSortedByDate, validateSalesSortedByPlantName, validateSalesErrorResponse, validateSalesSortedByQuantity, validateSalesSortedByTotalPrice, validateSalesNotFoundResponse, getSaleById, validateSingleSaleResponse, deleteSale, validateDeleteSaleErrorResponse, createSaleWithoutPlant, validateMissingPlantErrorResponse, sellPlantWithoutAuth, validateUnauthorizedErrorResponse, validateNegativeQuantityErrorResponse, validateDecimalQuantityErrorResponse } from "../../../support/api/sales";
+import { getSalesPage, sellPlant, validateSalesResponse, validateSalesSortedByDate, validateSalesSortedByPlantName, validateSalesErrorResponse, validateSalesSortedByQuantity, validateSalesSortedByTotalPrice, validateSalesNotFoundResponse, getSaleById, validateSingleSaleResponse, deleteSale, validateDeleteSaleErrorResponse, createSaleWithoutPlant, validateMissingPlantErrorResponse, sellPlantWithoutAuth, validateUnauthorizedErrorResponse, validateNegativeQuantityOrZeroErrorResponse, validateDecimalQuantityErrorResponse, validateNonNumericQuantityErrorResponse } from "../../../support/api/sales";
 
 Given("I have logged in as an admin user", () => {
 	return apiLoginAsAdmin();
@@ -179,7 +179,7 @@ Then("I should receive a 400 status code for negative quantity", () => {
 
 Then("the response should contain an error message {string}", (expectedMessage) => {
 	return cy.get("@negativeQuantityResponse").then((response) => {
-		return validateNegativeQuantityErrorResponse(response, expectedMessage);
+		return validateNegativeQuantityOrZeroErrorResponse(response, expectedMessage);
 	});
 });
 
@@ -195,4 +195,22 @@ Then("the response should contain a type conversion error message", () => {
 	return cy.get("@decimalQuantityResponse").then((response) => {
 		return validateDecimalQuantityErrorResponse(response);
 	});
+});
+
+When("I attempt to create a sale for plant {int} with non-numeric quantity {string}", (plantId, quantity) => {
+	return sellPlant(plantId, quantity, "nonNumericQuantityResponse");
+});
+
+Then("I should receive a 500 status code for non-numeric quantity", () => {
+	return cy.get("@nonNumericQuantityResponse").its("status").should("eq", 500);
+});
+
+Then("the response should contain a non-numeric type conversion error message", () => {
+	return cy.get("@nonNumericQuantityResponse").then((response) => {
+		return validateNonNumericQuantityErrorResponse(response);
+	});
+});
+
+Then("I should receive a 400 status code for zero quantity", () => {
+	return cy.get("@negativeQuantityResponse").its("status").should("eq", 400);
 });

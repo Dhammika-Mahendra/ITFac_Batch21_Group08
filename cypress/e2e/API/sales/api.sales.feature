@@ -97,6 +97,20 @@ Feature: Sales Management
         Then I should receive a 500 status code for decimal quantity
         And the response should contain a type conversion error message
 
+    @Sale_Admin_API_13
+    Scenario: Admin cannot create sale with non-numeric quantity
+        Given I have logged in as an admin user
+        When I attempt to create a sale for plant 3 with non-numeric quantity "abc"
+        Then I should receive a 500 status code for non-numeric quantity
+        And the response should contain a non-numeric type conversion error message
+
+    @Sale_Admin_API_14
+    Scenario: Admin cannot create sale with zero quantity
+        Given I have logged in as an admin user
+        When I attempt to create a sale for plant 1 with quantity 0
+        Then I should receive a 400 status code for zero quantity
+        And the response should contain an error message "Quantity must be greater than 0"
+
         
     #************************************************************************
     # Sales User API Scenarios

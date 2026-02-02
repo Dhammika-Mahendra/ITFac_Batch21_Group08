@@ -228,7 +228,7 @@ export function validateUnauthorizedErrorResponse(response) {
 	return response;
 }
 
-export function validateNegativeQuantityErrorResponse(response, expectedMessage) {
+export function validateNegativeQuantityOrZeroErrorResponse(response, expectedMessage) {
 	expect(response.status, "error status").to.equal(400);
 	expect(response.body.message, "error message").to.exist;
 	expect(response.body.message, "error message should match").to.equal(expectedMessage);
@@ -241,6 +241,15 @@ export function validateDecimalQuantityErrorResponse(response) {
 	const errorMsg = response.body.message;
 	const isValidError = errorMsg.includes("Failed to convert") && errorMsg.includes("java.lang.String") && errorMsg.includes("int");
 	expect(isValidError, "Error message should indicate type conversion failure from String to int").to.be.true;
+	return response;
+}
+
+export function validateNonNumericQuantityErrorResponse(response) {
+	expect(response.status, "error status").to.equal(500);
+	expect(response.body.message, "error message").to.exist;
+	const errorMsg = response.body.message;
+	const isValidError = errorMsg.includes("Failed to convert") && errorMsg.includes("java.lang.String") && errorMsg.includes("int");
+	expect(isValidError, "Error message should indicate type conversion failure from String to int for non-numeric input").to.be.true;
 	return response;
 }
 
