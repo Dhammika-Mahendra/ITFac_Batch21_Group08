@@ -130,7 +130,7 @@ Feature: Category Management
         Then the system should reject the request with an authorization error
 
     @Cat_User_API_06
-    Scenario: Verify that the system returns a Bad Request error when a User requests a category with an invalid string ID
+    Scenario: Verify that the system returns a Bad Request error when a User requests a category with an invalid category ID
         Given I have logged in as a non-admin user
         When I send a GET request to retrieve a category with an invalid string ID
         Then I should receive a 400 status code for invalid ID format
@@ -142,4 +142,4 @@ Feature: Category Management
         When I send a GET request to retrieve a category with a valid integer category ID
         Then I should receive a 200 status code for successful retrieval
         And the response should contain the category details
-        Then the system should reject the delete request with an authorization error
+
