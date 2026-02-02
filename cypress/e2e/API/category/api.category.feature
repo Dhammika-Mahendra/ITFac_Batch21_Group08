@@ -127,7 +127,7 @@ Feature: Category Management
         Given I have logged in as a non-admin user
         Given a category exists
         When I attempt to delete the category
-        Then the system should reject the request with an authorization error
+        Then the system should reject the delete request with an authorization error
 
     @Cat_User_API_06
     Scenario: Verify that the system returns a Bad Request error when a User requests a category with an invalid category ID
