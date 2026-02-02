@@ -1,6 +1,6 @@
 import { Given, When, Then } from "@badeball/cypress-cucumber-preprocessor";
 import { apiLoginAsAdmin, apiLoginAsUser } from "../../preconditions/login";
-import { getSalesPage, sellPlant, validateSalesResponse, validateSalesSortedByDate, validateSalesSortedByPlantName, validateSalesErrorResponse, validateSalesSortedByQuantity, validateSalesSortedByTotalPrice, validateSalesNotFoundResponse, getSaleById, validateSingleSaleResponse, deleteSale, validateDeleteSaleErrorResponse, createSaleWithoutPlant, validateMissingPlantErrorResponse, sellPlantWithoutAuth, validateUnauthorizedErrorResponse } from "../../../support/api/sales";
+import { getSalesPage, sellPlant, validateSalesResponse, validateSalesSortedByDate, validateSalesSortedByPlantName, validateSalesErrorResponse, validateSalesSortedByQuantity, validateSalesSortedByTotalPrice, validateSalesNotFoundResponse, getSaleById, validateSingleSaleResponse, deleteSale, validateDeleteSaleErrorResponse, createSaleWithoutPlant, validateMissingPlantErrorResponse, sellPlantWithoutAuth, validateUnauthorizedErrorResponse, validateNegativeQuantityErrorResponse } from "../../../support/api/sales";
 
 Given("I have logged in as an admin user", () => {
 	return apiLoginAsAdmin();
@@ -167,4 +167,18 @@ When("I attempt to retrieve sales without authenticating", () => {
 		qs: { page: 0, size: 10 },
 		failOnStatusCode: false
 	}).as("unauthenticatedSaleResponse");
+});
+
+When("I attempt to create a sale for plant {int} with quantity {int}", (plantId, quantity) => {
+	return sellPlant(plantId, quantity, "negativeQuantityResponse");
+});
+
+Then("I should receive a 400 status code for negative quantity", () => {
+	return cy.get("@negativeQuantityResponse").its("status").should("eq", 400);
+});
+
+Then("the response should contain an error message {string}", (expectedMessage) => {
+	return cy.get("@negativeQuantityResponse").then((response) => {
+		return validateNegativeQuantityErrorResponse(response, expectedMessage);
+	});
 });

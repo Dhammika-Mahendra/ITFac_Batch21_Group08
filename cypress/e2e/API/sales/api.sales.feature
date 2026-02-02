@@ -81,6 +81,16 @@ Feature: Sales Management
         Then I should receive a 401 status code
         And the response should contain an unauthorized error message
 
+    #*********************************************214160H************************************************
+    
+    @Sale_Admin_API_11
+    Scenario: Admin cannot create sale with negative quantity
+        Given I have logged in as an admin user
+        When I attempt to create a sale for plant 3 with quantity -5
+        Then I should receive a 400 status code for negative quantity
+        And the response should contain an error message "Quantity must be greater than 0"
+
+        
     #************************************************************************
     # Sales User API Scenarios
     #************************************************************************

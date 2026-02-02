@@ -228,6 +228,13 @@ export function validateUnauthorizedErrorResponse(response) {
 	return response;
 }
 
+export function validateNegativeQuantityErrorResponse(response, expectedMessage) {
+	expect(response.status, "error status").to.equal(400);
+	expect(response.body.message, "error message").to.exist;
+	expect(response.body.message, "error message should match").to.equal(expectedMessage);
+	return response;
+}
+
 export { validateSalesNotFoundResponse };
 
 //sales UI
