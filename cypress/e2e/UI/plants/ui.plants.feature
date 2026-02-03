@@ -75,11 +75,21 @@ Feature: Plant Management UI
         Then a validation error message should be displayed
         And the error message should say "Plant name is required"
 
-    @Plant_Admin_UI_09 @focus
+    @Plant_Admin_UI_09 
     Scenario: Verify that the system displays a validation error when the Plant Name is less than 3 characters
         Given I have logged in to the UI as an admin user
         When I navigate to the Add Plant page
         And I enter a Plant Name with less than 3 characters
+        And I fill in other required fields correctly
+        And I click Save button
+        Then a validation error message should be displayed
+        And the error message should say "Plant name must be between 3 and 25 characters"
+
+    @Plant_Admin_UI_10 @focus
+    Scenario: Verify that the system displays a validation error when the Plant Name exceeds 25 characters
+        Given I have logged in to the UI as an admin user
+        When I navigate to the Add Plant page
+        And I enter a Plant Name with more than 25 characters
         And I fill in other required fields correctly
         And I click Save button
         Then a validation error message should be displayed

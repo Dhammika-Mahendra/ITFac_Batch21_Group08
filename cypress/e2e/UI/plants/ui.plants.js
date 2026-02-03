@@ -257,6 +257,11 @@ When("I enter a Plant Name with less than 3 characters", () => {
     cy.get('input[name="name"]').clear().type('AB');
 });
 
+When("I enter a Plant Name with more than 25 characters", () => {
+    const longName = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1'; // 27 chars
+    cy.get('input[name="name"]').clear().type(longName);
+});
+
 When("I fill in other required fields correctly", () => {
     // Fill category, price, and quantity but not name
     cy.get('select[name="categoryId"] option').eq(1).invoke('val').then((categoryId) => {
