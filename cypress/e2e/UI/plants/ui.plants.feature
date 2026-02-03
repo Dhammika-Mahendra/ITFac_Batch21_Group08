@@ -113,7 +113,7 @@ Feature: Plant Management UI
         And plants with quantity less than 5 exist
         Then the Low badge should be displayed for plants with low quantity
 
-    @Plant_User_UI_07 @focus
+    @Plant_User_UI_07
     Scenario: Verify that a User can sort the plants list by price in both ascending and descending order
         Given I have logged in to the UI as a regular user
         And I am on the plants page
@@ -122,7 +122,7 @@ Feature: Plant Management UI
         When I click on the Price column header again
         Then plants should be sorted by price from highest to lowest
 
-    @Plant_User_UI_08 
+    @Plant_User_UI_08
     Scenario: Verify that a User can sort the plants list by quantity in both ascending and descending order
         Given I have logged in to the UI as a regular user
         And I am on the plants page
@@ -130,3 +130,9 @@ Feature: Plant Management UI
         Then plants should be sorted by quantity from lowest to highest
         When I click on the Quantity column header again
         Then plants should be sorted by quantity from highest to lowest
+
+    @Plant_User_UI_09
+    Scenario: Verify that the 'Add Plant' button is hidden for non-admin users
+        Given I have logged in to the UI as a regular user
+        When I navigate to the plants page
+        Then the Add Plant button should not be visible

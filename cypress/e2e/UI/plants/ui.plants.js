@@ -506,3 +506,46 @@ Then("plants should be sorted by quantity from highest to lowest", () => {
         expect(isDescending, 'Quantities should be sorted from highest to lowest').to.be.true;
     });
 });
+
+// @Plant_User_UI_09 -----------------------------------------------
+Then("the Add Plant button should not be visible", () => {
+    cy.get('body').then(($body) => {
+        const addPlantButton = $body.find('a.btn:contains("Add Plant"), button:contains("Add Plant")');
+        if (addPlantButton.length > 0) {
+            cy.get('a.btn:contains("Add Plant"), button:contains("Add Plant")').should('not.be.visible');
+        } else {
+            cy.log('Add Plant button is not rendered for non-admin users.');
+            cy.get('a.btn:contains("Add Plant"), button:contains("Add Plant")').should('not.exist');
+        }
+    });
+});
+
+// @Plant_User_UI_11 -----------------------------------------------
+
+Then("Edit icons should not be visible for any plants", () => {
+    cy.get('body').then(($body) => {
+        const editButtons = $body.find('button:contains("Edit"), a[title*="Edit"], a[aria-label*="Edit"], .edit-icon');
+        if (editButtons.length > 0) {
+            // If Edit buttons exist, they should not be visible
+            cy.get('button:contains("Edit"), a[title*="Edit"], a[aria-label*="Edit"]').should('not.be.visible');
+        } else {
+            // Edit buttons don't exist at all (preferred for non-admin)
+            cy.log('✅ Edit icons/buttons are not rendered for non-admin users.');
+            cy.get('button:contains("Edit"), a[title*="Edit"], a[aria-label*="Edit"]').should('not.exist');
+        }
+    });
+});
+
+Then("Delete icons should not be visible for any plants", () => {
+    cy.get('body').then(($body) => {
+        const deleteButtons = $body.find('button:contains("Delete"), button[title*="Delete"], button[aria-label*="Delete"], .delete-icon');
+        if (deleteButtons.length > 0) {
+            // If Delete buttons exist, they should not be visible
+            cy.get('button:contains("Delete"), button[title*="Delete"], button[aria-label*="Delete"]').should('not.be.visible');
+        } else {
+            // Delete buttons don't exist at all (preferred for non-admin)
+            cy.log('✅ Delete icons/buttons are not rendered for non-admin users.');
+            cy.get('button:contains("Delete"), button[title*="Delete"], button[aria-label*="Delete"]').should('not.exist');
+        }
+    });
+});
