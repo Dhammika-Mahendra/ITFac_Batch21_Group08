@@ -242,6 +242,43 @@ Then("all form fields should be pre-filled with existing plant data", () => {
     plantsPage.verifyFormPreFilled();
 });
 
+// @Plant_Admin_UI_08 -----------------------------------------------
+
+When("I navigate to the Add Plant page", () => {
+    plantsPage.visitAddPlantPage();
+    cy.wait(1000);
+});
+
+When("I leave the Plant Name field empty", () => {
+    // Intentionally do not fill the name field
+    cy.log('Skipping Plant Name field to trigger validation error');
+});
+
+When("I fill in other required fields correctly", () => {
+    // Fill category, price, and quantity but not name
+    cy.get('select[name="categoryId"] option').eq(1).invoke('val').then((categoryId) => {
+        plantsPage.fillPlantForm({
+            category: categoryId,
+            price: '25.99',
+            quantity: '10'
+        });
+    });
+});
+
+Then("a validation error message should be displayed", () => {
+    // Check for validation error message
+    cy.get('.error, .invalid-feedback, .error-message, .text-danger, [class*="error"]')
+        .should('exist')
+        .and('be.visible');
+});
+
+Then("the error message should say {string}", (expectedMessage) => {
+    // Verify the exact error message text
+    cy.get('.error, .invalid-feedback, .error-message, .text-danger, [class*="error"]')
+        .should('be.visible')
+        .and('contain.text', expectedMessage);
+});
+
 // @Plant_User_UI_02 -----------------------------------------------
 
 When("I select a category from the dropdown", () => {

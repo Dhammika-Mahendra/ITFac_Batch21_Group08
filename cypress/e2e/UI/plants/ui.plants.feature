@@ -65,6 +65,16 @@ Feature: Plant Management UI
         Then the Edit Plant form should be displayed
         And all form fields should be pre-filled with existing plant data
 
+    @Plant_Admin_UI_08 @focus
+    Scenario: Verify that the system displays a validation error when the Plant Name field is empty
+        Given I have logged in to the UI as an admin user
+        When I navigate to the Add Plant page
+        And I leave the Plant Name field empty
+        And I fill in other required fields correctly
+        And I click Save button
+        Then a validation error message should be displayed
+        And the error message should say "Plant name is required"
+
     #----------------------------------------------
     #          Regular User Scenarios
     #----------------------------------------------
@@ -137,7 +147,7 @@ Feature: Plant Management UI
         When I navigate to the plants page
         Then the Add Plant button should not be visible
 
-    @Plant_User_UI_10 @focus
+    @Plant_User_UI_10 
     Scenario: Verify that Edit and Delete actions are hidden for non-admin users
         Given I have logged in to the UI as a regular user
         When I navigate to the plants page
