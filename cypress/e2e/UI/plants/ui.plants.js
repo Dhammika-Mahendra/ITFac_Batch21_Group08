@@ -263,7 +263,7 @@ When("I enter a Plant Name with more than 25 characters", () => {
 });
 
 When("I fill valid Name, Category and Quantity", () => {
-    const name = 'TestPlant';
+    const name = `TestPlant_${Date.now()}`;
     cy.get('input[name="name"]').clear().type(name);
     // Select first non-empty category option and set quantity
     cy.get('select[name="categoryId"] option').eq(1).invoke('val').then((categoryId) => {
@@ -278,6 +278,62 @@ When("I leave the Price field empty", () => {
 
 When("I enter Price as a negative value", () => {
     cy.get('input[name="price"]').clear().type('-5');
+});
+
+When("I fill valid Name, Category and Price", () => {
+    const name = `TestPlant_${Date.now()}`;
+    cy.get('input[name="name"]').clear().type(name);
+    cy.get('input[name="price"]').clear().type('9.99');
+    cy.get('select[name="categoryId"] option').eq(1).invoke('val').then((categoryId) => {
+        plantsPage.fillPlantForm({ name: name, category: categoryId, price: '9.99' });
+    });
+    cy.wrap(name).as('currentTestPlantName');
+    cy.wait(500);
+});
+
+When("I leave the Quantity field empty", () => {
+    cy.get('input[name="quantity"]').clear();
+});
+
+When("I enter Quantity as a negative value", () => {
+    cy.get('input[name="quantity"]').clear().type('-3');
+});
+
+When("I enter Quantity as 0", () => {
+    cy.get('input[name="quantity"]').clear().type('0');
+});
+
+When("I fill valid Name, Price and Quantity", () => {
+    const name = `TestPlant_${Date.now()}`;
+    cy.get('input[name="name"]').clear().type(name);
+    cy.get('input[name="price"]').clear().type('9.99');
+    cy.get('input[name="quantity"]').clear().type('5');
+    cy.wait(500);
+});
+
+When("I leave the Category field unselected", () => {
+    // Ensure category is not selected (set to empty/default value)
+    cy.get('select[name="categoryId"]').select('');
+});
+
+Then("the plant should be saved successfully with quantity = 0", () => {
+    // Wait for successful save and redirect
+    cy.url().should('include', '/plants');
+    cy.wait(1000);
+    
+    // Get the stored plant name and verify quantity
+    cy.get('@currentTestPlantName').then((plantName) => {
+        plantsPage.searchPlant(plantName);
+        cy.wait(1000);
+        plantsPage.plantRows.each(($row) => {
+            const name = $row.find('td').first().text().trim();
+            if (name === plantName) {
+                cy.wrap($row).within(() => {
+                    cy.get('td').eq(3).should('contain.text', '0');
+                });
+            }
+        });
+    });
 });
 
 When("I fill in other required fields correctly", () => {

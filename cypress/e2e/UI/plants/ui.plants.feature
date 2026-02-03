@@ -95,7 +95,7 @@ Feature: Plant Management UI
         Then a validation error message should be displayed
         And the error message should say "Plant name must be between 3 and 25 characters"
 
-    @Plant_Admin_UI_11 @focus
+    @Plant_Admin_UI_11 
     Scenario: Verify that the system displays a validation error when the Price field is empty
         Given I have logged in to the UI as an admin user
         When I navigate to the Add Plant page
@@ -105,7 +105,7 @@ Feature: Plant Management UI
         Then a validation error message should be displayed
         And the error message should say "Price is required"
 
-    @Plant_Admin_UI_12 @focus
+    @Plant_Admin_UI_12 
     Scenario: Verify that the system displays a validation error when the Price is a negative value
         Given I have logged in to the UI as an admin user
         When I navigate to the Add Plant page
@@ -114,6 +114,45 @@ Feature: Plant Management UI
         And I click Save button
         Then a validation error message should be displayed
         And the error message should say "Price must be greater than 0"
+
+    @Plant_Admin_UI_13 
+    Scenario: Verify that the system displays a validation error when the Quantity field is empty
+        Given I have logged in to the UI as an admin user
+        When I navigate to the Add Plant page
+        And I fill valid Name, Category and Price
+        And I leave the Quantity field empty
+        And I click Save button
+        Then a validation error message should be displayed
+        And the error message should say "Quantity is required"
+
+    @Plant_Admin_UI_14 
+    Scenario: Verify that the system displays a validation error when the Quantity is a negative value
+        Given I have logged in to the UI as an admin user
+        When I navigate to the Add Plant page
+        And I fill valid Name, Category and Price
+        And I enter Quantity as a negative value
+        And I click Save button
+        Then a validation error message should be displayed
+        And the error message should say "Quantity cannot be negative"
+
+    @Plant_Admin_UI_15
+    Scenario: Verify that the system accepts a Quantity value of 0
+        Given I have logged in to the UI as an admin user
+        When I navigate to the Add Plant page
+        And I fill valid Name, Category and Price
+        And I enter Quantity as 0
+        And I click Save button
+        Then the plant should be saved successfully with quantity = 0
+
+    @Plant_Admin_UI_16 @focus
+    Scenario: Verify that the system displays a validation error when the Category is not selected
+        Given I have logged in to the UI as an admin user
+        When I navigate to the Add Plant page
+        And I fill valid Name, Price and Quantity
+        And I leave the Category field unselected
+        And I click Save button
+        Then a validation error message should be displayed
+        And the error message should say "Category is required"
 
     #----------------------------------------------
     #          Regular User Scenarios
