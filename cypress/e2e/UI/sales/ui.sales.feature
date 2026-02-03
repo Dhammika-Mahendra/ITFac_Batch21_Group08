@@ -55,7 +55,7 @@ Feature: Sales Management
         And I click on the "Sell Plant" button
         When I leave the Quantity field empty
         And I submit the form
-        Then an error message should appear for Quantity field
+        Then the error message "Quantity must be greater than 0" should be displayed
 
     @Sale_Admin_UI_07
     Scenario: Verify validation for non numeric quantity

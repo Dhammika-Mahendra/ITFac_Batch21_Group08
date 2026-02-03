@@ -87,13 +87,13 @@ After({ tags: "@Sale_Admin_UI_08" }, () => {
 
 Before({ tags: "@Sale_Admin_UI_09" }, () => {
 	apiLoginAsAdmin().then(() => {
-		backupSalesData();
+		backupSalesData(); // Backup the sales data before the test
 	});
 });
 
 After({ tags: "@Sale_Admin_UI_09" }, () => {
 	apiLoginAsAdmin().then(() => {
-		restoreSalesData();
+		restoreSalesData(); // Restore the sales data after the test to ensure no test data remains
 	});
 });
 
