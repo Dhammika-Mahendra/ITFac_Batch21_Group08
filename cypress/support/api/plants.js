@@ -130,3 +130,32 @@ export function getPlantsByCategory(categoryId, responseAlias = "plantsByCategor
         alias: responseAlias
     });
 }
+
+export function getAllPlantsUnauthorized(invalidToken = "invalid-token-123", responseAlias = "unauthorizedPlantsResponse") {
+    const baseUrl = ensureBaseUrl();
+    const url = `${baseUrl}/api/plants`;
+    
+    return cy.request({
+        method: "GET",
+        url,
+        headers: {
+            Authorization: `Bearer ${invalidToken}`
+        },
+        failOnStatusCode: false
+    }).as(responseAlias);
+}
+
+export function searchPlantsUnauthorized(searchParams = {}, invalidToken = "invalid-token-123", responseAlias = "unauthorizedSearchResponse") {
+    const baseUrl = ensureBaseUrl();
+    const url = `${baseUrl}/api/plants`;
+    
+    return cy.request({
+        method: "GET",
+        url,
+        qs: searchParams,
+        headers: {
+            Authorization: `Bearer ${invalidToken}`
+        },
+        failOnStatusCode: false
+    }).as(responseAlias);
+}

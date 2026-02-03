@@ -242,6 +242,125 @@ Then("all form fields should be pre-filled with existing plant data", () => {
     plantsPage.verifyFormPreFilled();
 });
 
+// @Plant_Admin_UI_08 -----------------------------------------------
+
+When("I navigate to the Add Plant page", () => {
+    plantsPage.visitAddPlantPage();
+    cy.wait(1000);
+});
+
+When("I leave the Plant Name field empty", () => {
+    cy.log('Skipping Plant Name field to trigger validation error');
+});
+
+When("I enter a Plant Name with less than 3 characters", () => {
+    cy.get('input[name="name"]').clear().type('AB');
+});
+
+When("I enter a Plant Name with more than 25 characters", () => {
+    const longName = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1'; // 27 chars
+    cy.get('input[name="name"]').clear().type(longName);
+});
+
+When("I fill valid Name, Category and Quantity", () => {
+    const name = `TestPlant_${Date.now()}`;
+    cy.get('input[name="name"]').clear().type(name);
+    // Select first non-empty category option and set quantity
+    cy.get('select[name="categoryId"] option').eq(1).invoke('val').then((categoryId) => {
+        plantsPage.fillPlantForm({ name: name, category: categoryId, quantity: '5' });
+    });
+    cy.wait(500);
+});
+
+When("I leave the Price field empty", () => {
+    cy.get('input[name="price"]').clear();
+});
+
+When("I enter Price as a negative value", () => {
+    cy.get('input[name="price"]').clear().type('-5');
+});
+
+When("I fill valid Name, Category and Price", () => {
+    const name = `TestPlant_${Date.now()}`;
+    cy.get('input[name="name"]').clear().type(name);
+    cy.get('input[name="price"]').clear().type('9.99');
+    cy.get('select[name="categoryId"] option').eq(1).invoke('val').then((categoryId) => {
+        plantsPage.fillPlantForm({ name: name, category: categoryId, price: '9.99' });
+    });
+    cy.wrap(name).as('currentTestPlantName');
+    cy.wait(500);
+});
+
+When("I leave the Quantity field empty", () => {
+    cy.get('input[name="quantity"]').clear();
+});
+
+When("I enter Quantity as a negative value", () => {
+    cy.get('input[name="quantity"]').clear().type('-3');
+});
+
+When("I enter Quantity as 0", () => {
+    cy.get('input[name="quantity"]').clear().type('0');
+});
+
+When("I fill valid Name, Price and Quantity", () => {
+    const name = `TestPlant_${Date.now()}`;
+    cy.get('input[name="name"]').clear().type(name);
+    cy.get('input[name="price"]').clear().type('9.99');
+    cy.get('input[name="quantity"]').clear().type('5');
+    cy.wait(500);
+});
+
+When("I leave the Category field unselected", () => {
+    // Ensure category is not selected (set to empty/default value)
+    cy.get('select[name="categoryId"]').select('');
+});
+
+Then("the plant should be saved successfully with quantity = 0", () => {
+    // Wait for successful save and redirect
+    cy.url().should('include', '/plants');
+    cy.wait(1000);
+    
+    // Get the stored plant name and verify quantity
+    cy.get('@currentTestPlantName').then((plantName) => {
+        plantsPage.searchPlant(plantName);
+        cy.wait(1000);
+        plantsPage.plantRows.each(($row) => {
+            const name = $row.find('td').first().text().trim();
+            if (name === plantName) {
+                cy.wrap($row).within(() => {
+                    cy.get('td').eq(3).should('contain.text', '0');
+                });
+            }
+        });
+    });
+});
+
+When("I fill in other required fields correctly", () => {
+    // Fill category, price, and quantity but not name
+    cy.get('select[name="categoryId"] option').eq(1).invoke('val').then((categoryId) => {
+        plantsPage.fillPlantForm({
+            category: categoryId,
+            price: '25.99',
+            quantity: '10'
+        });
+    });
+});
+
+Then("a validation error message should be displayed", () => {
+    // Check for validation error message
+    cy.get('.error, .invalid-feedback, .error-message, .text-danger, [class*="error"]')
+        .should('exist')
+        .and('be.visible');
+});
+
+Then("the error message should say {string}", (expectedMessage) => {
+    // Verify the exact error message text
+    cy.get('.error, .invalid-feedback, .error-message, .text-danger, [class*="error"]')
+        .should('be.visible')
+        .and('contain.text', expectedMessage);
+});
+
 // @Plant_User_UI_02 -----------------------------------------------
 
 When("I select a category from the dropdown", () => {
@@ -381,4 +500,172 @@ Then("the Low badge should be displayed for plants with low quantity", () => {
             cy.log('⚠️ No plants with quantity < 5 were found in the visible list. Test passed vacuously.');
         }
     });
+});
+
+// @Plant_User_UI_07 -----------------------------------------------
+
+When("I click on the Price column header", () => {
+    plantsPage.clickSortByPrice();
+    cy.wait(1000);
+});
+
+Then("plants should be sorted by price from lowest to highest", () => {
+    plantsPage.plantRows.then(($rows) => {
+        const prices = [];
+        $rows.each((idx, row) => {
+            // Get the price column (assuming it's the 3rd column, index 2)
+            const priceText = Cypress.$(row).find('td').eq(2).text().trim();
+            const price = parseFloat(priceText.replace(/[^0-9.]/g, ''));
+            prices.push(price);
+        });
+
+        cy.log(`Prices extracted: ${prices.join(', ')}`);
+
+        // Verify ascending order (lowest to highest)
+        const isAscending = prices.every((val, i, arr) => !i || arr[i - 1] <= val);
+
+        if (!isAscending) {
+            cy.log('⚠️ Backend sorting bug detected: Prices are NOT sorted from lowest to highest as expected.');
+            cy.log(`Current order: ${prices.join(', ')}`);
+        }
+
+        // Assert that prices are in ascending order
+        expect(isAscending, 'Prices should be sorted from lowest to highest').to.be.true;
+    });
+});
+
+When("I click on the Price column header again", () => {
+    plantsPage.clickSortByPrice();
+    cy.wait(1000);
+});
+
+Then("plants should be sorted by price from highest to lowest", () => {
+    plantsPage.plantRows.then(($rows) => {
+        const prices = [];
+        $rows.each((idx, row) => {
+            // Get the price column (assuming it's the 3rd column, index 2)
+            const priceText = Cypress.$(row).find('td').eq(2).text().trim();
+            const price = parseFloat(priceText.replace(/[^0-9.]/g, ''));
+            prices.push(price);
+        });
+
+        cy.log(`Prices extracted: ${prices.join(', ')}`);
+
+        // Verify descending order (highest to lowest)
+        const isDescending = prices.every((val, i, arr) => !i || arr[i - 1] >= val);
+
+        if (!isDescending) {
+            cy.log('⚠️ Backend sorting bug detected: Prices are NOT sorted from highest to lowest as expected.');
+            cy.log(`Current order: ${prices.join(', ')}`);
+        }
+
+        // Assert that prices are in descending order
+        expect(isDescending, 'Prices should be sorted from highest to lowest').to.be.true;
+    });
+});
+
+// @Plant_User_UI_08 -----------------------------------------------
+
+When("I click on the Quantity column header", () => {
+    plantsPage.clickSortByQuantity();
+    cy.wait(1000);
+});
+
+Then("plants should be sorted by quantity from lowest to highest", () => {
+    plantsPage.plantRows.then(($rows) => {
+        const quantities = [];
+        $rows.each((idx, row) => {
+            // Get the quantity column (assuming it's the 4th column, index 3)
+            const quantityText = Cypress.$(row).find('td').eq(3).text().trim();
+            const quantity = parseInt(quantityText.replace(/[^0-9]/g, ''), 10);
+            quantities.push(quantity);
+        });
+
+        cy.log(`Quantities extracted: ${quantities.join(', ')}`);
+
+        // Verify ascending order (lowest to highest)
+        const isAscending = quantities.every((val, i, arr) => !i || arr[i - 1] <= val);
+
+        if (!isAscending) {
+            cy.log('Backend sorting bug detected: Quantities are NOT sorted from lowest to highest as expected.');
+            cy.log(`Current order: ${quantities.join(', ')}`);
+        }
+
+        // Assert that quantities are in ascending order
+        expect(isAscending, 'Quantities should be sorted from lowest to highest').to.be.true;
+    });
+});
+
+When("I click on the Quantity column header again", () => {
+    plantsPage.clickSortByQuantity();
+    cy.wait(1000);
+});
+
+Then("plants should be sorted by quantity from highest to lowest", () => {
+    plantsPage.plantRows.then(($rows) => {
+        const quantities = [];
+        $rows.each((idx, row) => {
+            // Get the quantity column (assuming it's the 4th column, index 3)
+            const quantityText = Cypress.$(row).find('td').eq(3).text().trim();
+            const quantity = parseInt(quantityText.replace(/[^0-9]/g, ''), 10);
+            quantities.push(quantity);
+        });
+
+        cy.log(`Quantities extracted: ${quantities.join(', ')}`);
+
+        // Verify descending order (highest to lowest)
+        const isDescending = quantities.every((val, i, arr) => !i || arr[i - 1] >= val);
+
+        if (!isDescending) {
+            cy.log('Backend sorting bug detected: Quantities are NOT sorted from highest to lowest as expected.');
+            cy.log(`Current order: ${quantities.join(', ')}`);
+        }
+
+        // Assert that quantities are in descending order
+        expect(isDescending, 'Quantities should be sorted from highest to lowest').to.be.true;
+    });
+});
+
+// @Plant_User_UI_09 -----------------------------------------------
+Then("the Add Plant button should not be visible", () => {
+    cy.get('body').then(($body) => {
+        const addPlantButton = $body.find('a.btn:contains("Add Plant"), button:contains("Add Plant")');
+        if (addPlantButton.length > 0) {
+            cy.get('a.btn:contains("Add Plant"), button:contains("Add Plant")').should('not.be.visible');
+        } else {
+            cy.log('Add Plant button is not rendered for non-admin users.');
+            cy.get('a.btn:contains("Add Plant"), button:contains("Add Plant")').should('not.exist');
+        }
+    });
+});
+
+// @Plant_User_UI_10-----------------------------------------------
+
+Then("Edit icons should not be visible for any plants", () => {
+    cy.get('body').then(($body) => {
+        const editButtons = $body.find('button:contains("Edit"), a[title*="Edit"], a[aria-label*="Edit"], .edit-icon');
+        if (editButtons.length > 0) {
+            // If Edit buttons exist, they should not be visible
+            cy.get('button:contains("Edit"), a[title*="Edit"], a[aria-label*="Edit"]').should('not.be.visible');
+        } else {
+            // Edit buttons don't exist at all (preferred for non-admin)
+            cy.log('Edit icons/buttons are not rendered for non-admin users.');
+            cy.get('button:contains("Edit"), a[title*="Edit"], a[aria-label*="Edit"]').should('not.exist');
+        }
+    });
+});
+
+Then("Delete icons should not be visible for any plants", () => {
+    cy.get('body').then(($body) => {
+        const deleteButtons = $body.find('button:contains("Delete"), button[title*="Delete"], button[aria-label*="Delete"], .delete-icon');
+        if (deleteButtons.length > 0) {
+            // If Delete buttons exist, they should not be visible
+            cy.get('button:contains("Delete"), button[title*="Delete"], button[aria-label*="Delete"]').should('not.be.visible');
+        } else {
+            // Delete buttons don't exist at all (preferred for non-admin)
+            cy.log('✅ Delete icons/buttons are not rendered for non-admin users.');
+            cy.get('button:contains("Delete"), button[title*="Delete"], button[aria-label*="Delete"]').should('not.exist');
+        }
+    });
+
 });
