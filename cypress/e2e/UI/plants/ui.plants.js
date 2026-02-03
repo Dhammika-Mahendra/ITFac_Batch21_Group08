@@ -262,6 +262,24 @@ When("I enter a Plant Name with more than 25 characters", () => {
     cy.get('input[name="name"]').clear().type(longName);
 });
 
+When("I fill valid Name, Category and Quantity", () => {
+    const name = 'TestPlant';
+    cy.get('input[name="name"]').clear().type(name);
+    // Select first non-empty category option and set quantity
+    cy.get('select[name="categoryId"] option').eq(1).invoke('val').then((categoryId) => {
+        plantsPage.fillPlantForm({ name: name, category: categoryId, quantity: '5' });
+    });
+    cy.wait(500);
+});
+
+When("I leave the Price field empty", () => {
+    cy.get('input[name="price"]').clear();
+});
+
+When("I enter Price as a negative value", () => {
+    cy.get('input[name="price"]').clear().type('-5');
+});
+
 When("I fill in other required fields correctly", () => {
     // Fill category, price, and quantity but not name
     cy.get('select[name="categoryId"] option').eq(1).invoke('val').then((categoryId) => {

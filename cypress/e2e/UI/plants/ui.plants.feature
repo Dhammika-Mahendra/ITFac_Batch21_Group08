@@ -85,7 +85,7 @@ Feature: Plant Management UI
         Then a validation error message should be displayed
         And the error message should say "Plant name must be between 3 and 25 characters"
 
-    @Plant_Admin_UI_10 @focus
+    @Plant_Admin_UI_10 
     Scenario: Verify that the system displays a validation error when the Plant Name exceeds 25 characters
         Given I have logged in to the UI as an admin user
         When I navigate to the Add Plant page
@@ -94,6 +94,26 @@ Feature: Plant Management UI
         And I click Save button
         Then a validation error message should be displayed
         And the error message should say "Plant name must be between 3 and 25 characters"
+
+    @Plant_Admin_UI_11 @focus
+    Scenario: Verify that the system displays a validation error when the Price field is empty
+        Given I have logged in to the UI as an admin user
+        When I navigate to the Add Plant page
+        And I fill valid Name, Category and Quantity
+        And I leave the Price field empty
+        And I click Save button
+        Then a validation error message should be displayed
+        And the error message should say "Price is required"
+
+    @Plant_Admin_UI_12 @focus
+    Scenario: Verify that the system displays a validation error when the Price is a negative value
+        Given I have logged in to the UI as an admin user
+        When I navigate to the Add Plant page
+        And I fill valid Name, Category and Quantity
+        And I enter Price as a negative value
+        And I click Save button
+        Then a validation error message should be displayed
+        And the error message should say "Price must be greater than 0"
 
     #----------------------------------------------
     #          Regular User Scenarios
