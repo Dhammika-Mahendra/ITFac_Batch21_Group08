@@ -250,8 +250,11 @@ When("I navigate to the Add Plant page", () => {
 });
 
 When("I leave the Plant Name field empty", () => {
-    // Intentionally do not fill the name field
     cy.log('Skipping Plant Name field to trigger validation error');
+});
+
+When("I enter a Plant Name with less than 3 characters", () => {
+    cy.get('input[name="name"]').clear().type('AB');
 });
 
 When("I fill in other required fields correctly", () => {

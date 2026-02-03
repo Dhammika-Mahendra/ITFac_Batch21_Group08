@@ -65,7 +65,7 @@ Feature: Plant Management UI
         Then the Edit Plant form should be displayed
         And all form fields should be pre-filled with existing plant data
 
-    @Plant_Admin_UI_08 @focus
+    @Plant_Admin_UI_08
     Scenario: Verify that the system displays a validation error when the Plant Name field is empty
         Given I have logged in to the UI as an admin user
         When I navigate to the Add Plant page
@@ -74,6 +74,16 @@ Feature: Plant Management UI
         And I click Save button
         Then a validation error message should be displayed
         And the error message should say "Plant name is required"
+
+    @Plant_Admin_UI_09 @focus
+    Scenario: Verify that the system displays a validation error when the Plant Name is less than 3 characters
+        Given I have logged in to the UI as an admin user
+        When I navigate to the Add Plant page
+        And I enter a Plant Name with less than 3 characters
+        And I fill in other required fields correctly
+        And I click Save button
+        Then a validation error message should be displayed
+        And the error message should say "Plant name must be between 3 and 25 characters"
 
     #----------------------------------------------
     #          Regular User Scenarios
