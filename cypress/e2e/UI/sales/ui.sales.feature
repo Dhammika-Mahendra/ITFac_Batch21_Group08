@@ -64,7 +64,7 @@ Feature: Sales Management
         And I click on the "Sell Plant" button
         When I enter a non-numeric value in the Quantity field
         And I submit the form
-        Then an error message should appear for Quantity field
+        Then the error message "Quantity must be a valid number" should be displayed
 
     @Sale_Admin_UI_08
     Scenario: Verify that after a successful plant selling, admin redirects to sales list automatically
