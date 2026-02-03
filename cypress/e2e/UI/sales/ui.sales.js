@@ -274,6 +274,11 @@ Then("the sales should be sorted by Total price", () => {
 	salesPage.verifySalesSortedByTotalPrice();
 });
 
+Given("I am on the Sales page", () => {
+	salesPage.visitSalesPage();
+	cy.url().should('include', '/ui/sales');
+});
+
 Given("I am on the Sell Plant page", () => {
 	loginPage.visitLoginPage();
 	uiLoginAsAdmin();
@@ -382,4 +387,12 @@ Then("the sales records should be sorted correctly by Total Price", () => {
 
 Then("the sales records should be sorted correctly by Sold Date", () => {
 	salesPage.verifySalesSortedBySoldDate();
+});
+
+Then("I should be denied access to the sales page", () => {
+    // Check for any of the access denial messages
+    cy.get('body').then(($body) => {
+        const text = $body.text();
+        expect(text).to.satisfy((t) => t.includes('403') || t.includes('Forbidden') || t.includes('Unauthorized'));
+    });
 });

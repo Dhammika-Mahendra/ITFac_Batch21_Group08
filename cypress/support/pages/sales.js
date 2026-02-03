@@ -301,8 +301,11 @@ class SalesPage {
         // Verify validation error message appears near the quantity field
         // Check for error message in common locations
         cy.get('input[name="quantity"], input[id="quantity"]').then(($field) => {
-            // Look for error message near the field
-            cy.get('body').should('contain.text', 'Quantity must be greater than 0').or('contain.text', 'Quantity is required');
+            // Look for error message near the field - check for either message
+            cy.get('body').should(($body) => {
+                const text = $body.text();
+                expect(text).to.match(/Quantity must be greater than 0|Quantity is required/);
+            });
         });
         
         // Alternative: check for error in label/span near quantity field
