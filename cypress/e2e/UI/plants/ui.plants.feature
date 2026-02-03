@@ -136,3 +136,10 @@ Feature: Plant Management UI
         Given I have logged in to the UI as a regular user
         When I navigate to the plants page
         Then the Add Plant button should not be visible
+
+    @Plant_User_UI_10 @focus
+    Scenario: Verify that Edit and Delete actions are hidden for non-admin users
+        Given I have logged in to the UI as a regular user
+        When I navigate to the plants page
+        Then Edit icons should not be visible for any plants
+        And Delete icons should not be visible for any plants

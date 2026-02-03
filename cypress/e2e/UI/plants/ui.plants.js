@@ -520,7 +520,7 @@ Then("the Add Plant button should not be visible", () => {
     });
 });
 
-// @Plant_User_UI_11 -----------------------------------------------
+// @Plant_User_UI_10-----------------------------------------------
 
 Then("Edit icons should not be visible for any plants", () => {
     cy.get('body').then(($body) => {
@@ -530,7 +530,7 @@ Then("Edit icons should not be visible for any plants", () => {
             cy.get('button:contains("Edit"), a[title*="Edit"], a[aria-label*="Edit"]').should('not.be.visible');
         } else {
             // Edit buttons don't exist at all (preferred for non-admin)
-            cy.log('✅ Edit icons/buttons are not rendered for non-admin users.');
+            cy.log('Edit icons/buttons are not rendered for non-admin users.');
             cy.get('button:contains("Edit"), a[title*="Edit"], a[aria-label*="Edit"]').should('not.exist');
         }
     });
@@ -548,4 +548,5 @@ Then("Delete icons should not be visible for any plants", () => {
             cy.get('button:contains("Delete"), button[title*="Delete"], button[aria-label*="Delete"]').should('not.exist');
         }
     });
+
 });
