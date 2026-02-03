@@ -382,3 +382,127 @@ Then("the Low badge should be displayed for plants with low quantity", () => {
         }
     });
 });
+
+// @Plant_User_UI_07 -----------------------------------------------
+
+When("I click on the Price column header", () => {
+    plantsPage.clickSortByPrice();
+    cy.wait(1000);
+});
+
+Then("plants should be sorted by price from lowest to highest", () => {
+    plantsPage.plantRows.then(($rows) => {
+        const prices = [];
+        $rows.each((idx, row) => {
+            // Get the price column (assuming it's the 3rd column, index 2)
+            const priceText = Cypress.$(row).find('td').eq(2).text().trim();
+            const price = parseFloat(priceText.replace(/[^0-9.]/g, ''));
+            prices.push(price);
+        });
+
+        cy.log(`Prices extracted: ${prices.join(', ')}`);
+
+        // Verify ascending order (lowest to highest)
+        const isAscending = prices.every((val, i, arr) => !i || arr[i - 1] <= val);
+
+        if (!isAscending) {
+            cy.log('⚠️ Backend sorting bug detected: Prices are NOT sorted from lowest to highest as expected.');
+            cy.log(`Current order: ${prices.join(', ')}`);
+        }
+
+        // Assert that prices are in ascending order
+        expect(isAscending, 'Prices should be sorted from lowest to highest').to.be.true;
+    });
+});
+
+When("I click on the Price column header again", () => {
+    plantsPage.clickSortByPrice();
+    cy.wait(1000);
+});
+
+Then("plants should be sorted by price from highest to lowest", () => {
+    plantsPage.plantRows.then(($rows) => {
+        const prices = [];
+        $rows.each((idx, row) => {
+            // Get the price column (assuming it's the 3rd column, index 2)
+            const priceText = Cypress.$(row).find('td').eq(2).text().trim();
+            const price = parseFloat(priceText.replace(/[^0-9.]/g, ''));
+            prices.push(price);
+        });
+
+        cy.log(`Prices extracted: ${prices.join(', ')}`);
+
+        // Verify descending order (highest to lowest)
+        const isDescending = prices.every((val, i, arr) => !i || arr[i - 1] >= val);
+
+        if (!isDescending) {
+            cy.log('⚠️ Backend sorting bug detected: Prices are NOT sorted from highest to lowest as expected.');
+            cy.log(`Current order: ${prices.join(', ')}`);
+        }
+
+        // Assert that prices are in descending order
+        expect(isDescending, 'Prices should be sorted from highest to lowest').to.be.true;
+    });
+});
+
+// @Plant_User_UI_08 -----------------------------------------------
+
+When("I click on the Quantity column header", () => {
+    plantsPage.clickSortByQuantity();
+    cy.wait(1000);
+});
+
+Then("plants should be sorted by quantity from lowest to highest", () => {
+    plantsPage.plantRows.then(($rows) => {
+        const quantities = [];
+        $rows.each((idx, row) => {
+            // Get the quantity column (assuming it's the 4th column, index 3)
+            const quantityText = Cypress.$(row).find('td').eq(3).text().trim();
+            const quantity = parseInt(quantityText.replace(/[^0-9]/g, ''), 10);
+            quantities.push(quantity);
+        });
+
+        cy.log(`Quantities extracted: ${quantities.join(', ')}`);
+
+        // Verify ascending order (lowest to highest)
+        const isAscending = quantities.every((val, i, arr) => !i || arr[i - 1] <= val);
+
+        if (!isAscending) {
+            cy.log('Backend sorting bug detected: Quantities are NOT sorted from lowest to highest as expected.');
+            cy.log(`Current order: ${quantities.join(', ')}`);
+        }
+
+        // Assert that quantities are in ascending order
+        expect(isAscending, 'Quantities should be sorted from lowest to highest').to.be.true;
+    });
+});
+
+When("I click on the Quantity column header again", () => {
+    plantsPage.clickSortByQuantity();
+    cy.wait(1000);
+});
+
+Then("plants should be sorted by quantity from highest to lowest", () => {
+    plantsPage.plantRows.then(($rows) => {
+        const quantities = [];
+        $rows.each((idx, row) => {
+            // Get the quantity column (assuming it's the 4th column, index 3)
+            const quantityText = Cypress.$(row).find('td').eq(3).text().trim();
+            const quantity = parseInt(quantityText.replace(/[^0-9]/g, ''), 10);
+            quantities.push(quantity);
+        });
+
+        cy.log(`Quantities extracted: ${quantities.join(', ')}`);
+
+        // Verify descending order (highest to lowest)
+        const isDescending = quantities.every((val, i, arr) => !i || arr[i - 1] >= val);
+
+        if (!isDescending) {
+            cy.log('Backend sorting bug detected: Quantities are NOT sorted from highest to lowest as expected.');
+            cy.log(`Current order: ${quantities.join(', ')}`);
+        }
+
+        // Assert that quantities are in descending order
+        expect(isDescending, 'Quantities should be sorted from highest to lowest').to.be.true;
+    });
+});
