@@ -1,6 +1,6 @@
 import { Given, When, Then } from "@badeball/cypress-cucumber-preprocessor";
 import { apiLoginAsAdmin, apiLoginAsUser } from "../../preconditions/login";
-import { getSalesPage, sellPlant, validateSalesResponse, validateSalesSortedByDate, validateSalesSortedByPlantName, validateSalesErrorResponse, validateSalesSortedByQuantity, validateSalesSortedByTotalPrice, validateSalesNotFoundResponse, getSaleById, validateSingleSaleResponse, deleteSale, validateDeleteSaleErrorResponse, createSaleWithoutPlant, validateMissingPlantErrorResponse, sellPlantWithoutAuth, validateUnauthorizedErrorResponse, validateForbiddenErrorResponse, validateNegativeQuantityOrZeroErrorResponse, validateDecimalQuantityErrorResponse, validateNonNumericQuantityErrorResponse, getPlantWithStock, createSaleExceedingStock, validateInsufficientStockErrorResponse, selectPlantWithStockGreaterThan, createSaleAndVerify, validateSaleCreationSuccess, validateStockReduction, cleanupSaleTestData } from "../../../support/api/sales";
+import { getSalesPage, sellPlant, validateSalesResponse, validateSalesSortedByDate, validateSalesSortedByPlantName, validateSalesErrorResponse, validateSalesSortedByQuantity, validateSalesSortedByTotalPrice, validateSalesNotFoundResponse, getSaleById, validateSingleSaleResponse, deleteSale, validateDeleteSaleErrorResponse, createSaleWithoutPlant, validateMissingPlantErrorResponse, sellPlantWithoutAuth, validateUnauthorizedErrorResponse, validateForbiddenErrorResponse, validateNegativeQuantityOrZeroErrorResponse, validateDecimalQuantityErrorResponse, validateNonNumericQuantityErrorResponse, getPlantWithStock, createSaleExceedingStock, validateInsufficientStockErrorResponse, selectPlantWithStockGreaterThan, createSaleAndVerify, validateSaleCreationSuccess, validateStockReduction, cleanupSaleTestData, getAllSales } from "../../../support/api/sales";
 
 Given("I have logged in as an admin user", () => {
 	return apiLoginAsAdmin();
@@ -292,5 +292,21 @@ Then("I should receive a 403 status code for forbidden delete access", () => {
 Then("the delete response should contain an access denied error message", () => {
 	return cy.get("@userDeleteAttemptResponse").then((response) => {
 		return validateForbiddenErrorResponse(response);
+	});
+});
+
+// Sale_User_API_10: User can retrieve sales list
+When("I call the get all sales API endpoint", () => {
+	return getAllSales("allSalesResponse");
+});
+
+Then("I should receive a 200 status code for sales list", () => {
+	return cy.get("@allSalesResponse").its("status").should("eq", 200);
+});
+
+Then("the response should contain a sales array", () => {
+	return cy.get("@allSalesResponse").then((response) => {
+		expect(response.body, "Sales array").to.be.an("array");
+		cy.log(`✓ Received ${response.body.length} sales in the list`);
 	});
 });

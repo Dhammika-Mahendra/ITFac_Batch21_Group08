@@ -204,3 +204,10 @@ Feature: Sales Management
         When I retrieve a single sale by ID
         Then I should receive a 200 status code
         And the response should contain a single sale with the correct ID
+
+    @Sale_User_API_10
+    Scenario: Verify that a user can retrieve the sales list
+        Given I have logged in as a testuser
+        When I call the get all sales API endpoint
+        Then I should receive a 200 status code for sales list
+        And the response should contain a sales array
