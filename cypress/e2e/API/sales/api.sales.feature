@@ -196,3 +196,11 @@ Feature: Sales Management
         Then I should receive a 200 status code
         And the response should contain a list of sales
         And the sales should be sorted by plant name in alphabetical order
+
+    @Sale_User_API_09
+    Scenario: Verify that a user can retrieve a single sale by ID
+        Given I have logged in as a testuser
+        And I have retrieved a list of sales to get an existing sale ID
+        When I retrieve a single sale by ID
+        Then I should receive a 200 status code
+        And the response should contain a single sale with the correct ID
