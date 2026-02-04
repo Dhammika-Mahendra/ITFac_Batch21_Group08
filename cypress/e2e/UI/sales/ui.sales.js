@@ -87,13 +87,13 @@ After({ tags: "@Sale_Admin_UI_08" }, () => {
 
 Before({ tags: "@Sale_Admin_UI_09" }, () => {
 	apiLoginAsAdmin().then(() => {
-		backupSalesData();
+		backupSalesData(); // Backup the sales data before the test
 	});
 });
 
 After({ tags: "@Sale_Admin_UI_09" }, () => {
 	apiLoginAsAdmin().then(() => {
-		restoreSalesData();
+		restoreSalesData(); // Restore the sales data after the test to ensure no test data remains
 	});
 });
 
@@ -254,8 +254,9 @@ Given("sales exist in the system", () => {
 	cy.get('body').should('exist');
 });
 
-Then("the sales should be displayed in descending order by sold date", () => {
-	salesPage.verifySalesSortedBySoldDateDescending();
+Then("the sales should be displayed in descending order by Sold date", function () {
+    // Verify that the sales are displayed in descending order by sold date
+    salesPage.verifySalesSortedBySoldDateDescending();
 });
 
 When("I click on the {string} column header", (columnName) => {
@@ -272,6 +273,11 @@ Then("the sales should be sorted by Quantity", () => {
 
 Then("the sales should be sorted by Total price", () => {
 	salesPage.verifySalesSortedByTotalPrice();
+});
+
+Given("I am on the Sales page", () => {
+	salesPage.visitSalesPage();
+	cy.url().should('include', '/ui/sales');
 });
 
 Given("I am on the Sell Plant page", () => {
@@ -382,4 +388,10 @@ Then("the sales records should be sorted correctly by Total Price", () => {
 
 Then("the sales records should be sorted correctly by Sold Date", () => {
 	salesPage.verifySalesSortedBySoldDate();
+});
+
+Then("I should be denied access to the sales page", () => {
+    // Verify the user is redirected to an access denied page or sees an access denied message
+    cy.url().should('include', '/access-denied'); // Check if redirected to an access denied page
+    cy.get('body').should('contain.text', 'Access Denied'); // Check if the error message is displayed
 });

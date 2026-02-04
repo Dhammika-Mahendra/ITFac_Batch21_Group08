@@ -55,7 +55,7 @@ Feature: Sales Management
         And I click on the "Sell Plant" button
         When I leave the Quantity field empty
         And I submit the form
-        Then an error message should appear for Quantity field
+        Then the error message "Quantity must be greater than 0" should be displayed
 
     @Sale_Admin_UI_07
     Scenario: Verify validation for non numeric quantity
@@ -64,7 +64,7 @@ Feature: Sales Management
         And I click on the "Sell Plant" button
         When I enter a non-numeric value in the Quantity field
         And I submit the form
-        Then an error message should appear for Quantity field
+        Then the error message "Quantity must be a valid number" should be displayed
 
     @Sale_Admin_UI_08
     Scenario: Verify that after a successful plant selling, admin redirects to sales list automatically
@@ -171,6 +171,8 @@ Feature: Sales Management
         Given I am logged in as testuser
         When I navigate to the Sales page
         Then I should be denied access to the sales page
+        Then the error message "Access Denied" should be displayed
+
 
     @Sale_User_UI_02
     Scenario: Verify that "Sell Plant" button is not visible to User

@@ -65,6 +65,95 @@ Feature: Plant Management UI
         Then the Edit Plant form should be displayed
         And all form fields should be pre-filled with existing plant data
 
+    @Plant_Admin_UI_08
+    Scenario: Verify that the system displays a validation error when the Plant Name field is empty
+        Given I have logged in to the UI as an admin user
+        When I navigate to the Add Plant page
+        And I leave the Plant Name field empty
+        And I fill in other required fields correctly
+        And I click Save button
+        Then a validation error message should be displayed
+        And the error message should say "Plant name is required"
+
+    @Plant_Admin_UI_09 
+    Scenario: Verify that the system displays a validation error when the Plant Name is less than 3 characters
+        Given I have logged in to the UI as an admin user
+        When I navigate to the Add Plant page
+        And I enter a Plant Name with less than 3 characters
+        And I fill in other required fields correctly
+        And I click Save button
+        Then a validation error message should be displayed
+        And the error message should say "Plant name must be between 3 and 25 characters"
+
+    @Plant_Admin_UI_10 
+    Scenario: Verify that the system displays a validation error when the Plant Name exceeds 25 characters
+        Given I have logged in to the UI as an admin user
+        When I navigate to the Add Plant page
+        And I enter a Plant Name with more than 25 characters
+        And I fill in other required fields correctly
+        And I click Save button
+        Then a validation error message should be displayed
+        And the error message should say "Plant name must be between 3 and 25 characters"
+
+    @Plant_Admin_UI_11 
+    Scenario: Verify that the system displays a validation error when the Price field is empty
+        Given I have logged in to the UI as an admin user
+        When I navigate to the Add Plant page
+        And I fill valid Name, Category and Quantity
+        And I leave the Price field empty
+        And I click Save button
+        Then a validation error message should be displayed
+        And the error message should say "Price is required"
+
+    @Plant_Admin_UI_12 
+    Scenario: Verify that the system displays a validation error when the Price is a negative value
+        Given I have logged in to the UI as an admin user
+        When I navigate to the Add Plant page
+        And I fill valid Name, Category and Quantity
+        And I enter Price as a negative value
+        And I click Save button
+        Then a validation error message should be displayed
+        And the error message should say "Price must be greater than 0"
+
+    @Plant_Admin_UI_13 
+    Scenario: Verify that the system displays a validation error when the Quantity field is empty
+        Given I have logged in to the UI as an admin user
+        When I navigate to the Add Plant page
+        And I fill valid Name, Category and Price
+        And I leave the Quantity field empty
+        And I click Save button
+        Then a validation error message should be displayed
+        And the error message should say "Quantity is required"
+
+    @Plant_Admin_UI_14 
+    Scenario: Verify that the system displays a validation error when the Quantity is a negative value
+        Given I have logged in to the UI as an admin user
+        When I navigate to the Add Plant page
+        And I fill valid Name, Category and Price
+        And I enter Quantity as a negative value
+        And I click Save button
+        Then a validation error message should be displayed
+        And the error message should say "Quantity cannot be negative"
+
+    @Plant_Admin_UI_15
+    Scenario: Verify that the system accepts a Quantity value of 0
+        Given I have logged in to the UI as an admin user
+        When I navigate to the Add Plant page
+        And I fill valid Name, Category and Price
+        And I enter Quantity as 0
+        And I click Save button
+        Then the plant should be saved successfully with quantity = 0
+
+    @Plant_Admin_UI_16 @focus
+    Scenario: Verify that the system displays a validation error when the Category is not selected
+        Given I have logged in to the UI as an admin user
+        When I navigate to the Add Plant page
+        And I fill valid Name, Price and Quantity
+        And I leave the Category field unselected
+        And I click Save button
+        Then a validation error message should be displayed
+        And the error message should say "Category is required"
+
     #----------------------------------------------
     #          Regular User Scenarios
     #----------------------------------------------
@@ -112,3 +201,34 @@ Feature: Plant Management UI
         And I am on the plants page
         And plants with quantity less than 5 exist
         Then the Low badge should be displayed for plants with low quantity
+
+    @Plant_User_UI_07
+    Scenario: Verify that a User can sort the plants list by price in both ascending and descending order
+        Given I have logged in to the UI as a regular user
+        And I am on the plants page
+        When I click on the Price column header
+        Then plants should be sorted by price from lowest to highest
+        When I click on the Price column header again
+        Then plants should be sorted by price from highest to lowest
+
+    @Plant_User_UI_08
+    Scenario: Verify that a User can sort the plants list by quantity in both ascending and descending order
+        Given I have logged in to the UI as a regular user
+        And I am on the plants page
+        When I click on the Quantity column header
+        Then plants should be sorted by quantity from lowest to highest
+        When I click on the Quantity column header again
+        Then plants should be sorted by quantity from highest to lowest
+
+    @Plant_User_UI_09
+    Scenario: Verify that the 'Add Plant' button is hidden for non-admin users
+        Given I have logged in to the UI as a regular user
+        When I navigate to the plants page
+        Then the Add Plant button should not be visible
+
+    @Plant_User_UI_10 
+    Scenario: Verify that Edit and Delete actions are hidden for non-admin users
+        Given I have logged in to the UI as a regular user
+        When I navigate to the plants page
+        Then Edit icons should not be visible for any plants
+        And Delete icons should not be visible for any plants
