@@ -301,8 +301,11 @@ class SalesPage {
         // Verify validation error message appears near the quantity field
         // Check for error message in common locations
         cy.get('input[name="quantity"], input[id="quantity"]').then(($field) => {
-            // Look for error message near the field
-            cy.get('body').should('contain.text', 'Quantity must be greater than 0').or('contain.text', 'Quantity is required');
+            // Look for error message near the field - check for either message
+            cy.get('body').should(($body) => {
+                const text = $body.text();
+                expect(text).to.match(/Quantity must be greater than 0|Quantity is required/);
+            });
         });
         
         // Alternative: check for error in label/span near quantity field
@@ -334,9 +337,27 @@ class SalesPage {
         this.salesTable.should('exist').and('be.visible');
     }
 
-    captureCurrentPlantStock() {
-        // Store the selected plant name and initial stock for comparison
-        this.plantDropdown.find('option:selected').invoke('text').as('selectedPlant');
+ captureCurrentPlantStock() {
+        cy.get('@deletedSalePlantName').then((plantName) => {
+
+            cy.get('table tbody tr')
+            .contains('td', plantName)          
+            .parent('tr')                
+            .find('td').eq(3)            
+            .find('span').first()              
+            .invoke('text')
+            .then((stockText) => {
+                const stockBeforeDeletion = parseInt(stockText.trim());
+
+                expect(
+                stockBeforeDeletion,
+                `Stock before deletion should exist for plant ${plantName}`,
+                ).to.not.be.NaN;
+
+                cy.wrap(stockBeforeDeletion).as('stockBeforeDeletion');
+                cy.log(`Stock before deletion for ${plantName}: ${stockBeforeDeletion}`);
+            });
+        });
     }
 
     verifyStockReducedByQuantity() {
@@ -481,30 +502,7 @@ class SalesPage {
         cy.url().should('include', 'sortField=soldAt');
     }
 
-    captureCurrentPlantStock() {
-        cy.get('@deletedSalePlantName').then((plantName) => {
-
-            cy.get('table tbody tr')
-            .contains('td', plantName)          
-            .parent('tr')                
-            .find('td').eq(3)            
-            .find('span').first()              
-            .invoke('text')
-            .then((stockText) => {
-                const stockBeforeDeletion = parseInt(stockText.trim());
-
-                expect(
-                stockBeforeDeletion,
-                `Stock before deletion should exist for plant ${plantName}`
-                ).to.not.be.NaN;
-
-                cy.wrap(stockBeforeDeletion).as('stockBeforeDeletion');
-                cy.log(`Stock before deletion for ${plantName}: ${stockBeforeDeletion}`);
-            });
-        });
-    }
-
-    verifySellPlantButtonNotVisible(buttonText) {
+   verifySellPlantButtonNotVisible(buttonText) {
         // Verify the "Sell Plant" button is not visible to regular user
         // The button should either not exist or not be visible
         cy.get('body').then(($body) => {
