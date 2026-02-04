@@ -337,13 +337,26 @@ class SalesPage {
         this.salesTable.should('exist').and('be.visible');
     }
 
-    captureCurrentPlantStock() {
-        // Capture the current plant stock and set it as an alias
-        this.salesTableRows.first().find('td').eq(0).invoke('text').then((plantName) => {
-            cy.wrap(plantName.trim()).as('deletedSalePlantName');
-        });
-        this.salesTableRows.first().find('td').eq(1).invoke('text').then((stock) => {
-            cy.wrap(stock.trim()).as('currentPlantStock');
+ captureCurrentPlantStock() {
+        cy.get('@deletedSalePlantName').then((plantName) => {
+
+            cy.get('table tbody tr')
+            .contains('td', plantName)          
+            .parent('tr')                
+            .find('td').eq(3)            
+            .find('span').first()              
+            .invoke('text')
+            .then((stockText) => {
+                const stockBeforeDeletion = parseInt(stockText.trim());
+
+                expect(
+                stockBeforeDeletion,
+                `Stock before deletion should exist for plant ${plantName}`,
+                ).to.not.be.NaN;
+
+                cy.wrap(stockBeforeDeletion).as('stockBeforeDeletion');
+                cy.log(`Stock before deletion for ${plantName}: ${stockBeforeDeletion}`);
+            });
         });
     }
 

@@ -391,9 +391,7 @@ Then("the sales records should be sorted correctly by Sold Date", () => {
 });
 
 Then("I should be denied access to the sales page", () => {
-    // Check for any of the access denial messages
-    cy.get('body').then(($body) => {
-        const text = $body.text();
-        expect(text).to.satisfy((t) => t.includes('403') || t.includes('Forbidden') || t.includes('Unauthorized'));
-    });
+    // Verify the user is redirected to an access denied page or sees an access denied message
+    cy.url().should('include', '/access-denied'); // Check if redirected to an access denied page
+    cy.get('body').should('contain.text', 'Access Denied'); // Check if the error message is displayed
 });

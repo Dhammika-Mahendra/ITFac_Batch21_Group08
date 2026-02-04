@@ -171,6 +171,8 @@ Feature: Sales Management
         Given I am logged in as testuser
         When I navigate to the Sales page
         Then I should be denied access to the sales page
+        Then the error message "Access Denied" should be displayed
+
 
     @Sale_User_UI_02
     Scenario: Verify that "Sell Plant" button is not visible to User
