@@ -502,17 +502,7 @@ class SalesPage {
         cy.url().should('include', 'sortField=soldAt');
     }
 
-    captureCurrentPlantStock() {
-        // Capture the current plant stock and set it as an alias
-        this.salesTableRows.first().find('td').eq(0).invoke('text').then((plantName) => {
-            cy.wrap(plantName.trim()).as('deletedSalePlantName');
-        });
-        this.salesTableRows.first().find('td').eq(1).invoke('text').then((stock) => {
-            cy.wrap(stock.trim()).as('currentPlantStock');
-        });
-    }
-
-    verifySellPlantButtonNotVisible(buttonText) {
+   verifySellPlantButtonNotVisible(buttonText) {
         // Verify the "Sell Plant" button is not visible to regular user
         // The button should either not exist or not be visible
         cy.get('body').then(($body) => {
