@@ -188,3 +188,11 @@ Feature: Sales Management
         When I attempt to delete the sale as a regular user
         Then I should receive a 403 status code for forbidden delete access
         And the delete response should contain an access denied error message
+
+    @Sale_User_API_08
+    Scenario: Verify that a user can retrieve sales sorted by plant name
+        Given I have logged in as a testuser
+        When I call the sales pagination API endpoint with page 0, size 10 and sort PlantName
+        Then I should receive a 200 status code
+        And the response should contain a list of sales
+        And the sales should be sorted by plant name in alphabetical order
