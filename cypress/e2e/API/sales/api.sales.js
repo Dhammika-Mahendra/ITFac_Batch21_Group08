@@ -1,6 +1,6 @@
 import { Given, When, Then } from "@badeball/cypress-cucumber-preprocessor";
 import { apiLoginAsAdmin, apiLoginAsUser } from "../../preconditions/login";
-import { getSalesPage, sellPlant, validateSalesResponse, validateSalesSortedByDate, validateSalesSortedByPlantName, validateSalesErrorResponse, validateSalesSortedByQuantity, validateSalesSortedByTotalPrice, validateSalesNotFoundResponse, getSaleById, validateSingleSaleResponse, deleteSale, validateDeleteSaleErrorResponse, createSaleWithoutPlant, validateMissingPlantErrorResponse, sellPlantWithoutAuth, validateUnauthorizedErrorResponse, validateNegativeQuantityOrZeroErrorResponse, validateDecimalQuantityErrorResponse, validateNonNumericQuantityErrorResponse, getPlantWithStock, createSaleExceedingStock, validateInsufficientStockErrorResponse } from "../../../support/api/sales";
+import { getSalesPage, sellPlant, validateSalesResponse, validateSalesSortedByDate, validateSalesSortedByPlantName, validateSalesErrorResponse, validateSalesSortedByQuantity, validateSalesSortedByTotalPrice, validateSalesNotFoundResponse, getSaleById, validateSingleSaleResponse, deleteSale, validateDeleteSaleErrorResponse, createSaleWithoutPlant, validateMissingPlantErrorResponse, sellPlantWithoutAuth, validateUnauthorizedErrorResponse, validateNegativeQuantityOrZeroErrorResponse, validateDecimalQuantityErrorResponse, validateNonNumericQuantityErrorResponse, getPlantWithStock, createSaleExceedingStock, validateInsufficientStockErrorResponse, selectPlantWithStockGreaterThan, createSaleAndVerify, validateSaleCreationSuccess, validateStockReduction, cleanupSaleTestData } from "../../../support/api/sales";
 
 Given("I have logged in as an admin user", () => {
 	return apiLoginAsAdmin();
@@ -231,4 +231,30 @@ Then("the response should contain an insufficient stock error message", () => {
 	return cy.get("@insufficientStockResponse").then((response) => {
 		return validateInsufficientStockErrorResponse(response);
 	});
+});
+
+// Sale_Admin_API_16: Admin creates sale with valid data
+Given("I have selected a plant with stock greater than {int}", (minStock) => {
+	return selectPlantWithStockGreaterThan(minStock);
+});
+
+When("I create a sale for the selected plant with quantity {int}", (quantity) => {
+	return createSaleAndVerify(quantity);
+});
+
+Then("I should receive a 201 status code for sale creation", () => {
+	return cy.get("@saleCreationResponse").its("status").should("eq", 201);
+});
+
+Then("the sale should be created with correct details", () => {
+	return cy.get("@saleCreationResponse").then((response) => {
+		return validateSaleCreationSuccess(response);
+	});
+});
+
+Then("the plant stock should be reduced by the quantity sold", () => {
+	return validateStockReduction();
+});
+Then("I cleanup the test data by deleting the sale and restoring plant quantity", function () {
+	return cleanupSaleTestData();
 });

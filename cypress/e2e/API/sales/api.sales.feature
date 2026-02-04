@@ -119,6 +119,16 @@ Feature: Sales Management
         Then I should receive a 400 status code for insufficient stock
         And the response should contain an insufficient stock error message
 
+    @Sale_Admin_API_16
+    Scenario: Verify that an admin can create a new sale with valid data
+        Given I have logged in as an admin user
+        And I have selected a plant with stock greater than 2
+        When I create a sale for the selected plant with quantity 2
+        Then I should receive a 201 status code for sale creation
+        And the sale should be created with correct details
+        And the plant stock should be reduced by the quantity sold
+        And I cleanup the test data by deleting the sale and restoring plant quantity
+
         
     #************************************************************************
     # Sales User API Scenarios
