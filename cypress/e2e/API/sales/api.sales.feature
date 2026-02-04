@@ -129,6 +129,7 @@ Feature: Sales Management
         And the plant stock should be reduced by the quantity sold
         And I cleanup the test data by deleting the sale and restoring plant quantity
 
+    #***************************************************************************************************
         
     #************************************************************************
     # Sales User API Scenarios
@@ -169,3 +170,13 @@ Feature: Sales Management
         When I attempt to retrieve sales without authenticating
         Then I should receive a 401 status code
         And the response should contain an unauthorized error message
+
+    #******************************************214160H************************************************
+
+    @Sale_User_API_06
+    Scenario: Verify that a user cannot create a new sale
+        Given I have logged in as a testuser
+        And I have selected a plant with stock greater than 2
+        When I attempt to create a sale as a regular user for the selected plant with quantity 2
+        Then I should receive a 403 status code for forbidden access
+        And the response should contain an access denied error message

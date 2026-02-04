@@ -228,6 +228,13 @@ export function validateUnauthorizedErrorResponse(response) {
 	return response;
 }
 
+export function validateForbiddenErrorResponse(response) {
+	expect(response.status, "error status").to.equal(403);
+	expect(response.body.message, "error message").to.exist;
+	expect(response.body.message, "error message should mention Forbidden or Access Denied").to.match(/Forbidden|Access Denied|access denied/i);
+	return response;
+}
+
 export function validateNegativeQuantityOrZeroErrorResponse(response, expectedMessage) {
 	expect(response.status, "error status").to.equal(400);
 	expect(response.body.message, "error message").to.exist;
