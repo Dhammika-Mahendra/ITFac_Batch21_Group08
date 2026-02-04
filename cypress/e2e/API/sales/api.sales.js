@@ -277,3 +277,20 @@ Then("the response should contain an access denied error message", () => {
 		return validateForbiddenErrorResponse(response);
 	});
 });
+
+// Sale_User_API_07: User cannot delete sale
+When("I attempt to delete the sale as a regular user", () => {
+	return cy.get("@saleId").then((saleId) => {
+		return deleteSale(saleId, "userDeleteAttemptResponse");
+	});
+});
+
+Then("I should receive a 403 status code for forbidden delete access", () => {
+	return cy.get("@userDeleteAttemptResponse").its("status").should("eq", 403);
+});
+
+Then("the delete response should contain an access denied error message", () => {
+	return cy.get("@userDeleteAttemptResponse").then((response) => {
+		return validateForbiddenErrorResponse(response);
+	});
+});
