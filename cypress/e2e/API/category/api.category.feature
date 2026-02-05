@@ -32,14 +32,14 @@ Feature: Category Management
     @Cat_Admin_API_04
     Scenario: Verify Admin can edit an existing category name
         Given I have logged in as an admin user
-        Given a category exists
+        Given category list exists
         When I send a request to edit the category name
         Then the category name should be updated successfully
 
     @Cat_Admin_API_05
     Scenario: Verify Admin edit category name happens within the valid naming constraints
         Given I have logged in as an admin user
-        Given a category exists
+        Given category list exists
         When I attempt to edit the category name with invalid data - empty name
         Then the system should reject the name update with a validation error
         When I attempt to edit the category name with invalid data - short name
@@ -50,7 +50,7 @@ Feature: Category Management
     @Cat_Admin_API_06
     Scenario: Verify Admin can delete an existing category
         Given I have logged in as an admin user
-        Given a category exists
+        Given category list exists
         When I send a request to delete the category
         Then the category should be deleted successfully
 
@@ -118,14 +118,14 @@ Feature: Category Management
     @Cat_User_API_04
     Scenario: Verify User can not edit an existing category
         Given I have logged in as a non-admin user
-        Given a category exists
+        Given category list exists
         When I attempt to edit the category name
         Then the system should reject the edit request with an authorization error
 
     @Cat_User_API_05
     Scenario: Verify User can not delete an existing category
         Given I have logged in as a non-admin user
-        Given a category exists
+        Given category list exists
         When I attempt to delete the category
         Then the system should reject the delete request with an authorization error
 
