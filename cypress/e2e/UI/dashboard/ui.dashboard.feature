@@ -5,7 +5,7 @@ Feature: Dashboard Access
     So that I can monitor the system
 
     @Dash_Admin_UI_01
-    Scenario: Dashboard access for admin user
+    Scenario: Admin can see the dashboard with all necessary basic components after a succesful login
         Given I open the login page
         When I sign in with valid admin user credentials
         Then I should be redirected to the dashboard
@@ -13,7 +13,7 @@ Feature: Dashboard Access
         And Category, Plants and Sales summary information will be displayed
 
     @Dash_User_UI_01
-    Scenario: Dashboard access for non-admin user
+    Scenario: User can see the dashboard with all necessary basic components after a succesful login
         Given I open the login page
         When I sign in with valid non-admin user credentials
         Then I should be redirected to the dashboard
