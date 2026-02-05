@@ -110,20 +110,20 @@ Feature: Category Management
         Then I should receive a different paginated list of categories
 
     @Cat_User_API_03
-    Scenario: Verify User attempt to create new category
+    Scenario: Verify User can not create new category
         Given I have logged in as a non-admin user
         When I attempt to create a new category
         Then the system should reject the create request with an authorization error
 
     @Cat_User_API_04
-    Scenario: Verify User attempt to edit an existing category
+    Scenario: Verify User can not edit an existing category
         Given I have logged in as a non-admin user
         Given a category exists
         When I attempt to edit the category name
         Then the system should reject the edit request with an authorization error
 
     @Cat_User_API_05
-    Scenario: Verify User attempt to delete an existing category
+    Scenario: Verify User can not delete an existing category
         Given I have logged in as a non-admin user
         Given a category exists
         When I attempt to delete the category

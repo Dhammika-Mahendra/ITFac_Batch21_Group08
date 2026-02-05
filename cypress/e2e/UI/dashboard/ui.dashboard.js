@@ -53,7 +53,7 @@ Then("Category, Plants and Sales summary information will be displayed", () => {
 	dashboardPage.getSubCategoriesCount().should('eq', subCategoriesCount);
 
 	//store number of plants and low stock plants (where quantity <3)
-	getAllCategories().then((response) => {
+	getAllPlants().then((response) => {
 		const categories = response.body;
 		totalPlantsCount = categories.reduce((sum, cat) => sum + (cat.plants ? cat.plants.length : 0), 0);
 		lowStockPlantsCount = categories.reduce((sum, cat) => 
