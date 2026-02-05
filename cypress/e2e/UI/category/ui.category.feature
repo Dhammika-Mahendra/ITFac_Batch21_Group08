@@ -9,12 +9,14 @@ Feature: Category Management UI
 	@Cat_Admin_UI_01
 	Scenario: Verify Admin view all existing categories
 		Given I am logged in as an admin user
+		Given category list exists
 		When I click the Categories menu option
 		Then I should see a table of list of all categories
 
 	@Cat_Admin_UI_02
 	Scenario: Verify Admin view categories list with pagination
 		Given I am logged in as an admin user
+		Given category list exists
 		When I click the Categories menu option
 		Then I should see a table of list of all categories
 		And I see a pagination control
@@ -26,18 +28,21 @@ Feature: Category Management UI
 	@Cat_Admin_UI_03
 	Scenario: Verify Admin can see Add Category button and accessible
 		Given I am logged in as an admin user
+		Given category list exists
 		When I click the Categories menu option
 		Then I should see and be able to access the Add Category button
 
 	@Cat_Admin_UI_04
 	Scenario: Verify Admin can see Edit category button and accessible
 		Given I am logged in as an admin user
+		Given category list exists
 		When I click the Categories menu option
 		Then I should see and be able to access the Edit Category button for each category
 
 	@Cat_Admin_UI_05
 	Scenario: Verify Admin can see Delete category button and accessible
 		Given I am logged in as an admin user
+		Given category list exists
 		When I click the Categories menu option
 		Then I should see and be able to access the Delete Category button for each category
 
@@ -51,6 +56,7 @@ Feature: Category Management UI
 	@Cat_Admin_UI_07
 	Scenario: Verify Admin can Edit category
 		Given I am logged in as an admin user
+		Given category list exists
 		When I click the Categories menu option
 		When I edit the category using the Edit Category button
 		Then the category should be updated in the list
@@ -58,6 +64,7 @@ Feature: Category Management UI
 	@Cat_Admin_UI_08
 	Scenario: Verify Admin can Delete category
 		Given I am logged in as an admin user
+		Given category list exists
 		When I click the Categories menu option
 		When I delete the category using the Delete Category button
 		Then the category should be removed from the list
@@ -65,6 +72,7 @@ Feature: Category Management UI
 	@Cat_Admin_UI_09
 	Scenario: Verify Admin edit category name within the valid naming constraints
 		Given I am logged in as an admin user
+		Given category list exists
 		When I click the Categories menu option
 		When I attempt to edit the category name with invalid data - empty
 		Then the system should show a validation error - empty name
@@ -101,15 +109,15 @@ Feature: Category Management UI
 		Then I should not see the Add Category button
 
 	@Cat_User_UI_04
-	Scenario: Verify User cannot Edit category
+	Scenario: Verify User cannot access Edit category button
 		Given I am logged in as a non-admin user
+		Given category list exists
 		When I click the Categories menu option
-		Given a category exists
 		Then I should not see the Edit Category button for any category
 
 	@Cat_User_UI_05
 	Scenario: Verify User cannot access Delete category button
 		Given I am logged in as a non-admin user
+		Given category list exists
 		When I click the Categories menu option
-		Given a category exists
 		Then I should not see the Delete Category button for any category

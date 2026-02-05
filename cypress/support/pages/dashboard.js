@@ -28,51 +28,86 @@ class DashboardPage {
             .should("have.class", "active");
     }
 
-    verifyCategoriesCard() {
+    getCategoriesCard() {
         this.summaryCardContainer
             .find('.card-body')
             .contains('h6', 'Categories')
             .should('exist')
             .parents('.card-body')
             .find('.fw-bold.fs-5')
-            .invoke('text')
-            .should(text => {
-                expect(text.trim()).to.match(/^\d+$/);
-            });
     }
 
-    verifyPlantsCard() {
+    getMainCategoriesCount() {
+        // first ".fw-bold.fs-5" class element of getCategoriesCard
+        return this.getCategoriesCard()
+            .eq(0)
+            .invoke('text')
+            .then(text => parseInt(text.trim()));
+    }
+
+    getSubCategoriesCount() {
+        // second ".fw-bold.fs-5" class element of getCategoriesCard
+        return this.getCategoriesCard()
+            .eq(1)
+            .invoke('text')
+            .then(text => parseInt(text.trim()));
+    }
+
+    getPlantsCard() {
         this.summaryCardContainer
             .find('.card-body')
             .contains('h6', 'Plants')
             .should('exist')
             .parents('.card-body')
             .find('.fw-bold.fs-5')
-            .invoke('text')
-            .should(text => {
-                expect(text.trim()).to.match(/^\d+$/);
-            });
     }
 
-    verifySalesCard() {
+    getPlantsCount() {
+        // first ".fw-bold.fs-5" class element of getPlantsCard
+        return this.getPlantsCard()
+            .eq(0)
+            .invoke('text')
+            .then(text => parseInt(text.trim()));
+    }
+
+    getLowStockPlantsCount() {
+        // second ".fw-bold.fs-5" class element of getPlantsCard
+        return this.getPlantsCard() 
+            .eq(1)
+            .invoke('text')
+            .then(text => parseInt(text.trim()));
+    }
+
+    getSalesCard() {
         this.summaryCardContainer
             .find('.card-body')
             .contains('h6', 'Sales')
             .should('exist')
             .parents('.card-body')
             .find('.fw-bold.fs-5')
+    }
+
+    getTotalSalesCount() {
+        // second ".fw-bold.fs-5" class element of getSalesCard
+        return this.getSalesCard()
+            .eq(1)
             .invoke('text')
-            .should(text => {
-                expect(text.trim()).to.not.equal('');
+            .then(text => parseInt(text.trim()));
+    }
+
+    getTotalRevenue() {
+        // first ".fw-bold.fs-5" class element of getSalesCard
+        return this.getSalesCard()
+            .eq(0)
+            .invoke('text')
+            .then(text => {
+                // Remove Rs. at the first and decimal valuse after .
+                const numericText = text.replace('Rs.', '').split('.')[0].trim();
+                return parseInt(numericText);
             });
     }
 
-    //verify above all cards are present and tested 
-    verifySummaryCards() {
-        this.verifyCategoriesCard();
-        this.verifyPlantsCard();
-        this.verifySalesCard();
-    }
+
 }
 
 export const dashboardPage = new DashboardPage();

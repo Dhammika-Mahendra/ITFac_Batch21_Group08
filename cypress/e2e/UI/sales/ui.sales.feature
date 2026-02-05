@@ -38,6 +38,7 @@ Feature: Sales Management
         And sales exist in the system
         When I navigate to the sales page
         And I click on the "Quantity" column header
+        
         Then the sales should be sorted by Quantity
 
     @Sale_Admin_UI_05
