@@ -144,7 +144,7 @@ Feature: Plant Management UI
         And I click Save button
         Then the plant should be saved successfully with quantity = 0
 
-    @Plant_Admin_UI_16 @focus
+    @Plant_Admin_UI_16
     Scenario: Verify that the system displays a validation error when the Category is not selected
         Given I have logged in to the UI as an admin user
         When I navigate to the Add Plant page

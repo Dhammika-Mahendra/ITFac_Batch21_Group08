@@ -11,11 +11,16 @@ const fs = require("fs");
 const path = require("path");
 
 module.exports = defineConfig({
+  env: {
+    allure: true,
+  },
   e2e: {
     specPattern: "cypress/e2e/**/*.feature",
     stepDefinitions: "cypress/e2e",
     async setupNodeEvents(on, config) {
       await addCucumberPreprocessorPlugin(on, config);
+
+      require("@shelex/cypress-allure-plugin/writer")(on, config);
 
       on(
         "file:preprocessor",
