@@ -615,3 +615,48 @@ export function cleanupSaleTestData() {
 		});
 	});
 }
+
+export function validateForbiddenAccessWithCleanup(response) {
+	const status = response.status;
+	cy.log(`Actual status: ${status}`);
+	
+	// If status is 201, cleanup first before failing the assertion
+	if (status === 201) {
+		cy.log("⚠ Sale was created (201) - cleanup required before assertion fails");
+		
+		if (response.body && response.body.id) {
+			const saleId = response.body.id;
+			
+			// Import apiLoginAsAdmin at runtime to avoid circular dependency
+			const { apiLoginAsAdmin } = require('../../e2e/preconditions/login');
+			
+			// Perform cleanup
+			return cy.get('@selectedPlantId').then((plantId) => {
+				return cy.get('@initialStock').then((initialStock) => {
+					cy.log(`Cleanup: Sale ID=${saleId}, Plant ID=${plantId}, Initial Stock=${initialStock}`);
+					
+					// Login as admin
+					return apiLoginAsAdmin().then(() => {
+						cy.log("Logged in as admin for cleanup");
+						
+						// Set aliases
+						cy.wrap(saleId).as("createdSaleId");
+						cy.wrap(plantId).as("selectedPlantId");
+						cy.wrap(initialStock).as("initialStock");
+						
+						// Execute cleanup
+						return cleanupSaleTestData().then(() => {
+							cy.log("✓✓✓ CLEANUP COMPLETED ✓✓✓");
+						});
+					});
+				});
+			}).then(() => {
+				// Now fail the assertion after cleanup
+				expect(status, "Status code after cleanup").to.equal(403);
+			});
+		}
+	}
+	
+	// Normal assertion for 403
+	expect(status).to.equal(403);
+}

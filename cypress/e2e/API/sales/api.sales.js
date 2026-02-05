@@ -1,6 +1,6 @@
 import { Given, When, Then } from "@badeball/cypress-cucumber-preprocessor";
 import { apiLoginAsAdmin, apiLoginAsUser } from "../../preconditions/login";
-import { getSalesPage, sellPlant, validateSalesResponse, validateSalesSortedByDate, validateSalesSortedByPlantName, validateSalesErrorResponse, validateSalesSortedByQuantity, validateSalesSortedByTotalPrice, validateSalesNotFoundResponse, getSaleById, validateSingleSaleResponse, deleteSale, validateDeleteSaleErrorResponse, createSaleWithoutPlant, validateMissingPlantErrorResponse, sellPlantWithoutAuth, validateUnauthorizedErrorResponse, validateForbiddenErrorResponse, validateNegativeQuantityOrZeroErrorResponse, validateDecimalQuantityErrorResponse, validateNonNumericQuantityErrorResponse, getPlantWithStock, createSaleExceedingStock, validateInsufficientStockErrorResponse, selectPlantWithStockGreaterThan, createSaleAndVerify, validateSaleCreationSuccess, validateStockReduction, cleanupSaleTestData, getAllSales } from "../../../support/api/sales";
+import { getSalesPage, sellPlant, validateSalesResponse, validateSalesSortedByDate, validateSalesSortedByPlantName, validateSalesErrorResponse, validateSalesSortedByQuantity, validateSalesSortedByTotalPrice, validateSalesNotFoundResponse, getSaleById, validateSingleSaleResponse, deleteSale, validateDeleteSaleErrorResponse, createSaleWithoutPlant, validateMissingPlantErrorResponse, sellPlantWithoutAuth, validateUnauthorizedErrorResponse, validateForbiddenErrorResponse, validateNegativeQuantityOrZeroErrorResponse, validateDecimalQuantityErrorResponse, validateNonNumericQuantityErrorResponse, getPlantWithStock, createSaleExceedingStock, validateInsufficientStockErrorResponse, selectPlantWithStockGreaterThan, createSaleAndVerify, validateSaleCreationSuccess, validateStockReduction, cleanupSaleTestData, getAllSales, validateForbiddenAccessWithCleanup } from "../../../support/api/sales";
 
 Given("I have logged in as an admin user", () => {
 	return apiLoginAsAdmin();
@@ -262,14 +262,14 @@ Then("I cleanup the test data by deleting the sale and restoring plant quantity"
 // Sale_User_API_06: User cannot create sale
 When("I attempt to create a sale as a regular user for the selected plant with quantity {int}", (quantity) => {
 	return cy.get("@selectedPlantId").then((plantId) => {
-		return sellPlant(plantId, quantity, "userSaleAttemptResponse").then(() => {
-			cy.wrap(quantity).as("attemptedQuantity");
-		});
+		return sellPlant(plantId, quantity, "userSaleAttemptResponse");
 	});
 });
 
 Then("I should receive a 403 status code for forbidden access", () => {
-	return cy.get("@userSaleAttemptResponse").its("status").should("eq", 403);
+	return cy.get("@userSaleAttemptResponse").then((response) => {
+		return validateForbiddenAccessWithCleanup(response);
+	});
 });
 
 Then("the response should contain an access denied error message", () => {
@@ -307,6 +307,6 @@ Then("I should receive a 200 status code for sales list", () => {
 Then("the response should contain a sales array", () => {
 	return cy.get("@allSalesResponse").then((response) => {
 		expect(response.body, "Sales array").to.be.an("array");
-		cy.log(`✓ Received ${response.body.length} sales in the list`);
+		cy.log(`Received ${response.body.length} sales in the list`);
 	});
 });
