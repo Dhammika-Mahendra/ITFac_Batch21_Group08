@@ -184,7 +184,7 @@ Feature: Sales Management
     @Sale_User_API_07
     Scenario: User cannot delete sale
         Given I have logged in as a testuser
-        And I have retrieved a list of sales to get an existing sale ID
+        And I have retrieved a list of sales with full data for restore
         When I attempt to delete the sale as a regular user
         Then I should receive a 403 status code for forbidden delete access
         And the delete response should contain an access denied error message

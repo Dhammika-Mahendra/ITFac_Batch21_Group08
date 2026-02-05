@@ -622,7 +622,7 @@ export function validateForbiddenAccessWithCleanup(response) {
 	
 	// If status is 201, cleanup first before failing the assertion
 	if (status === 201) {
-		cy.log("⚠ Sale was created (201) - cleanup required before assertion fails");
+		cy.log("Sale was created (201) - cleanup required before assertion fails");
 		
 		if (response.body && response.body.id) {
 			const saleId = response.body.id;
@@ -646,7 +646,7 @@ export function validateForbiddenAccessWithCleanup(response) {
 						
 						// Execute cleanup
 						return cleanupSaleTestData().then(() => {
-							cy.log("✓✓✓ CLEANUP COMPLETED ✓✓✓");
+							cy.log("CLEANUP COMPLETED");
 						});
 					});
 				});
@@ -655,6 +655,106 @@ export function validateForbiddenAccessWithCleanup(response) {
 				expect(status, "Status code after cleanup").to.equal(403);
 			});
 		}
+	}
+	
+	// Normal assertion for 403
+	expect(status).to.equal(403);
+}
+
+export function validateForbiddenDeleteAccessWithRestore(response) {
+	const status = response.status;
+	cy.log(`Delete attempt status: ${status}`);
+	
+	// If status is 200 or 204, sale was deleted - restore before failing
+	if (status === 200 || status === 204) {
+		cy.log("Sale was deleted - Restoring before assertion fails");
+		
+		return cy.get('@saleDataForRestore').then((saleData) => {
+			const plantId = saleData.plant?.id || saleData.plantId;
+			const quantity = saleData.quantity;
+			const deletedSaleId = saleData.id;
+			const originalSoldDate = saleData.soldDate;
+			
+			cy.log(`Restoring: ID=${deletedSaleId}, Plant=${plantId}, Qty=${quantity}, Date=${originalSoldDate}`);
+			
+			// Import apiLoginAsAdmin at runtime to avoid circular dependency
+			const { apiLoginAsAdmin } = require('../../e2e/preconditions/login');
+			
+			// Login as admin to restore
+			return apiLoginAsAdmin().then(() => {
+				cy.log("✓ Logged in as admin");
+				const baseUrl = ensureBaseUrl();
+				
+				return cy.get("@authToken").then((adminToken) => {
+					// Get current plant stock
+					return cy.request({
+						method: "GET",
+						url: `${baseUrl}/api/plants/${plantId}`,
+						headers: { Authorization: `Bearer ${adminToken}` },
+						failOnStatusCode: false,
+					}).then((plantResponse) => {
+						if (plantResponse.status === 200) {
+							const currentStock = plantResponse.body.quantity;
+							const newStock = currentStock + quantity;
+							cy.log(`Plant stock: ${currentStock} → ${newStock}`);
+							
+							// Update plant stock
+							return cy.request({
+								method: "PUT",
+								url: `${baseUrl}/api/plants/${plantId}`,
+								headers: { Authorization: `Bearer ${adminToken}` },
+								body: { ...plantResponse.body, quantity: newStock },
+								failOnStatusCode: false,
+							}).then((updateResponse) => {
+								if (updateResponse.status === 200) {
+									cy.log("✓ Plant stock updated");
+									
+									// Recreate the sale
+									return cy.request({
+										method: "POST",
+										url: `${baseUrl}/api/sales/plant/${plantId}?quantity=${quantity}`,
+										headers: { Authorization: `Bearer ${adminToken}` },
+										failOnStatusCode: false,
+									}).then((createResponse) => {
+										if (createResponse.status === 201) {
+											const newSaleId = createResponse.body.id;
+											cy.log(`✓ Sale created (ID: ${newSaleId})`);
+											
+											// Update the sale with original date
+											return cy.request({
+												method: "PUT",
+												url: `${baseUrl}/api/sales/${newSaleId}`,
+												headers: { Authorization: `Bearer ${adminToken}` },
+												body: {
+													...createResponse.body,
+													soldDate: originalSoldDate
+												},
+												failOnStatusCode: false,
+											}).then((dateUpdateResponse) => {
+												if (dateUpdateResponse.status === 200) {
+													cy.log(`SALE RESTORED (ID: ${newSaleId}, Date: ${originalSoldDate})`);
+												} else {
+													cy.log(`Date update failed (${dateUpdateResponse.status}), but sale created`);
+												}
+											});
+										} else {
+											cy.log(`Restore failed: ${createResponse.status}`);
+										}
+									});
+								} else {
+									cy.log(`Plant update failed: ${updateResponse.status}`);
+								}
+							});
+						} else {
+							cy.log(`Could not get plant: ${plantResponse.status}`);
+						}
+					});
+				});
+			});
+		}).then(() => {
+			// Now fail the assertion after restore
+			expect(status, "Status code after restore").to.equal(403);
+		});
 	}
 	
 	// Normal assertion for 403

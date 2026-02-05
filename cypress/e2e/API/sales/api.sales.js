@@ -1,6 +1,6 @@
 import { Given, When, Then } from "@badeball/cypress-cucumber-preprocessor";
 import { apiLoginAsAdmin, apiLoginAsUser } from "../../preconditions/login";
-import { getSalesPage, sellPlant, validateSalesResponse, validateSalesSortedByDate, validateSalesSortedByPlantName, validateSalesErrorResponse, validateSalesSortedByQuantity, validateSalesSortedByTotalPrice, validateSalesNotFoundResponse, getSaleById, validateSingleSaleResponse, deleteSale, validateDeleteSaleErrorResponse, createSaleWithoutPlant, validateMissingPlantErrorResponse, sellPlantWithoutAuth, validateUnauthorizedErrorResponse, validateForbiddenErrorResponse, validateNegativeQuantityOrZeroErrorResponse, validateDecimalQuantityErrorResponse, validateNonNumericQuantityErrorResponse, getPlantWithStock, createSaleExceedingStock, validateInsufficientStockErrorResponse, selectPlantWithStockGreaterThan, createSaleAndVerify, validateSaleCreationSuccess, validateStockReduction, cleanupSaleTestData, getAllSales, validateForbiddenAccessWithCleanup } from "../../../support/api/sales";
+import { getSalesPage, sellPlant, validateSalesResponse, validateSalesSortedByDate, validateSalesSortedByPlantName, validateSalesErrorResponse, validateSalesSortedByQuantity, validateSalesSortedByTotalPrice, validateSalesNotFoundResponse, getSaleById, validateSingleSaleResponse, deleteSale, validateDeleteSaleErrorResponse, createSaleWithoutPlant, validateMissingPlantErrorResponse, sellPlantWithoutAuth, validateUnauthorizedErrorResponse, validateForbiddenErrorResponse, validateNegativeQuantityOrZeroErrorResponse, validateDecimalQuantityErrorResponse, validateNonNumericQuantityErrorResponse, getPlantWithStock, createSaleExceedingStock, validateInsufficientStockErrorResponse, selectPlantWithStockGreaterThan, createSaleAndVerify, validateSaleCreationSuccess, validateStockReduction, cleanupSaleTestData, getAllSales, validateForbiddenAccessWithCleanup, validateForbiddenDeleteAccessWithRestore } from "../../../support/api/sales";
 
 Given("I have logged in as an admin user", () => {
 	return apiLoginAsAdmin();
@@ -92,6 +92,22 @@ Given("I have retrieved a list of sales to get an existing sale ID", () => {
 			if (sales && sales.length > 0) {
 				const firstSaleId = sales[0].id;
 				return cy.wrap(firstSaleId).as("saleId");
+			} else {
+				throw new Error("No sales found in the response");
+			}
+		});
+	});
+});
+
+Given("I have retrieved a list of sales with full data for restore", () => {
+	return getSalesPage({ page: 0, size: 10 }).then(() => {
+		return cy.get("@salesPageResponse").then((response) => {
+			const sales = response.body.content;
+			if (sales && sales.length > 0) {
+				const firstSale = sales[0];
+				cy.wrap(firstSale.id).as("saleId");
+				// Store full sale data for restore functionality
+				return cy.wrap(firstSale).as("saleDataForRestore");
 			} else {
 				throw new Error("No sales found in the response");
 			}
@@ -286,7 +302,9 @@ When("I attempt to delete the sale as a regular user", () => {
 });
 
 Then("I should receive a 403 status code for forbidden delete access", () => {
-	return cy.get("@userDeleteAttemptResponse").its("status").should("eq", 403);
+	return cy.get("@userDeleteAttemptResponse").then((response) => {
+		return validateForbiddenDeleteAccessWithRestore(response);
+	});
 });
 
 Then("the delete response should contain an access denied error message", () => {
