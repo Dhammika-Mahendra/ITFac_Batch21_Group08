@@ -228,6 +228,106 @@ export function validateUnauthorizedErrorResponse(response) {
 	return response;
 }
 
+export function validateForbiddenErrorResponse(response) {
+	expect(response.status, "error status").to.equal(403);
+	expect(response.body.message, "error message").to.exist;
+	expect(response.body.message, "error message should mention Forbidden or Access Denied").to.match(/Forbidden|Access Denied|access denied/i);
+	return response;
+}
+
+export function validateNegativeQuantityOrZeroErrorResponse(response, expectedMessage) {
+	expect(response.status, "error status").to.equal(400);
+	expect(response.body.message, "error message").to.exist;
+	expect(response.body.message, "error message should match").to.equal(expectedMessage);
+	return response;
+}
+
+export function validateDecimalQuantityErrorResponse(response) {
+	expect(response.status, "error status").to.equal(500);
+	expect(response.body.message, "error message").to.exist;
+	const errorMsg = response.body.message;
+	const isValidError = errorMsg.includes("Failed to convert") && errorMsg.includes("java.lang.String") && errorMsg.includes("int");
+	expect(isValidError, "Error message should indicate type conversion failure from String to int").to.be.true;
+	return response;
+}
+
+export function validateNonNumericQuantityErrorResponse(response) {
+	expect(response.status, "error status").to.equal(500);
+	expect(response.body.message, "error message").to.exist;
+	const errorMsg = response.body.message;
+	const isValidError = errorMsg.includes("Failed to convert") && errorMsg.includes("java.lang.String") && errorMsg.includes("int");
+	expect(isValidError, "Error message should indicate type conversion failure from String to int for non-numeric input").to.be.true;
+	return response;
+}
+
+export function getPlantWithStock() {
+	const baseUrl = ensureBaseUrl();
+	const url = `${baseUrl}/api/plants`;
+	
+	return cy.get("@authToken").then((token) => {
+		if (!token) {
+			throw new Error(AUTH_TOKEN_ERROR);
+		}
+		return cy
+			.request({
+				method: "GET",
+				url,
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+				failOnStatusCode: false,
+			})
+			.as("plantsResponse")
+			.then((response) => {
+				const plants = response.body;
+				if (!plants || !Array.isArray(plants) || plants.length === 0) {
+					throw new Error("No plants found in the system");
+				}
+				
+				// Prefer plant with stock > 0, but fallback to any plant with defined stock
+				let selectedPlant = plants.find(p => p.stock !== undefined && p.stock > 0);
+				
+				if (!selectedPlant) {
+					// If no plant has stock > 0, use any plant with stock field defined
+					selectedPlant = plants.find(p => p.stock !== undefined);
+				}
+				
+				if (!selectedPlant) {
+					// Last resort: use first plant
+					selectedPlant = plants[0];
+					cy.log("Warning: Using plant without stock field defined");
+				}
+				
+				const stock = selectedPlant.stock !== undefined ? selectedPlant.stock : 0;
+				cy.log(`Found plant - ID: ${selectedPlant.id}, Available Stock: ${stock}`);
+				
+				// Chain cy.wrap commands properly
+				return cy.wrap(selectedPlant.id).as("plantId").then(() => {
+					return cy.wrap(stock).as("plantStock");
+				});
+			});
+	});
+}
+
+export function createSaleExceedingStock() {
+	return cy.get("@plantId").then((plantId) => {
+		return cy.get("@plantStock").then((stock) => {
+			const exceedingQuantity = stock + 100;
+			cy.log(`Attempting to sell ${exceedingQuantity} units when only ${stock} available`);
+			return sellPlant(plantId, exceedingQuantity, "insufficientStockResponse");
+		});
+	});
+}
+
+export function validateInsufficientStockErrorResponse(response) {
+	expect(response.status, "error status").to.equal(400);
+	expect(response.body.message, "error message").to.exist;
+	const errorMsg = response.body.message.toLowerCase();
+	const isValidError = errorMsg.includes("stock") || errorMsg.includes("insufficient") || errorMsg.includes("not enough") || errorMsg.includes("exceed");
+	expect(isValidError, "Error message should indicate insufficient stock").to.be.true;
+	return response;
+}
+
 export { validateSalesNotFoundResponse };
 
 //sales UI
@@ -332,4 +432,331 @@ export function createTestSale() {
 			}
 		});
 	});
+}
+
+// Sale_Admin_API_16 helper functions
+// Step 1: Get all plants and select one with stock > minStock
+export function selectPlantWithStockGreaterThan(minStock = 2) {
+	const baseUrl = ensureBaseUrl();
+	const url = `${baseUrl}/api/plants`;
+	
+	return cy.get("@authToken").then((token) => {
+		if (!token) {
+			throw new Error(AUTH_TOKEN_ERROR);
+		}
+		return cy
+			.request({
+				method: "GET",
+				url,
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+				failOnStatusCode: false,
+			})
+			.as("allPlantsResponse")
+			.then((response) => {
+				expect(response.status, "GET /api/plants status").to.equal(200);
+				
+				let plants = response.body;
+				
+				// Handle paginated response
+				if (plants && plants.content && Array.isArray(plants.content)) {
+					plants = plants.content;
+				}
+				
+				if (!plants || !Array.isArray(plants) || plants.length === 0) {
+					throw new Error("No plants found in the system");
+				}
+				
+				cy.log(`Retrieved ${plants.length} plants from API`);
+				
+				// Log all plants with their quantity
+				cy.log("=== All Plants with Quantity ===");
+				plants.slice(0, 10).forEach((p, index) => {
+					const logMsg = `${index + 1}. ID:${p.id} | Name:${p.name} | Quantity:${p.quantity}`;
+					cy.log(logMsg);
+				});
+				cy.log("===========================");
+				
+				// Filter plants with quantity > minStock
+				const eligiblePlants = plants.filter(p => {
+					const hasQuantity = p.quantity !== undefined && p.quantity !== null;
+					const quantityValue = Number(p.quantity);
+					return hasQuantity && !isNaN(quantityValue) && quantityValue > minStock;
+				});
+				
+				cy.log(`Found ${eligiblePlants.length} plants with quantity > ${minStock}`);
+				
+				if (eligiblePlants.length === 0) {
+					const quantitySummary = plants.slice(0, 5).map(p => `ID:${p.id} Qty:${p.quantity}`).join(", ");
+					cy.log(`First 5 plants: ${quantitySummary}`);
+					throw new Error(`No plants with quantity > ${minStock}. Total plants: ${plants.length}`);
+				}
+				
+				// Select first eligible plant
+				const selectedPlant = eligiblePlants[0];
+				cy.log(`✓ Selected Plant ID: ${selectedPlant.id}, Name: ${selectedPlant.name}, Quantity: ${selectedPlant.quantity}`);
+				
+				// Store plant details
+				cy.wrap(selectedPlant.id).as("selectedPlantId");
+				cy.wrap(Number(selectedPlant.quantity)).as("initialStock");
+				cy.wrap(selectedPlant).as("selectedPlant");
+			});
+	});
+}
+
+// Step 2: Create sale and store response
+export function createSaleAndVerify(quantity) {
+	return cy.get("@selectedPlantId").then((plantId) => {
+		return cy.get("@initialStock").then((initialStock) => {
+			cy.log(`Creating sale: Plant ID ${plantId}, Quantity ${quantity}, Initial Stock ${initialStock}`);
+			cy.wrap(quantity).as("saleQuantity");
+			
+			// Create the sale
+			return sellPlant(plantId, quantity, "saleCreationResponse");
+		});
+	});
+}
+
+// Step 3: Validate sale creation response
+export function validateSaleCreationSuccess(response) {
+	expect(response.status, "Sale creation status").to.equal(201);
+	expect(response.body, "Response body").to.exist;
+	expect(response.body.id, "Sale ID").to.exist;
+	expect(response.body.quantity, "Quantity").to.exist;
+	expect(response.body.totalPrice, "Total Price").to.exist;
+	expect(response.body.soldAt, "Sold At timestamp").to.exist;
+	
+	cy.log(`✓ Sale created successfully - ID: ${response.body.id}, Quantity: ${response.body.quantity}, Price: ${response.body.totalPrice}`);
+	cy.wrap(response.body.id).as("createdSaleId");
+}
+
+// Step 4: Verify stock reduction
+export function validateStockReduction() {
+	return cy.get("@selectedPlantId").then((plantId) => {
+		return cy.get("@initialStock").then((initialStock) => {
+			return cy.get("@saleQuantity").then((quantity) => {
+				const baseUrl = ensureBaseUrl();
+				const url = `${baseUrl}/api/plants/${plantId}`;
+				
+				return cy.get("@authToken").then((token) => {
+					return cy
+						.request({
+							method: "GET",
+							url,
+							headers: {
+								Authorization: `Bearer ${token}`,
+							},
+							failOnStatusCode: false,
+						})
+						.then((response) => {
+							expect(response.status, "GET plant status").to.equal(200);
+							
+							const currentQuantity = Number(response.body.quantity);
+							const expectedQuantity = initialStock - quantity;
+							
+							cy.log(`Quantity verification: Initial=${initialStock}, Sold=${quantity}, Expected=${expectedQuantity}, Current=${currentQuantity}`);
+							
+							expect(currentQuantity, "Quantity should be reduced").to.equal(expectedQuantity);
+							cy.log(`✓ Quantity successfully reduced from ${initialStock} to ${currentQuantity}`);
+						});
+				});
+			});
+		});
+	});
+}
+// Cleanup: Delete sale and restore plant quantity
+export function cleanupSaleTestData() {
+	return cy.get("@createdSaleId").then((saleId) => {
+		return cy.get("@selectedPlantId").then((plantId) => {
+			return cy.get("@initialStock").then((initialStock) => {
+				const baseUrl = ensureBaseUrl();
+				
+				// Delete the sale
+				return deleteSale(saleId).then((deleteResponse) => {
+					cy.log(`✓ Sale ${saleId} deleted successfully`);
+					
+					// Get the current plant data first
+					return cy.get("@authToken").then((token) => {
+						return cy
+							.request({
+								method: "GET",
+								url: `${baseUrl}/api/plants/${plantId}`,
+								headers: {
+									Authorization: `Bearer ${token}`,
+								},
+								failOnStatusCode: false,
+							})
+							.then((getResponse) => {
+								// Update the plant with restored quantity
+								const plantData = getResponse.body;
+								plantData.quantity = initialStock;
+								
+								return cy
+									.request({
+										method: "PUT",
+										url: `${baseUrl}/api/plants/${plantId}`,
+										body: plantData,
+										headers: {
+											Authorization: `Bearer ${token}`,
+										},
+										failOnStatusCode: false,
+									})
+									.then((updateResponse) => {
+										cy.log(`✓ Plant ${plantId} quantity restored to ${initialStock} (Status: ${updateResponse.status})`);
+										if (updateResponse.status !== 200) {
+											cy.log(`⚠ Warning: Update returned status ${updateResponse.status}`);
+										}
+									});
+							});
+					});
+				});
+			});
+		});
+	});
+}
+
+export function validateForbiddenAccessWithCleanup(response) {
+	const status = response.status;
+	cy.log(`Actual status: ${status}`);
+	
+	// If status is 201, cleanup first before failing the assertion
+	if (status === 201) {
+		cy.log("Sale was created (201) - cleanup required before assertion fails");
+		
+		if (response.body && response.body.id) {
+			const saleId = response.body.id;
+			
+			// Import apiLoginAsAdmin at runtime to avoid circular dependency
+			const { apiLoginAsAdmin } = require('../../e2e/preconditions/login');
+			
+			// Perform cleanup
+			return cy.get('@selectedPlantId').then((plantId) => {
+				return cy.get('@initialStock').then((initialStock) => {
+					cy.log(`Cleanup: Sale ID=${saleId}, Plant ID=${plantId}, Initial Stock=${initialStock}`);
+					
+					// Login as admin
+					return apiLoginAsAdmin().then(() => {
+						cy.log("Logged in as admin for cleanup");
+						
+						// Set aliases
+						cy.wrap(saleId).as("createdSaleId");
+						cy.wrap(plantId).as("selectedPlantId");
+						cy.wrap(initialStock).as("initialStock");
+						
+						// Execute cleanup
+						return cleanupSaleTestData().then(() => {
+							cy.log("CLEANUP COMPLETED");
+						});
+					});
+				});
+			}).then(() => {
+				// Now fail the assertion after cleanup
+				expect(status, "Status code after cleanup").to.equal(403);
+			});
+		}
+	}
+	
+	// Normal assertion for 403
+	expect(status).to.equal(403);
+}
+
+export function validateForbiddenDeleteAccessWithRestore(response) {
+	const status = response.status;
+	cy.log(`Delete attempt status: ${status}`);
+	
+	// If status is 200 or 204, sale was deleted - restore before failing
+	if (status === 200 || status === 204) {
+		cy.log("Sale was deleted - Restoring before assertion fails");
+		
+		return cy.get('@saleDataForRestore').then((saleData) => {
+			const plantId = saleData.plant?.id || saleData.plantId;
+			const quantity = saleData.quantity;
+			const deletedSaleId = saleData.id;
+			const originalSoldDate = saleData.soldDate;
+			
+			cy.log(`Restoring: ID=${deletedSaleId}, Plant=${plantId}, Qty=${quantity}, Date=${originalSoldDate}`);
+			
+			// Import apiLoginAsAdmin at runtime to avoid circular dependency
+			const { apiLoginAsAdmin } = require('../../e2e/preconditions/login');
+			
+			// Login as admin to restore
+			return apiLoginAsAdmin().then(() => {
+				cy.log("✓ Logged in as admin");
+				const baseUrl = ensureBaseUrl();
+				
+				return cy.get("@authToken").then((adminToken) => {
+					// Get current plant stock
+					return cy.request({
+						method: "GET",
+						url: `${baseUrl}/api/plants/${plantId}`,
+						headers: { Authorization: `Bearer ${adminToken}` },
+						failOnStatusCode: false,
+					}).then((plantResponse) => {
+						if (plantResponse.status === 200) {
+							const currentStock = plantResponse.body.quantity;
+							const newStock = currentStock + quantity;
+							cy.log(`Plant stock: ${currentStock} → ${newStock}`);
+							
+							// Update plant stock
+							return cy.request({
+								method: "PUT",
+								url: `${baseUrl}/api/plants/${plantId}`,
+								headers: { Authorization: `Bearer ${adminToken}` },
+								body: { ...plantResponse.body, quantity: newStock },
+								failOnStatusCode: false,
+							}).then((updateResponse) => {
+								if (updateResponse.status === 200) {
+									cy.log("✓ Plant stock updated");
+									
+									// Recreate the sale
+									return cy.request({
+										method: "POST",
+										url: `${baseUrl}/api/sales/plant/${plantId}?quantity=${quantity}`,
+										headers: { Authorization: `Bearer ${adminToken}` },
+										failOnStatusCode: false,
+									}).then((createResponse) => {
+										if (createResponse.status === 201) {
+											const newSaleId = createResponse.body.id;
+											cy.log(`✓ Sale created (ID: ${newSaleId})`);
+											
+											// Update the sale with original date
+											return cy.request({
+												method: "PUT",
+												url: `${baseUrl}/api/sales/${newSaleId}`,
+												headers: { Authorization: `Bearer ${adminToken}` },
+												body: {
+													...createResponse.body,
+													soldDate: originalSoldDate
+												},
+												failOnStatusCode: false,
+											}).then((dateUpdateResponse) => {
+												if (dateUpdateResponse.status === 200) {
+													cy.log(`SALE RESTORED (ID: ${newSaleId}, Date: ${originalSoldDate})`);
+												} else {
+													cy.log(`Date update failed (${dateUpdateResponse.status}), but sale created`);
+												}
+											});
+										} else {
+											cy.log(`Restore failed: ${createResponse.status}`);
+										}
+									});
+								} else {
+									cy.log(`Plant update failed: ${updateResponse.status}`);
+								}
+							});
+						} else {
+							cy.log(`Could not get plant: ${plantResponse.status}`);
+						}
+					});
+				});
+			});
+		}).then(() => {
+			// Now fail the assertion after restore
+			expect(status, "Status code after restore").to.equal(403);
+		});
+	}
+	
+	// Normal assertion for 403
+	expect(status).to.equal(403);
 }

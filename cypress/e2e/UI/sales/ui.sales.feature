@@ -89,6 +89,7 @@ Feature: Sales Management
         And I redirected to the sales list page
         Then the plant stock should be reduced by the sold quantity
 
+    #*******************************************214160H****************************************************
     @Sale_Admin_UI_10
     Scenario: Verify that "No sales found" message is displayed for admin when no sales exist
         Given I am logged in as admin
@@ -163,6 +164,8 @@ Feature: Sales Management
         And I click on the "Sell" button
         Then the error message "Quantity must be greater than 0" should be displayed
 
+    #****************************************************************************************************
+
     #----------------------------------------------
     #           Non Admin User Scenarios
     #----------------------------------------------
@@ -202,6 +205,7 @@ Feature: Sales Management
         When I navigate to the Sales page
         Then the sales should be displayed in descending order by Sold date
 
+    #*******************************************214160H****************************************************
     @Sale_User_UI_06
     Scenario: Verify that user can sort the sales by Plant Name
         Given I am logged in as user
