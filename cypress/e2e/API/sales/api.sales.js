@@ -1,6 +1,6 @@
 import { Given, When, Then } from "@badeball/cypress-cucumber-preprocessor";
 import { apiLoginAsAdmin, apiLoginAsUser } from "../../preconditions/login";
-import { getSalesPage, sellPlant, validateSalesResponse, validateSalesSortedByDate, validateSalesSortedByPlantName, validateSalesErrorResponse, validateSalesSortedByQuantity, validateSalesSortedByTotalPrice, validateSalesNotFoundResponse, getSaleById, validateSingleSaleResponse, deleteSale, validateDeleteSaleErrorResponse, createSaleWithoutPlant, validateMissingPlantErrorResponse, sellPlantWithoutAuth, validateUnauthorizedErrorResponse } from "../../../support/api/sales";
+import { getSalesPage, sellPlant, validateSalesResponse, validateSalesSortedByDate, validateSalesSortedByPlantName, validateSalesErrorResponse, validateSalesSortedByQuantity, validateSalesSortedByTotalPrice, validateSalesNotFoundResponse, getSaleById, validateSingleSaleResponse, deleteSale, validateDeleteSaleErrorResponse, createSaleWithoutPlant, validateMissingPlantErrorResponse, sellPlantWithoutAuth, validateUnauthorizedErrorResponse, validateForbiddenErrorResponse, validateNegativeQuantityOrZeroErrorResponse, validateDecimalQuantityErrorResponse, validateNonNumericQuantityErrorResponse, getPlantWithStock, createSaleExceedingStock, validateInsufficientStockErrorResponse, selectPlantWithStockGreaterThan, createSaleAndVerify, validateSaleCreationSuccess, validateStockReduction, cleanupSaleTestData, getAllSales, validateForbiddenAccessWithCleanup, validateForbiddenDeleteAccessWithRestore } from "../../../support/api/sales";
 
 Given("I have logged in as an admin user", () => {
 	return apiLoginAsAdmin();
@@ -99,6 +99,22 @@ Given("I have retrieved a list of sales to get an existing sale ID", () => {
 	});
 });
 
+Given("I have retrieved a list of sales with full data for restore", () => {
+	return getSalesPage({ page: 0, size: 10 }).then(() => {
+		return cy.get("@salesPageResponse").then((response) => {
+			const sales = response.body.content;
+			if (sales && sales.length > 0) {
+				const firstSale = sales[0];
+				cy.wrap(firstSale.id).as("saleId");
+				// Store full sale data for restore functionality
+				return cy.wrap(firstSale).as("saleDataForRestore");
+			} else {
+				throw new Error("No sales found in the response");
+			}
+		});
+	});
+});
+
 When("I retrieve a single sale by ID", () => {
 	return cy.get("@saleId").then((saleId) => {
 		return getSaleById(saleId);
@@ -167,4 +183,148 @@ When("I attempt to retrieve sales without authenticating", () => {
 		qs: { page: 0, size: 10 },
 		failOnStatusCode: false
 	}).as("unauthenticatedSaleResponse");
+});
+
+When("I attempt to create a sale for plant {int} with quantity {int}", (plantId, quantity) => {
+	return sellPlant(plantId, quantity, "negativeQuantityResponse");
+});
+
+Then("I should receive a 400 status code for negative quantity", () => {
+	return cy.get("@negativeQuantityResponse").its("status").should("eq", 400);
+});
+
+Then("the response should contain an error message {string}", (expectedMessage) => {
+	return cy.get("@negativeQuantityResponse").then((response) => {
+		return validateNegativeQuantityOrZeroErrorResponse(response, expectedMessage);
+	});
+});
+
+When("I attempt to create a sale for plant {int} with decimal quantity {float}", (plantId, quantity) => {
+	return sellPlant(plantId, quantity, "decimalQuantityResponse");
+});
+
+Then("I should receive a 500 status code for decimal quantity", () => {
+	return cy.get("@decimalQuantityResponse").its("status").should("eq", 500);
+});
+
+Then("the response should contain a type conversion error message", () => {
+	return cy.get("@decimalQuantityResponse").then((response) => {
+		return validateDecimalQuantityErrorResponse(response);
+	});
+});
+
+When("I attempt to create a sale for plant {int} with non-numeric quantity {string}", (plantId, quantity) => {
+	return sellPlant(plantId, quantity, "nonNumericQuantityResponse");
+});
+
+Then("I should receive a 500 status code for non-numeric quantity", () => {
+	return cy.get("@nonNumericQuantityResponse").its("status").should("eq", 500);
+});
+
+Then("the response should contain a non-numeric type conversion error message", () => {
+	return cy.get("@nonNumericQuantityResponse").then((response) => {
+		return validateNonNumericQuantityErrorResponse(response);
+	});
+});
+
+Then("I should receive a 400 status code for zero quantity", () => {
+	return cy.get("@negativeQuantityResponse").its("status").should("eq", 400);
+});
+
+Given("I have retrieved a plant with available stock", () => {
+	return getPlantWithStock();
+});
+
+When("I attempt to create a sale with quantity exceeding available stock", () => {
+	return createSaleExceedingStock();
+});
+
+Then("I should receive a 400 status code for insufficient stock", () => {
+	return cy.get("@insufficientStockResponse").its("status").should("eq", 400);
+});
+
+Then("the response should contain an insufficient stock error message", () => {
+	return cy.get("@insufficientStockResponse").then((response) => {
+		return validateInsufficientStockErrorResponse(response);
+	});
+});
+
+// Sale_Admin_API_16: Admin creates sale with valid data
+Given("I have selected a plant with stock greater than {int}", (minStock) => {
+	return selectPlantWithStockGreaterThan(minStock);
+});
+
+When("I create a sale for the selected plant with quantity {int}", (quantity) => {
+	return createSaleAndVerify(quantity);
+});
+
+Then("I should receive a 201 status code for sale creation", () => {
+	return cy.get("@saleCreationResponse").its("status").should("eq", 201);
+});
+
+Then("the sale should be created with correct details", () => {
+	return cy.get("@saleCreationResponse").then((response) => {
+		return validateSaleCreationSuccess(response);
+	});
+});
+
+Then("the plant stock should be reduced by the quantity sold", () => {
+	return validateStockReduction();
+});
+Then("I cleanup the test data by deleting the sale and restoring plant quantity", function () {
+	return cleanupSaleTestData();
+});
+
+// Sale_User_API_06: User cannot create sale
+When("I attempt to create a sale as a regular user for the selected plant with quantity {int}", (quantity) => {
+	return cy.get("@selectedPlantId").then((plantId) => {
+		return sellPlant(plantId, quantity, "userSaleAttemptResponse");
+	});
+});
+
+Then("I should receive a 403 status code for forbidden access", () => {
+	return cy.get("@userSaleAttemptResponse").then((response) => {
+		return validateForbiddenAccessWithCleanup(response);
+	});
+});
+
+Then("the response should contain an access denied error message", () => {
+	return cy.get("@userSaleAttemptResponse").then((response) => {
+		return validateForbiddenErrorResponse(response);
+	});
+});
+
+// Sale_User_API_07: User cannot delete sale
+When("I attempt to delete the sale as a regular user", () => {
+	return cy.get("@saleId").then((saleId) => {
+		return deleteSale(saleId, "userDeleteAttemptResponse");
+	});
+});
+
+Then("I should receive a 403 status code for forbidden delete access", () => {
+	return cy.get("@userDeleteAttemptResponse").then((response) => {
+		return validateForbiddenDeleteAccessWithRestore(response);
+	});
+});
+
+Then("the delete response should contain an access denied error message", () => {
+	return cy.get("@userDeleteAttemptResponse").then((response) => {
+		return validateForbiddenErrorResponse(response);
+	});
+});
+
+// Sale_User_API_10: User can retrieve sales list
+When("I call the get all sales API endpoint", () => {
+	return getAllSales("allSalesResponse");
+});
+
+Then("I should receive a 200 status code for sales list", () => {
+	return cy.get("@allSalesResponse").its("status").should("eq", 200);
+});
+
+Then("the response should contain a sales array", () => {
+	return cy.get("@allSalesResponse").then((response) => {
+		expect(response.body, "Sales array").to.be.an("array");
+		cy.log(`Received ${response.body.length} sales in the list`);
+	});
 });

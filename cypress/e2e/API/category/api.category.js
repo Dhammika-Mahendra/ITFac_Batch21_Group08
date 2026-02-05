@@ -10,6 +10,13 @@ Given("I have logged in as a non-admin user", () => {
     return apiLoginAsUser();
 });
 
+Given("category list exists", () => {
+	return getAllCategories().then((response) => {
+		expect(response.status).to.eq(200);
+		expect(response.body).to.be.an('array').that.is.not.empty;
+	});
+});
+
 // @Cat_Admin_API_01 -----------------------------------------------
 
 When("I call the categories get API point", () => {
@@ -35,14 +42,6 @@ Then("the response should contain a list of categories", () => {
 });
 
 // @Cat_Admin_API_02 -----------------------------------------------
-
-Given("category list exists", () => {
-	return getAllCategories().then((response) => {
-		expect(response.status, "get all categories status").to.eq(200);
-		const categories = response.body;
-		expect(categories, "categories payload").to.be.an("array").and.not.empty;
-	});
-});
 
 let categoriesPage0 = null;
 let categoriesPage1 = null;
@@ -120,7 +119,7 @@ let lastCategory = null;
 let parentId = null;
 const editName = "MyCat";
 
-Given("a category exists", () => {
+const handleCategoryModify = () => {
 	return getAllCategories().then((response) => {
 		expect(response.status, "get all categories status").to.eq(200);
 		const categories = response.body;
@@ -134,11 +133,13 @@ Given("a category exists", () => {
 		const parentCategory = categories.find(cat => cat.name === lastCategory.parentName);
 		parentId = parentCategory ? parentCategory.id : null;
 	});
-});
+};
 
 Then("I send a request to edit the category name", () => {
+	return handleCategoryModify().then(() => {
 	let data = { name: editName, parentId: parentId };
 	return updateCategory(lastCategory.id, data, "updateCategoryResponse");
+	});
 });
 
 Then("the category name should be updated successfully", () => {
@@ -155,8 +156,10 @@ Then("the category name should be updated successfully", () => {
 // @Cat_Admin_API_05 -----------------------------------------------
 
 When("I attempt to edit the category name with invalid data - empty name",()=>{
+	return handleCategoryModify().then(() => {	
 	let data = { name: "", parentId: parentId };
 	return updateCategory(lastCategory.id, data, "updateCategoryResponse");
+	});
 });
 
 When("I attempt to edit the category name with invalid data - short name",()=>{
@@ -179,7 +182,9 @@ Then("the system should reject the name update with a validation error", () => {
 // @Cat_Admin_API_06 -----------------------------------------------
 
 Then("I send a request to delete the category", () => {
-	return deleteCategory(lastCategory.id, "deleteCategoryResponse");
+	return handleCategoryModify().then(() => {	
+		return deleteCategory(lastCategory.id, "deleteCategoryResponse");
+	});
 });
 
 Then("the category should be deleted successfully", () => {
@@ -434,8 +439,10 @@ Then("the system should reject the create request with an authorization error", 
 // @Cat_User_API_04 -----------------------------------------------
 
 When("I attempt to edit the category name", () => {
+	return handleCategoryModify().then(() => {
 	let data = { name: editName, parentId: parentId };
 	return updateCategory(lastCategory.id, data, "updateCategoryResponse");
+	});
 });
 
 Then("the system should reject the edit request with an authorization error", () => {
@@ -448,7 +455,9 @@ Then("the system should reject the edit request with an authorization error", ()
 // @Cat_User_API_05 -----------------------------------------------
 
 When("I attempt to delete the category", () => {
-	return deleteCategory(lastCategory.id, "deleteCategoryResponse");
+	return handleCategoryModify().then(() => {
+		return deleteCategory(lastCategory.id, "deleteCategoryResponse");
+	});
 });
 
 Then("the system should reject the delete request with an authorization error", () => {

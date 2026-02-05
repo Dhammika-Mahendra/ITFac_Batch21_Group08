@@ -1,6 +1,6 @@
 import { Given, When, Then } from "@badeball/cypress-cucumber-preprocessor";
 import { apiLoginAsAdmin, apiLoginAsUser } from "../../preconditions/login";
-import { createPlant, getAllPlants, deletePlant, updatePlant, getPlantById, searchPlants, getPlantsByCategory } from "../../../support/api/plants";
+import { createPlant, getAllPlants, deletePlant, updatePlant, getPlantById, searchPlants, getPlantsByCategory, getAllPlantsUnauthorized, searchPlantsUnauthorized } from "../../../support/api/plants";
 import { getAllCategories, updateCategory } from "../../../support/api/category";
 
 // Login steps
@@ -388,5 +388,109 @@ Then("plants should be sorted by quantity from highest to lowest", () => {
                 expect(plants[i].quantity, "quantity order").to.be.at.least(plants[i + 1].quantity);
             }
         }
+    });
+});
+
+// @Plant_User_API_08 -----------------------------------------------
+
+let validCategoryId = null;
+
+Given("a valid category with plants exists", () => {
+    return getAllCategories().then((response) => {
+        expect(response.status, "get categories status").to.eq(200);
+        const categories = response.body;
+        expect(categories, "categories").to.be.an("array").and.not.empty;
+        validCategoryId = categories.find(cat => cat.id)?.id || categories[0].id;
+    });
+});
+
+When("I send a GET request to retrieve plants by category ID", () => {
+    return getPlantsByCategory(validCategoryId, "plantsByCategoryResponse");
+});
+
+Then("I should receive a 200 status code for plants by category", () => {
+    return cy.get("@plantsByCategoryResponse").its("status").should("eq", 200);
+});
+
+Then("the response should contain plants from the specified category", () => {
+    return cy.get("@plantsByCategoryResponse").then((response) => {
+        expect(response.status, "status").to.eq(200);
+        const plants = Array.isArray(response.body) ? response.body : (response.body.content || response.body);
+        expect(plants, "plants array").to.be.an("array");
+        
+        if (plants.length > 0) {
+            plants.forEach((plant) => {
+                expect(plant, "plant object").to.have.property("category");
+                expect(plant.category.id, "category id").to.eq(validCategoryId);
+            });
+        }
+    });
+});
+
+// @Plant_User_API_09 -----------------------------------------------
+
+When("I send a GET request to retrieve plants by invalid category ID", () => {
+    const invalidCategoryId = 999999;
+    return getPlantsByCategory(invalidCategoryId, "plantsByInvalidCategoryResponse");
+});
+
+Then("I should receive a 404 or 400 status code for invalid category", () => {
+    return cy.get("@plantsByInvalidCategoryResponse").then((response) => {
+        expect(response.status, "invalid category status").to.be.oneOf([400, 404]);
+    });
+});
+
+Then("the response should contain an error message about category not found", () => {
+    return cy.get("@plantsByInvalidCategoryResponse").then((response) => {
+        expect(response.body, "error response").to.have.property("status");
+        expect(response.body, "error response").to.have.property("error");
+        expect(response.body, "error response").to.have.property("message");
+        
+        const errorMessage = response.body.message.toLowerCase();
+        const isCategoryError = errorMessage.includes("category") || 
+                               errorMessage.includes("not found") ||
+                               errorMessage.includes("does not exist");
+        
+        expect(isCategoryError, 
+            `Error message should indicate category not found. Got: ${response.body.message}`
+        ).to.be.true;
+    });
+});
+
+// @Plant_User_API_10 -----------------------------------------------
+
+When("I send a GET request to plants endpoint with invalid token", () => {
+    return getAllPlantsUnauthorized("invalid-token-123", "unauthorizedPlantsResponse");
+});
+
+Then("I should receive a 401 Unauthorized status code", () => {
+    return cy.get("@unauthorizedPlantsResponse").its("status").should("eq", 401);
+});
+
+Then("the response should indicate access is denied", () => {
+    return cy.get("@unauthorizedPlantsResponse").then((response) => {
+        expect(response.status, "unauthorized status").to.eq(401);
+        expect(response.body, "error response").to.have.property("status", 401);
+        expect(response.body, "error response").to.have.property("error");
+        expect(response.body, "error response").to.have.property("message");
+    });
+});
+
+// @Plant_User_API_11 -----------------------------------------------
+
+When("I send a GET request to search plants with invalid token", () => {
+    return searchPlantsUnauthorized({ name: "Fern" }, "invalid-token-123", "unauthorizedSearchResponse");
+});
+
+Then("I should receive a 401 Unauthorized status code for search", () => {
+    return cy.get("@unauthorizedSearchResponse").its("status").should("eq", 401);
+});
+
+Then("the response should indicate search access is denied", () => {
+    return cy.get("@unauthorizedSearchResponse").then((response) => {
+        expect(response.status, "unauthorized search status").to.eq(401);
+        expect(response.body, "error response").to.have.property("status", 401);
+        expect(response.body, "error response").to.have.property("error");
+        expect(response.body, "error response").to.have.property("message");
     });
 });

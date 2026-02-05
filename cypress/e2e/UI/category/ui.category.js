@@ -1,7 +1,8 @@
 import { Given, When, Then } from "@badeball/cypress-cucumber-preprocessor";
 import { loginPage } from "../../../support/pages/login";
-import { uiLoginAsAdmin, uiLoginAsUser } from "../../preconditions/login";
+import { apiLoginAsAdmin, uiLoginAsAdmin, uiLoginAsUser } from "../../preconditions/login";
 import { categoriesPage } from "../../../support/pages/categories";
+import { getAllCategories } from "../../../support/api/category";
 
 Given("I am logged in as an admin user", () => {
     loginPage.visitLoginPage();
@@ -13,19 +14,43 @@ Given("I am logged in as a non-admin user", () => {
     uiLoginAsUser();
 });
 
+Given("category list exists", () => {
+    return apiLoginAsAdmin().then(() => {
+        return getAllCategories().then((response) => {
+            expect(response.status).to.eq(200);
+            expect(response.body).to.be.an('array').that.is.not.empty;
+        }); 
+    });
+});
+
 // @Cat_Admin_UI_01 -----------------------------------------------------
 
 When("I click the Categories menu option",() => {
     categoriesPage.clickCategoriesMenu();
 });
 
-Then("I should see a table of list of all categories", () => {
+Then("I should see a table of list of all categories", () => { 
     categoriesPage.categoryTableRows.should('have.length.greaterThan', 0);
     //verify that the second <td> elements are not empty for each <tr>
     categoriesPage.categoryTableRows.each(($row) => {
         cy.wrap($row).find('td').eq(1).invoke('text').should('not.be.empty');
     });
-    
+});
+
+When("there are no categories", () => {
+    // Execute SQL to clean database without validation and refreshing the page 
+    return cy.task('executeSql', 'sql/categoryBackup.sql').then(() => {
+        // Refresh the page to reflect the changes in the database
+        cy.reload();    
+    });
+
+});
+
+Then("I should see no categories are found message", () => {
+    categoriesPage.verifyNoCategoriesMessage();
+
+    //added the backup SQL to restore the database after the test
+    return cy.task('executeSql', 'sql/categoryRestore.sql');
 });
 
 // @Cat_Admin_UI_02 -----------------------------------------------------
@@ -215,15 +240,6 @@ Then("I should not see the Edit Category button for any category",()=>{
 });
 
 // @Cat_User_UI_05 -----------------------------------------------------
-
-Then("a category exists", () => {
-    categoriesPage.categoryTableRows.should('have.length.greaterThan', 0);
-    //verify that the second <td> elements are not empty for each <tr>
-    categoriesPage.categoryTableRows.each(($row) => {
-        cy.wrap($row).find('td').eq(1).invoke('text').should('not.be.empty');
-    });
-    
-});
 
 Then("I should not see the Delete Category button for any category",()=>{
     categoriesPage.verifyDeleteButtonDisabled();

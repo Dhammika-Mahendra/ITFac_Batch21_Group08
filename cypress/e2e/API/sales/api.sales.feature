@@ -1,6 +1,6 @@
 @api @sales
 
-Feature: Sales Management
+Feature: Sales API
     I want to retrieve and manage sales records
 
     #************************************************************************ 
@@ -81,6 +81,56 @@ Feature: Sales Management
         Then I should receive a 401 status code
         And the response should contain an unauthorized error message
 
+    #*********************************************214160H************************************************
+    
+    @Sale_Admin_API_11
+    Scenario: Admin cannot create sale with negative quantity
+        Given I have logged in as an admin user
+        When I attempt to create a sale for plant 3 with quantity -5
+        Then I should receive a 400 status code for negative quantity
+        And the response should contain an error message "Quantity must be greater than 0"
+
+    @Sale_Admin_API_12
+    Scenario: Admin cannot create sale with decimal quantity
+        Given I have logged in as an admin user
+        When I attempt to create a sale for plant 3 with decimal quantity 2.5
+        Then I should receive a 500 status code for decimal quantity
+        And the response should contain a type conversion error message
+
+    @Sale_Admin_API_13
+    Scenario: Admin cannot create sale with non-numeric quantity
+        Given I have logged in as an admin user
+        When I attempt to create a sale for plant 3 with non-numeric quantity "abc"
+        Then I should receive a 500 status code for non-numeric quantity
+        And the response should contain a non-numeric type conversion error message
+
+    @Sale_Admin_API_14
+    Scenario: Admin cannot create sale with zero quantity
+        Given I have logged in as an admin user
+        When I attempt to create a sale for plant 1 with quantity 0
+        Then I should receive a 400 status code for zero quantity
+        And the response should contain an error message "Quantity must be greater than 0"
+
+    @Sale_Admin_API_15
+    Scenario: Admin cannot create sale exceeding available stock
+        Given I have logged in as an admin user
+        And I have retrieved a plant with available stock
+        When I attempt to create a sale with quantity exceeding available stock
+        Then I should receive a 400 status code for insufficient stock
+        And the response should contain an insufficient stock error message
+
+    @Sale_Admin_API_16
+    Scenario: Verify that an admin can create a new sale with valid data
+        Given I have logged in as an admin user
+        And I have selected a plant with stock greater than 2
+        When I create a sale for the selected plant with quantity 2
+        Then I should receive a 201 status code for sale creation
+        And the sale should be created with correct details
+        And the plant stock should be reduced by the quantity sold
+        And I cleanup the test data by deleting the sale and restoring plant quantity
+
+    #***************************************************************************************************
+        
     #************************************************************************
     # Sales User API Scenarios
     #************************************************************************
@@ -120,3 +170,44 @@ Feature: Sales Management
         When I attempt to retrieve sales without authenticating
         Then I should receive a 401 status code
         And the response should contain an unauthorized error message
+
+    #******************************************214160H************************************************
+
+    @Sale_User_API_06
+    Scenario: Verify that a user cannot create a new sale
+        Given I have logged in as a testuser
+        And I have selected a plant with stock greater than 2
+        When I attempt to create a sale as a regular user for the selected plant with quantity 2
+        Then I should receive a 403 status code for forbidden access
+        And the response should contain an access denied error message
+
+    @Sale_User_API_07
+    Scenario: User cannot delete sale
+        Given I have logged in as a testuser
+        And I have retrieved a list of sales with full data for restore
+        When I attempt to delete the sale as a regular user
+        Then I should receive a 403 status code for forbidden delete access
+        And the delete response should contain an access denied error message
+
+    @Sale_User_API_08
+    Scenario: Verify that a user can retrieve sales sorted by plant name
+        Given I have logged in as a testuser
+        When I call the sales pagination API endpoint with page 0, size 10 and sort PlantName
+        Then I should receive a 200 status code
+        And the response should contain a list of sales
+        And the sales should be sorted by plant name in alphabetical order
+
+    @Sale_User_API_09
+    Scenario: Verify that a user can retrieve a single sale by ID
+        Given I have logged in as a testuser
+        And I have retrieved a list of sales to get an existing sale ID
+        When I retrieve a single sale by ID
+        Then I should receive a 200 status code
+        And the response should contain a single sale with the correct ID
+
+    @Sale_User_API_10
+    Scenario: Verify that a user can retrieve the sales list
+        Given I have logged in as a testuser
+        When I call the get all sales API endpoint
+        Then I should receive a 200 status code for sales list
+        And the response should contain a sales array

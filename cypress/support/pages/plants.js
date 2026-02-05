@@ -225,6 +225,13 @@ class PlantsPage {
         return this;
     }
 
+    // Navigate to add plant page
+    visitAddPlantPage() {
+        const baseUrl = Cypress.env("BASE_URL") || "http://localhost:8080";
+        cy.visit(`${baseUrl}/ui/plants/add`);
+        return this;
+    }
+
     verifyFormPreFilled() {
         cy.get('input[name="name"], input#name').should('not.have.value', '');
         cy.get('input[name="price"], input#price').should('not.have.value', '');
