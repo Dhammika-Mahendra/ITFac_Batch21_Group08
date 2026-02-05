@@ -1,7 +1,8 @@
 @api @category
 
-Feature: Category Management
-    I want to manage categories after signing in
+Feature: Category API
+    After signing in as an authenticated user
+    I want to manage categories
 
     #----------------------------------------------
     #           Admin User Scenarios

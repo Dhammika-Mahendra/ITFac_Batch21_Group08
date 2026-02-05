@@ -1,6 +1,6 @@
 @ui @plants
 
-Feature: Plant Management UI
+Feature: Plants UI
     I want to manage plants through the user interface
 
     #----------------------------------------------

@@ -1,8 +1,7 @@
 @ui @dashboard
-Feature: Dashboard Access
-    As an authenticated user
-    I want to reach the dashboard after signing in
-    So that I can monitor the system
+Feature: Dashboard UI
+    After signing in as an authenticated user
+    I want to reach the dashboard UI, so that I can monitor the system
 
     @Dash_Admin_UI_01
     Scenario: Admin can see the dashboard with all necessary basic components after a succesful login

@@ -1,6 +1,6 @@
 @api @sales
 
-Feature: Sales Management
+Feature: Sales API
     I want to retrieve and manage sales records
 
     #************************************************************************ 

@@ -1,6 +1,6 @@
 @api @plants
 
-Feature: Plant Management API
+Feature: Plants API
     I want to manage plants after signing in
 
     #----------------------------------------------

@@ -1,5 +1,5 @@
 @ui @sales
-Feature: Sales Management
+Feature: Sales UI
     
     As an admin user
     I want to manage sales records
