@@ -66,6 +66,23 @@ Welcome to the QA Test Project repository! This project is designed for automate
   npx cypress run --env tags=@YourTag
   ```
 
+## Allure Report
+
+1. **Run Cypress tests (generates `allure-results/`):**
+   ```sh
+   npm run cy:run
+   ```
+
+2. **Generate the report:**
+   ```sh
+   npm run allure:generate
+   ```
+
+3. **Open the report:**
+   ```sh
+   npm run allure:open
+   ```
+
 ## Additional Notes
 
 - Screenshots and test results are saved in the `cypress/screenshots/` directory.
