@@ -29,13 +29,28 @@ When("I click the Categories menu option",() => {
     categoriesPage.clickCategoriesMenu();
 });
 
-Then("I should see a table of list of all categories", () => {
+Then("I should see a table of list of all categories", () => { 
     categoriesPage.categoryTableRows.should('have.length.greaterThan', 0);
     //verify that the second <td> elements are not empty for each <tr>
     categoriesPage.categoryTableRows.each(($row) => {
         cy.wrap($row).find('td').eq(1).invoke('text').should('not.be.empty');
     });
-    
+});
+
+When("there are no categories", () => {
+    // Execute SQL to clean database without validation and refreshing the page 
+    return cy.task('executeSql', 'sql/categoryBackup.sql').then(() => {
+        // Refresh the page to reflect the changes in the database
+        cy.reload();    
+    });
+
+});
+
+Then("I should see no categories are found message", () => {
+    categoriesPage.verifyNoCategoriesMessage();
+
+    //added the backup SQL to restore the database after the test
+    return cy.task('executeSql', 'sql/categoryRestore.sql');
 });
 
 // @Cat_Admin_UI_02 -----------------------------------------------------

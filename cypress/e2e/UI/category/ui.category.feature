@@ -1,6 +1,7 @@
 @ui @category
-Feature: Category Management UI
-	As an admin or user, I want to interact with the category management UI
+Feature: Category UI
+	After signing in as an authenticated user
+	I want to interact with the category management via the UI
 
     #----------------------------------------------
     #           Admin User Scenarios
@@ -12,6 +13,8 @@ Feature: Category Management UI
 		Given category list exists
 		When I click the Categories menu option
 		Then I should see a table of list of all categories
+		When there are no categories
+		Then I should see no categories are found message
 
 	@Cat_Admin_UI_02
 	Scenario: Verify Admin view categories list with pagination
@@ -88,8 +91,12 @@ Feature: Category Management UI
 	@Cat_User_UI_01
 	Scenario: Verify User view all existing categories
 		Given I am logged in as a non-admin user
+		Given category list exists
 		When I click the Categories menu option
 		Then I should see a table of list of all categories
+		When there are no categories
+		Then I should see no categories are found message
+
 
 	@Cat_User_UI_02
 	Scenario: Verify User view categories list with pagination

@@ -19,6 +19,16 @@ class CategoriesPage {
         return this.categoryTable.find('tbody').find('tr');
     }
 
+    get noCategoriesMessage(){
+        //get a <td> element of class="text-center text-muted py-4" element inside categoryTable
+        return this.categoryTable.find('td.text-center.text-muted.py-4');
+    }
+
+    verifyNoCategoriesMessage(){
+        // message should mention "No category found"
+        this.noCategoriesMessage.should('contain.text', 'No category found');
+    }
+
     categoryTableRowsByIndex(index){
         return this.categoryTableRows.eq(index);
     }
