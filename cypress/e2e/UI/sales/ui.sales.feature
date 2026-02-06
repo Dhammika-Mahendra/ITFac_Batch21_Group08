@@ -21,7 +21,7 @@ Feature: Sales UI
         Given I am logged in as admin
         And sales exist in the system
         When I navigate to the sales page
-        And I click on the "Sold date" column header
+        And I click on the "Sold At" column header
         Then the sales should be displayed in descending order by sold date
 
     @Sale_Admin_UI_03
@@ -29,7 +29,7 @@ Feature: Sales UI
         Given I am logged in as admin
         And sales exist in the system
         When I navigate to the sales page
-        And I click on the "Plant name" column header
+        And I click on the "Plant" column header
         Then the sales should be sorted by Plant Name
 
     @Sale_Admin_UI_04
@@ -46,7 +46,7 @@ Feature: Sales UI
         Given I am logged in as admin
         And sales exist in the system
         When I navigate to the sales page
-        And I click on the "Total price" column header
+        And I click on the "Total" column header
         Then the sales should be sorted by Total price
 
     @Sale_Admin_UI_06
@@ -59,13 +59,12 @@ Feature: Sales UI
         Then the error message "Quantity must be greater than 0" should be displayed
 
     @Sale_Admin_UI_07
-    Scenario: Verify validation for non numeric quantity
+    Scenario: Verify that Quantity field does not accept non-numeric values
         Given I am logged in as admin
         And I am on the Sales page
         And I click on the "Sell Plant" button
-        When I enter a non-numeric value in the Quantity field
-        And I submit the form
-        Then the error message "Quantity must be a valid number" should be displayed
+        When I try to enter a non-numeric value in the Quantity field
+        Then the Quantity field should not accept the non-numeric value
 
     @Sale_Admin_UI_08
     Scenario: Verify that after a successful plant selling, admin redirects to sales list automatically
@@ -203,7 +202,7 @@ Feature: Sales UI
         Given I am logged in as testuser
         And sales exist in the system
         When I navigate to the Sales page
-        Then the sales should be displayed in descending order by Sold date
+        Then the sales should be displayed in descending order by sold date
 
     #*******************************************214160H****************************************************
     @Sale_User_UI_06
@@ -227,7 +226,7 @@ Feature: Sales UI
         Given I am logged in as user
         And sales exist
         When I navigate to the sales page
-        And I click on "Total Price" column header to change sort order
+        And I click on "Total" column header to change sort order
         Then the sales records should be sorted correctly by Total Price
 
     @Sale_User_UI_09
