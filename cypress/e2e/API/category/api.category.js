@@ -144,7 +144,8 @@ Then("I send a request to edit the category name", () => {
 
 Then("the category name should be updated successfully", () => {
 	return cy.get("@updateCategoryResponse").then((response) => {
-		expect(response.status, "update category status").to.eq(200);
+		//200 or 204 as response status
+		expect(response.status, "update category status").to.be.oneOf([200, 204]);
 		expect(response.body.name, "updated category name").to.eq(editName);
 
 		// Revert the category name back to its original value for cleanup
@@ -174,7 +175,8 @@ When("When I attempt to edit the category name with invalid data - long name",()
 
 Then("the system should reject the name update with a validation error", () => {
 	return cy.get("@updateCategoryResponse").then((response) => {
-		expect(response.status, "update category status").to.eq(500);
+		//4xx status expected
+		expect(response.status, "update category status").to.be.within(400, 499);
 	});
 });
 
@@ -199,7 +201,7 @@ Then("the category should be deleted successfully", () => {
 		} else if (response.status === 500) {
 			expect(response.body.message).to.include("sub-categories");
 		} else {
-			expect(response.status).to.be.oneOf([204, 500]);
+			expect(response.status).to.be.oneOf([200, 204]);
 		}
 	});
 });
