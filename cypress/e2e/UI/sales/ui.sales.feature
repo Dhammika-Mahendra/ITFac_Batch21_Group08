@@ -46,7 +46,7 @@ Feature: Sales UI
         Given I am logged in as admin
         And sales exist in the system
         When I navigate to the sales page
-        And I click on the "Total price" column header
+        And I click on the "Total" column header
         Then the sales should be sorted by Total price
 
     @Sale_Admin_UI_06
@@ -226,7 +226,7 @@ Feature: Sales UI
         Given I am logged in as user
         And sales exist
         When I navigate to the sales page
-        And I click on "Total Price" column header to change sort order
+        And I click on "Total" column header to change sort order
         Then the sales records should be sorted correctly by Total Price
 
     @Sale_User_UI_09

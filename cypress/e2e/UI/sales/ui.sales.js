@@ -275,7 +275,7 @@ Then("the sales should be sorted by Quantity", () => {
 });
 
 Then("the sales should be sorted by Total price", () => {
-	salesPage.verifyAdminSalesSortedByTotalPrice();
+	salesPage.verifySalesSortedByTotalPrice();
 });
 
 Then("the sales should be sorted by Plant", () => {

@@ -263,26 +263,6 @@ class SalesPage {
         });
     }
 
-    verifySalesSortedByTotalPrice() {
-        // Extract total prices from the table and verify they are sorted
-        const prices = [];
-        
-        this.salesTableRows.each(($row) => {
-            // Get the total price column (typically the third column)
-            cy.wrap($row).find('td').eq(2).invoke('text').then((priceText) => {
-                const cleaned = priceText.replace(/[^0-9.]/g, "").trim();
-                const price = parseFloat(cleaned);
-                if (!isNaN(price)) {
-                    prices.push(price);
-                }
-            });
-        }).then(() => {
-            // Verify prices are sorted numerically
-            const sortedPrices = [...prices].sort((a, b) => a - b);
-            expect(prices).to.deep.equal(sortedPrices);
-        });
-    }
-
     get quantityField() {
         return cy.get('input[name="quantity"], input[id="quantity"], [data-testid="quantity-input"]');
     }
