@@ -466,8 +466,8 @@ class SalesPage {
     }
 
     clickColumnHeader(columnName) {
-        // Updated to use "Plant" instead of "Plant Name"
-        cy.get('table thead th').contains(columnName).click();
+        // Updated to use case-insensitive matching for column headers
+        cy.get('table thead th').contains(new RegExp(columnName, 'i')).click();
     }
 
     verifySalesSortedByPlant() {
