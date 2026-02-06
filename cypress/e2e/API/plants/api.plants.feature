@@ -10,7 +10,7 @@ Feature: Plants API
     @Plant_Admin_API_01
     Scenario: Verify that admin can successfully retrieve complete list of all plants with pagination details via API
         Given I have logged in as an admin user
-        When I call the plants get API endpoint
+        When I call the paged plants API endpoint with page 0, size 10, and sort by name
         Then I should receive a 200 status code for plants
         And the response should contain a plants array
         And the response should contain pagination details

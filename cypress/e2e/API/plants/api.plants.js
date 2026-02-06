@@ -14,8 +14,8 @@ Given("I have logged in as a regular user", () => {
 
 // @Plant_Admin_API_01 -----------------------------------------------
 
-When("I call the plants get API endpoint", () => {
-    return getAllPlants();
+When("I call the paged plants API endpoint with page 0, size 10, and sort by name", () => {
+    return searchPlants({ page: 0, size: 10, sortBy: "name", responseAlias: "plantsResponse" });
 });
 
 Then("I should receive a 200 status code for plants", () => {
@@ -242,6 +242,10 @@ Then("I should receive plants only from second category", () => {
 
 // @Plant_User_API_01 (already covered by shared steps above)
 
+When("I call the plants get API endpoint", () => {
+    return getAllPlants();
+});
+
 // @Plant_User_API_02 -----------------------------------------------
 
 When("I attempt to create a new plant as regular user", () => {
@@ -417,7 +421,7 @@ Then("the response should contain plants from the specified category", () => {
         expect(response.status, "status").to.eq(200);
         const plants = Array.isArray(response.body) ? response.body : (response.body.content || response.body);
         expect(plants, "plants array").to.be.an("array");
-        
+
         if (plants.length > 0) {
             plants.forEach((plant) => {
                 expect(plant, "plant object").to.have.property("category");
@@ -445,13 +449,13 @@ Then("the response should contain an error message about category not found", ()
         expect(response.body, "error response").to.have.property("status");
         expect(response.body, "error response").to.have.property("error");
         expect(response.body, "error response").to.have.property("message");
-        
+
         const errorMessage = response.body.message.toLowerCase();
-        const isCategoryError = errorMessage.includes("category") || 
-                               errorMessage.includes("not found") ||
-                               errorMessage.includes("does not exist");
-        
-        expect(isCategoryError, 
+        const isCategoryError = errorMessage.includes("category") ||
+            errorMessage.includes("not found") ||
+            errorMessage.includes("does not exist");
+
+        expect(isCategoryError,
             `Error message should indicate category not found. Got: ${response.body.message}`
         ).to.be.true;
     });

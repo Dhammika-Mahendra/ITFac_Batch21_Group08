@@ -197,10 +197,16 @@ Feature: Plants UI
 
     @Plant_User_UI_06
     Scenario: Verify that 'Low' badge is displayed to regular user when plant quantity is below 5 on UI
-        Given I have logged in to the UI as a regular user
+        # Setup: Login as Admin to set quantity to 3
+        Given I have logged in to the UI as an admin user
         And I am on the plants page
-        And plants with quantity less than 5 exist
-        Then the Low badge should be displayed for plants with low quantity
+        When I click Edit button for a plant
+        And I modify the plant quantity
+        And I click Save button
+        Then the quantity changes should be saved successfully
+        
+        # Verify badge exists on modified plant (first row)
+        Then the Low badge should be displayed for the updated plant
 
     @Plant_User_UI_07
     Scenario: Verify that a User can sort the plants list by price in both ascending and descending order

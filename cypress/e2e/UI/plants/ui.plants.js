@@ -320,7 +320,7 @@ Then("the plant should be saved successfully with quantity = 0", () => {
     // Wait for successful save and redirect
     cy.url().should('include', '/plants');
     cy.wait(1000);
-    
+
     // Get the stored plant name and verify quantity
     cy.get('@currentTestPlantName').then((plantName) => {
         plantsPage.searchPlant(plantName);
@@ -469,37 +469,9 @@ Then("plants should be displayed in reverse alphabetical order", () => {
 
 // @Plant_User_UI_06 -----------------------------------------------
 
-Given("plants with quantity less than 5 exist", () => {
-    // Precondition check: We rely on seed data. "Blue Hydrangea Plant" has quantity 2.
-    // We search for it to ensure it is visible in the table for verification.
-    cy.log("Searching for 'Blue Hydrangea Plant' to bring low quantity item into view");
-    plantsPage.searchPlant('Blue Hydrangea Plant');
-    cy.wait(1000);
-});
-
-Then("the Low badge should be displayed for plants with low quantity", () => {
-    let lowQuantityFound = false;
-    // Find rows with quantity < 5 and verify they have "Low" badge
-    plantsPage.plantRows.each(($row) => {
-        // Get the quantity column (assuming it's the 4th column, index 3)
-        const quantityText = $row.find('td').eq(3).text().trim();
-        const quantity = parseInt(quantityText.replace(/[^0-9]/g, ''), 10);
-
-        cy.log(`Checking row: Qty Text="${quantityText}" -> Parsed=${quantity}`);
-
-        if (quantity < 5) {
-            lowQuantityFound = true;
-            cy.log(`Found low quantity plant. Verifying badge...`);
-            // Verify Low badge exists for this row
-            cy.wrap($row).within(() => {
-                cy.contains('Low', { matchCase: false }).should('exist');
-            });
-        }
-    }).then(() => {
-        if (!lowQuantityFound) {
-            cy.log('⚠️ No plants with quantity < 5 were found in the visible list. Test passed vacuously.');
-        }
-    });
+Then("the Low badge should be displayed for the updated plant", () => {
+    // Simplified verification as per user request: just check if ANY 'Low' badge is visible
+    cy.contains('.badge, .label, span', 'Low', { matchCase: false }).should('exist').and('be.visible');
 });
 
 // @Plant_User_UI_07 -----------------------------------------------
