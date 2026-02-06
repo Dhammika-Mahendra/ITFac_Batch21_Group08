@@ -172,7 +172,7 @@ Given("I have logged in as a testuser", () => {
 
 When("I call the sales pagination API endpoint with page {int} and size {int}", (page, size) => {
 	const query = { page, size };
-	return getSalesPage(query, "invalidParamsResponse");
+	return getSalesPage(query, "salesPageResponse");
 });
 
 When("I attempt to retrieve sales without authenticating", () => {

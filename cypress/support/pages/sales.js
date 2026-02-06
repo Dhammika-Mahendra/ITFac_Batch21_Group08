@@ -213,7 +213,7 @@ class SalesPage {
             for (let i = 0; i < dates.length - 1; i++) {
                 const currentDate = new Date(dates[i]);
                 const nextDate = new Date(dates[i + 1]);
-                expect(currentDate.getTime()).to.be.greaterThanOrEqual(nextDate.getTime());
+                expect(currentDate.getTime()).to.be.at.least(nextDate.getTime());
             }
         });
     }
