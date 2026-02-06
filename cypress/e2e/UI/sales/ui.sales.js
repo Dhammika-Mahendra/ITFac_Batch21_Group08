@@ -257,7 +257,7 @@ Given("sales exist in the system", () => {
 	cy.get('body').should('exist');
 });
 
-Then("the sales should be displayed in descending order by Sold date", function () {
+Then("the sales should be displayed in descending order by sold date", function () {
     // Verify that the sales are displayed in descending order by sold date
     salesPage.verifySalesSortedBySoldDateDescending();
 });

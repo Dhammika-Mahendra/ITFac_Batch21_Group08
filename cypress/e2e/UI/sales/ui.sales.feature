@@ -21,7 +21,7 @@ Feature: Sales UI
         Given I am logged in as admin
         And sales exist in the system
         When I navigate to the sales page
-        And I click on the "Sold date" column header
+        And I click on the "Sold At" column header
         Then the sales should be displayed in descending order by sold date
 
     @Sale_Admin_UI_03
@@ -29,7 +29,7 @@ Feature: Sales UI
         Given I am logged in as admin
         And sales exist in the system
         When I navigate to the sales page
-        And I click on the "Plant name" column header
+        And I click on the "Plant" column header
         Then the sales should be sorted by Plant Name
 
     @Sale_Admin_UI_04
@@ -202,7 +202,7 @@ Feature: Sales UI
         Given I am logged in as testuser
         And sales exist in the system
         When I navigate to the Sales page
-        Then the sales should be displayed in descending order by Sold date
+        Then the sales should be displayed in descending order by sold date
 
     #*******************************************214160H****************************************************
     @Sale_User_UI_06
