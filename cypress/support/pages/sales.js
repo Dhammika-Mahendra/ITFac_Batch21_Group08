@@ -636,6 +636,24 @@ class SalesPage {
             });
         });
     }
+
+    verifySalesSortedByPlantName() {
+        // Extract plant names from the table and verify they are sorted
+        const plantNames = [];
+        
+        this.salesTableRows.each(($row) => {
+            // Get the plant name column (usually the first column)
+            cy.wrap($row).find('td').first().invoke('text').then((plantName) => {
+                if (plantName && plantName.trim()) {
+                    plantNames.push(plantName.trim());
+                }
+            });
+        }).then(() => {
+            // Verify plant names are sorted alphabetically
+            const sortedNames = [...plantNames].sort((a, b) => a.localeCompare(b));
+            expect(plantNames).to.deep.equal(sortedNames);
+        });
+    }
 }
 
 export const salesPage = new SalesPage();
