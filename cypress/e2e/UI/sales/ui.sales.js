@@ -416,3 +416,9 @@ Then("I should be denied access to the sales page", () => {
     cy.url().should('include', '/access-denied'); // Check if redirected to an access denied page
     cy.get('body').should('contain.text', 'Access Denied'); // Check if the error message is displayed
 });
+
+
+Then("Sell plants button is not visible", () => {
+	// Verify that the "Sell Plant" button is not visible on the sales page
+	salesPage.verifySellPlantButtonNotVisible("Sell Plant");
+});

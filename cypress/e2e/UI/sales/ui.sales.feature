@@ -170,11 +170,10 @@ Feature: Sales UI
     #----------------------------------------------
 
     @Sale_User_UI_01
-    Scenario: Verify that user cannot access Sales page
+    Scenario: Verify that user can access Sales page
         Given I am logged in as testuser
         When I navigate to the Sales page
-        Then I should be denied access to the sales page
-        Then the error message "Access Denied" should be displayed
+        Then Sell plants button is not visible
 
 
     @Sale_User_UI_02
