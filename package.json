@@ -2,7 +2,8 @@
   "scripts": {
     "cy:run": "cypress run",
     "allure:generate": "allure generate allure-results --clean -o allure-report",
-    "allure:open": "allure open allure-report"
+    "allure:open": "allure open allure-report",
+    "db:seed": "node scripts/seedDatabase.js"
   },
   "devDependencies": {
     "@bahmutov/cypress-esbuild-preprocessor": "^2.2.0",

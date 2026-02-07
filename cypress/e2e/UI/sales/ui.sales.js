@@ -182,6 +182,9 @@ When("I navigate to the Sales page", () => {
 
 When("I capture the plant name and quantity from the first sale", () => {
 	salesPage.captureFirstSaleDetails();
+	cy.get('@deletedSalePlantName').then((plantName) => {
+		cy.log(`Alias @deletedSalePlantName set with value: ${plantName}`); // Debug log to confirm alias is set
+	});
 });
 
 When("I capture the current plant stock", () => {
@@ -254,25 +257,29 @@ Given("sales exist in the system", () => {
 	cy.get('body').should('exist');
 });
 
-Then("the sales should be displayed in descending order by Sold date", function () {
+Then("the sales should be displayed in descending order by sold date", function () {
     // Verify that the sales are displayed in descending order by sold date
     salesPage.verifySalesSortedBySoldDateDescending();
 });
 
 When("I click on the {string} column header", (columnName) => {
-	salesPage.clickColumnHeader(columnName);
+	salesPage.clickAdminColumnHeader(columnName);
 });
 
 Then("the sales should be sorted by Plant Name", () => {
-	salesPage.verifySalesSortedByPlantName();
+	salesPage.verifyAdminSalesSortedByPlantName();
 });
 
 Then("the sales should be sorted by Quantity", () => {
-	salesPage.verifySalesSortedByQuantity();
+	salesPage.verifyAdminSalesSortedByQuantity();
 });
 
 Then("the sales should be sorted by Total price", () => {
 	salesPage.verifySalesSortedByTotalPrice();
+});
+
+Then("the sales should be sorted by Plant", () => {
+    salesPage.verifySalesSortedByPlant();
 });
 
 Given("I am on the Sales page", () => {
@@ -285,6 +292,10 @@ Given("I am on the Sell Plant page", () => {
 	uiLoginAsAdmin();
 	salesPage.visitSalesPage();
 	salesPage.clickSellPlantButton("Sell Plant");
+});
+When ("the Quantity field should not accept the non-numeric value", () => {
+	// Verify that the quantity field does not accept non-numeric input
+	cy.get('input.form-control#quantity').should('have.attr', 'type', 'number');
 });
 
 When("I leave the Quantity field empty", () => {
@@ -304,6 +315,12 @@ When("I enter a non-numeric value in the Quantity field", () => {
 	salesPage.enterNonNumericQuantity();
 });
 
+When("I try to enter a non-numeric value in the Quantity field", () => {
+    // getv the inout of class form-control and id quantity
+	//verify type is number and does not accept non-numeric input
+	cy.get('input.form-control#quantity').should('have.attr', 'type', 'number');
+});
+
 When("I select a plant from the dropdown", () => {
 	salesPage.selectPlantFromDropdown();
 });
@@ -314,6 +331,10 @@ When("I enter a valid quantity", () => {
 });
 
 Then("admin should be redirected to the sales list page", () => {
+	salesPage.verifyRedirectedToSalesList();
+});
+
+When("I redirected to the sales list page", () => {
 	salesPage.verifyRedirectedToSalesList();
 });
 
@@ -394,4 +415,10 @@ Then("I should be denied access to the sales page", () => {
     // Verify the user is redirected to an access denied page or sees an access denied message
     cy.url().should('include', '/access-denied'); // Check if redirected to an access denied page
     cy.get('body').should('contain.text', 'Access Denied'); // Check if the error message is displayed
+});
+
+
+Then("Sell plants button is not visible", () => {
+	// Verify that the "Sell Plant" button is not visible on the sales page
+	salesPage.verifySellPlantButtonNotVisible("Sell Plant");
 });

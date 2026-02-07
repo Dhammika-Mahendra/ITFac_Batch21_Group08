@@ -46,7 +46,7 @@ class CategoriesPage {
     }
 
     get addCategoryButton(){
-        return cy.get('a.btn.btn-primary').contains('Add Category');
+        return cy.get('a.btn.btn-primary').contains('Add A Category');
     }
 
     clickAddCategoryButton(){

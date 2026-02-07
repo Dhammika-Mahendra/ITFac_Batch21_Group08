@@ -31,13 +31,20 @@ Welcome to the QA Test Project repository! This project is designed for automate
 
 3. **Run the Java Application:**
    - Navigate to the `app` folder and run the JAR file.
+   - This will also create the tables with corresponding schema
    ```sh
    cd app
    java -jar qa-training-app.jar
    ```
    - Ensure the application is running before executing Cypress tests.
 
-4. **Run Cypress Tests:**
+4. **Add sample data to database**
+   - Run the seeding file to add populate the database
+   ```sh
+   npm run db:seed
+   ```
+
+5. **Run Cypress Tests:**
    - Open a new terminal and return to the project root directory.
    - Use the following command to run all tests:
    ```sh
